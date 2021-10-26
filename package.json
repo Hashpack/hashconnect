@@ -1,0 +1,25 @@
+{
+  "name": "hashconnect",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "prepublish": "npm run build",
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hashpack/hashconnect.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Hashpack/hashconnect/issues"
+  },
+  "homepage": "https://github.com/Hashpack/hashconnect#readme",
+  "devDependencies": {
+    "typescript": "^4.4.4"
+  }
+}

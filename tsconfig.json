@@ -8,7 +8,7 @@
     "esModuleInterop": true,
     "allowJs": true
   },
-  "include": ["src"],
+  "include": ["lib"],
   "exclude": [
     "node_modules",
     "dist"

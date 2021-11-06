@@ -42,6 +42,7 @@
     "prettier": "^2.3.2",
     "rimraf": "^3.0.2",
     "rollup": "^2.56.3",
+    "rollup-plugin-polyfill-node": "^0.7.0",
     "time-cache": "^0.3.0",
     "ts-node": "^10.2.1",
     "tslib": "^2.3.1",
@@ -49,9 +50,9 @@
     "typescript": "^4.4.2"
   },
   "dependencies": {
-    "@types/node": "^16.11.6",
     "@rollup/plugin-json": "^4.1.0",
     "@types/bl": "^5.0.2",
+    "@types/node": "^16.11.6",
     "crypto": "^1.0.1",
     "crypto-browserify": "^3.12.0",
     "crypto-js": "^3.1.9-1",
@@ -59,8 +60,8 @@
     "protons": "^2.0.3",
     "rxjs": "~6.6.0",
     "time-cache": "^0.3.0",
+    "timers-browserify": "2.0.12",
     "tslib": "^2.3.0",
-    "zone.js": "~0.11.4",
-    "timers-browserify": "2.0.12"
+    "zone.js": "~0.11.4"
   }
 }

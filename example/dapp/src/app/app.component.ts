@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { greet, foo, ee, qq, pp, bb } from 'hashconnect';
+import { greet, foo, ee, qq, pp, bb, cc } from 'hashconnect';
 
 @Component({
   selector: 'app-root',

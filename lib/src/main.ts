@@ -25,6 +25,13 @@ export const bb = async (name: string): Promise<string> => {
     return `Hello ${name}`
 }
 
+export const cc = async (name: string): Promise<string> => {
+    let waku = await Waku.create({ bootstrap: true });
+    console.log(waku);
+    return `Hello ${name}`
+}
+
+
 export const pp = async (name: string): Promise<string> => {
     let waku = await Waku.create({ bootstrap: true });
     console.log(waku);

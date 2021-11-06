@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "es5",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "esModuleInterop": true,
+    "paths": {
+      "crypto": [
+        "./node_modules/crypto-js"
+      ],
+      "stream": [
+        "./node_modules/stream-browserify"
+      ]
+    },
+    "noImplicitAny": false
+  }
+}

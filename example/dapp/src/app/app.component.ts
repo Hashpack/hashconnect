@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { initWaku, currentMessage, sendMessage } from 'hashconnect';
+// import { initWaku, currentMessage, sendMessage } from 'hashconnect';
+import { test } from 'hashconnect2';
 
 @Component({
     selector: 'app-root',
@@ -13,18 +14,19 @@ export class AppComponent {
     incomingMessage = "";
 
     constructor() {
-      console.log(initWaku);
+        test("aaa");
+    //   console.log(initWaku);
         // currentMessage.subscribe((msg) => this.incomingMessage += msg + "\n")
     }
 
     async initClient() {
-        await initWaku();
+        // await initWaku();
         this.status = "initialized"
       }
     
       async send() {
         this.status = "message sending..."
-        await sendMessage(this.message);
+        // await sendMessage(this.message);
         this.status = "message sent"
       }
 }

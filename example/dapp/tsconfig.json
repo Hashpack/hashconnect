@@ -23,17 +23,20 @@
         ],
         "paths": {
             "hashconnect": [
-                "node_modules/hashconnect/src"
+                "node_modules/hashconnect/dist"
             ],
             "hashconnect/*": [
-                "node_modules/hashconnect/src/*"
+                "node_modules/hashconnect/dist/*"
             ]
         },
+        "types": [ "node" ],
+        "typeRoots": [ "../node_modules/@types" ]
     },
     "angularCompilerOptions": {
         "enableI18nLegacyMessageIdFormat": false,
         "strictInjectionParameters": true,
         "strictInputAccessModifiers": true,
-        "strictTemplates": true
+        "strictTemplates": true,
+        "noImplicitAny": false
     }
 }

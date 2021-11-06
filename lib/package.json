@@ -1,12 +1,12 @@
 {
   "name": "hashconnect",
   "version": "0.0.1",
-  "description": "TypeScript library npm package boilerplate",
+  "description": "HashConnect TODO",
   "author": "HashPack",
-  "homepage": "https://github.com/jasonsturges/typescript-npm-package",
+  "homepage": "https://github.com/Hashpack/hashconnect",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jasonsturges/typescript-npm-package"
+    "url": "https://github.com/Hashpack/hashconnect"
   },
   "license": "ISC",
   "keywords": [
@@ -15,9 +15,9 @@
     "package",
     "boilerplate"
   ],
-  "main": "dist/typescript-npm-package.cjs.js",
-  "module": "dist/typescript-npm-package.esm.js",
-  "browser": "dist/typescript-npm-package.umd.js",
+  "main": "dist/hashconnect.cjs.js",
+  "module": "dist/hashconnect.esm.js",
+  "browser": "dist/hashconnect.umd.js",
   "files": [
     "dist"
   ],
@@ -34,15 +34,33 @@
   "devDependencies": {
     "@microsoft/api-extractor": "^7.18.7",
     "@rollup/plugin-commonjs": "^20.0.0",
+    "@rollup/plugin-json": "4.1.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-typescript": "^8.2.5",
+    "@types/node": "^16.11.6",
     "eslint": "^7.32.0",
     "prettier": "^2.3.2",
     "rimraf": "^3.0.2",
     "rollup": "^2.56.3",
+    "time-cache": "^0.3.0",
     "ts-node": "^10.2.1",
     "tslib": "^2.3.1",
     "typedoc": "^0.21.9",
     "typescript": "^4.4.2"
+  },
+  "dependencies": {
+    "@types/node": "^16.11.6",
+    "@rollup/plugin-json": "^4.1.0",
+    "@types/bl": "^5.0.2",
+    "crypto": "^1.0.1",
+    "crypto-browserify": "^3.12.0",
+    "crypto-js": "^3.1.9-1",
+    "js-waku": "0.14.1",
+    "protons": "^2.0.3",
+    "rxjs": "~6.6.0",
+    "time-cache": "^0.3.0",
+    "tslib": "^2.3.0",
+    "zone.js": "~0.11.4",
+    "timers-browserify": "2.0.12"
   }
 }

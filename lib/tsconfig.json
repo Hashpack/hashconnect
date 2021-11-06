@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es2015",
     "module": "esnext",
     "moduleResolution": "node",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "noImplicitAny": false
   }
 }

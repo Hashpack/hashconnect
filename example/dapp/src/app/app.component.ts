@@ -13,7 +13,8 @@ export class AppComponent {
     incomingMessage = "";
 
     constructor() {
-        currentMessage.subscribe((msg) => this.incomingMessage += msg + "\n")
+      console.log(initWaku);
+        // currentMessage.subscribe((msg) => this.incomingMessage += msg + "\n")
     }
 
     async initClient() {

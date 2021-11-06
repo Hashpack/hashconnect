@@ -52,6 +52,7 @@
   "dependencies": {
     "@rollup/plugin-json": "^4.1.0",
     "@types/bl": "^5.0.2",
+    "@types/estree": "^0.0.47",
     "@types/node": "^16.11.6",
     "crypto": "^1.0.1",
     "crypto-browserify": "^3.12.0",

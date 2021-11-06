@@ -14,7 +14,7 @@
         "experimentalDecorators": true,
         "moduleResolution": "node",
         "importHelpers": true,
-        "target": "es2017",
+        "target": "es5",
         "module": "es2020",
         "esModuleInterop": true,
         "lib": [
@@ -30,13 +30,11 @@
             ],
             "crypto": [
                 "./node_modules/crypto-browserify"
-              ],
-              "stream": [
+            ],
+            "stream": [
                 "./node_modules/stream-browserify"
-              ]
-        },
-        "types": [ "node" ],
-        "typeRoots": [ "../node_modules/@types" ]
+            ]
+        }
     },
     "angularCompilerOptions": {
         "enableI18nLegacyMessageIdFormat": false,

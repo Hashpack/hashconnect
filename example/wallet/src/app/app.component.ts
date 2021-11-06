@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import {  } from 'hashconnect';
 
 @Component({
   selector: 'app-root',
@@ -7,5 +6,5 @@ import {  } from 'hashconnect';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'dapp';
+  title = 'wallet';
 }

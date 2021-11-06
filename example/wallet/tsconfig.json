@@ -19,7 +19,15 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+        "hashconnect": [
+            "node_modules/hashconnect/src"
+        ],
+        "hashconnect/*": [
+            "node_modules/hashconnect/src/*"
+        ]
+    },
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import {  } from 'hashconnect';
+import { event, initWaku, sendMessage } from 'hashconnect';
 
 @Component({
   selector: 'app-root',
@@ -8,4 +8,21 @@ import {  } from 'hashconnect';
 })
 export class AppComponent {
   title = 'dapp';
+  status = "not started";
+  message = "";
+
+  constructor() {
+
+  }
+
+  async initClient() {
+    await initWaku();
+    this.status = "initialized";
+  }
+
+  async send() {
+    this.status = "message sending...";
+    await sendMessage(this.message);
+    this.status = "message sent";
+  }
 }

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { event, initWaku, sendMessage } from 'hashconnect';
+import { EventType, WakuRelay } from 'hashconnect';
 
 @Component({
   selector: 'app-root',
@@ -10,19 +10,30 @@ export class AppComponent {
   title = 'dapp';
   status = "not started";
   message = "";
+  incomingMessage = "";
+  private wakuRelay: WakuRelay;
 
   constructor() {
+    this.wakuRelay = new WakuRelay();
+    this.wakuRelay.attachEvent(EventType.CONNECT, (msg) => {
+      console.log(msg);
+      this.status = msg;
+    })
 
+    this.wakuRelay.attachEvent(EventType.MESSAGE_RECEIVED, (msg) => {
+      console.log("message from peer received: "+msg);
+      this.status = "message received"
+      this.incomingMessage += msg + "\n";
+    })
   }
 
   async initClient() {
-    await initWaku();
-    this.status = "initialized";
+    await this.wakuRelay.init();
   }
 
   async send() {
     this.status = "message sending...";
-    await sendMessage(this.message);
+    await this.wakuRelay.sendMessage(this.message);
     this.status = "message sent";
   }
 }

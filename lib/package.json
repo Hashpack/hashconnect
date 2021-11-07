@@ -1,8 +1,8 @@
 {
   "name": "hashconnect",
   "version": "0.4.2",
-  "description": "Boilerplate for TypeScript projects (Node.js and browser modules)",
-  "author": "Chris Hager <chris@linuxuser.at>",
+  "description": "hashconnect interoperability library",
+  "author": "Tyler Coté <tyler@hashpack.app>, Nick Hanna <nick@hashpack.app>",
   "repository": "https://github.com/metachris/typescript-boilerplate",
   "license": "MIT",
   "keywords": [
@@ -40,6 +40,8 @@
   "dependencies": {
     "crypto-js": "^4.1.1",
     "js-waku": "^0.14.1",
-    "ts-typed-events": "3.0.0"
+    "ts-typed-events": "3.0.0",
+    "protons": "^2.0.3",
+    "process": "^0.11.10"
   }
 }

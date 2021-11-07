@@ -1,3 +1,54 @@
+# HashConnect
+
+## In The Browser
+
+There are a few steps in order to integrate hashconnect into a web app.  This is due to using node types from js-waku.
+
+### polyfills
+
+Please add the following polyfills:
+
+(window as any).global = window;
+global.Buffer = global.Buffer || require('buffer').Buffer;
+global.process = require('process');
+
+### package.json
+
+There are a few dependencies that are required in order to make the node packages compatible:
+
+dependencies:
+  - crypto-browserify
+  - stream-browserify
+  - process
+
+devDependencies:
+  - @types/node
+
+
+### tsconfig.json
+
+Add the following lines to your tsconfig.json:
+
+compilerOptions:
+    "target": "es5"
+    "paths": {
+      "crypto": [
+        "node_modules/crypto-browserify"
+      ],
+      "stream": [
+        "node_modules/stream-browserify"
+      ]
+    },
+    "types": ["node"],
+    "typeRoots": [ "../node_modules/@types" ]
+
+If there is another json file extending this (ex: tsconfig.app.json in Angular), you can also put
+
+    "types": ["node"],
+    "typeRoots": [ "../node_modules/@types" ]
+
+in that file.  If you choose to put it in tsconfig.json, make sure to remove types and typeroot
+
 # TypeScript Boilerplate for 2021
 
 [![Build and test status](https://github.com/metachris/typescript-boilerplate/workflows/Lint%20and%20test/badge.svg)](https://github.com/metachris/typescript-boilerplate/actions?query=workflow%3A%22Build+and+test%22)

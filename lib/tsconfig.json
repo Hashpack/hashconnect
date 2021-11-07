@@ -26,12 +26,7 @@
     "lib": [
       "ES6",
       "DOM"
-    ],
-    "paths": {
-        "crypto": [
-          "./node_modules/crypto-js"
-        ]
-      }
+    ]
   },
   "include": [
     "src/**/*.ts"
@@ -39,6 +34,5 @@
   "exclude": [
     "node_modules",
     "**/*.test.ts"
-  ],
-  
+  ]
 }

@@ -1,99 +1,173 @@
-# TypeScript NPM Package
-Scaffold TypeScript npm packages using this template to bootstrap your next library.
+# HashConnect
 
-This project includes:
-- [TypeScript](https://www.typescriptlang.org/)
-- [Rollup](https://rollupjs.org/)
-- [Microsoft API Extractor](https://api-extractor.com/)
-- [TypeDoc](https://typedoc.org/)
+## In The Browser
 
-## Usage
+There are a few steps in order to integrate hashconnect into a web app.  This is due to using node types from js-waku.
 
-The following tasks are available for `npm run`:
+### polyfills
 
-- `dev`: Run Rollup in watch mode to detect changes to files during development
-- `build`: Run Rollup to build a production release distributable
-- `build:types`: Run Microsoft API Extractor to rollup a types declaration (`d.ts`) file 
-- `docs`: Run TypeDoc for TSDoc generated documentation in the "*docs/*" folder
-- `clean`: Remove all build artifacts
-
-**From your library project**, issue the `npm link` command:
-
+Please add the following polyfills:
 ```
-npm link
+(window as any).global = window;
+global.Buffer = global.Buffer || require('buffer').Buffer;
+global.process = require('process');
 ```
+### package.json
 
-Start Rollup in watch mode:
+There are a few dependencies that are required in order to make the node packages compatible:
 
+dependencies:
+  - crypto-browserify
+  - stream-browserify
+  - process
+
+devDependencies:
+  - @types/node
+
+
+### tsconfig.json
+
+Add the following lines to your tsconfig.json:
 ```
-npm run dev
-```
-
-**Create a test app project**, by doing the following:
-
-To use your npm package library locally for development, create a new project in a separate folder:
-
-```
-mkdir test-app && cd test-app
-npm init
-```
-
-Take the defaults from `npm init`; then, add TypeScript:
-
-```
-npm install typescript --save-dev
-```
-
-In the package.json of your test app, add the following two things:
-- Set the `type` of your package to `module`
-- Add a `start` script to execute your app
-
-```json
-"type": "module",
-"scripts": {
-  "start": "tsc && node index.js",
-},
-```
-
-Link to your library using the `npm link <name>` command - be sure the `<name>` matches your library's package.json name.  For example:
-
-```
-npm link typescript-npm-package
-```
-
-Add a "*tsconfig.json*" file to your test app that includes a `baseUrl` and references the `paths` to your npm linked module.  Again, be sure the `paths` name matches your library's package.json name.  For example:
-
-```json
-{
-  "compilerOptions": {
-    "target": "es6",
-    "module": "esnext",
-    "moduleResolution": "node",
-    "strict": true,
-    "esModuleInterop": true,
-    "baseUrl": ".",
+compilerOptions:
+    "target": "es5"
     "paths": {
-      "typescript-npm-package": ["node_modules/typescript-npm-package/src"],
-      "typescript-npm-package/*": ["node_modules/typescript-npm-package/src/*"]
-    }
-  }
-}
+      "crypto": [
+        "node_modules/crypto-browserify"
+      ],
+      "stream": [
+        "node_modules/stream-browserify"
+      ]
+    },
+    "types": ["node"],
+    "typeRoots": [ "../node_modules/@types" ]
+```
+If there is another json file extending this (ex: tsconfig.app.json in Angular), you can also put
+```
+    "types": ["node"],
+    "typeRoots": [ "../node_modules/@types" ]
+```
+in that file.  If you choose to put it in tsconfig.json, make sure to remove types and typeroot
+
+# TypeScript Boilerplate for 2021
+
+[![Build and test status](https://github.com/metachris/typescript-boilerplate/workflows/Lint%20and%20test/badge.svg)](https://github.com/metachris/typescript-boilerplate/actions?query=workflow%3A%22Build+and+test%22)
+
+TypeScript project boilerplate with modern tooling, for Node.js programs, libraries and browser modules. Get started quickly and right-footed 🚀
+
+* [TypeScript 4](https://www.typescriptlang.org/)
+* Optionally [esbuild](https://esbuild.github.io/) to bundle for browsers (and Node.js)
+* Linting with [typescript-eslint](https://github.com/typescript-eslint/typescript-eslint) ([tslint](https://palantir.github.io/tslint/) is deprecated)
+* Testing with [Jest](https://jestjs.io/docs/getting-started) (and [ts-jest](https://www.npmjs.com/package/ts-jest))
+* Publishing to npm
+* Continuous integration ([GitHub Actions](https://docs.github.com/en/actions) / [GitLab CI](https://docs.gitlab.com/ee/ci/))
+* Automatic API documentation with [TypeDoc](https://typedoc.org/guides/doccomments/)
+
+See also the introduction blog post: **[Starting a TypeScript Project in 2021](https://www.metachris.com/2021/03/bootstrapping-a-typescript-node.js-project/)**.
+
+
+## Getting Started
+
+```bash
+# Clone the repository (you can also click "Use this template")
+git clone https://github.com/metachris/typescript-boilerplate.git your_project_name
+cd your_project_name
+
+# Edit `package.json` and `tsconfig.json` to your liking
+...
+
+# Install dependencies
+yarn install
+
+# Now you can run various yarn commands:
+yarn cli
+yarn lint
+yarn test
+yarn build-all
+yarn ts-node <filename>
+yarn esbuild-browser
+...
 ```
 
-Now, run your app via `npm start`.
+* Take a look at all the scripts in [`package.json`](https://github.com/metachris/typescript-boilerplate/blob/master/package.json)
+* For publishing to npm, use `yarn publish` (or `npm publish`)
 
-As an example, if your library's "*index.ts*" file contained:
+## esbuild
 
-```ts
-export const sayHi = () => {
-  console.log("Hi");
-};
+[esbuild](https://esbuild.github.io/) is an extremely fast bundler that supports a [large part of the TypeScript syntax](https://esbuild.github.io/content-types/#typescript). This project uses it to bundle for browsers (and Node.js if you want).
+
+```bash
+# Build for browsers
+yarn esbuild-browser:dev
+yarn esbuild-browser:watch
+
+# Build the cli for node
+yarn esbuild-node:dev
+yarn esbuild-node:watch
 ```
 
-...your test app would implement an import using your package name, such as:
+You can generate a full clean build with `yarn build-all` (which uses both `tsc` and `esbuild`).
 
-```ts
-import { sayHi } from "typescript-npm-package";
+* `package.json` includes `scripts` for various esbuild commands: [see here](https://github.com/metachris/typescript-boilerplate/blob/master/package.json#L23)
+* `esbuild` has a `--global-name=xyz` flag, to store the exports from the entry point in a global variable. See also the [esbuild "Global name" docs](https://esbuild.github.io/api/#global-name).
+* Read more about the esbuild setup [here](https://www.metachris.com/2021/04/starting-a-typescript-project-in-2021/#esbuild).
+* esbuild for the browser uses the IIFE (immediately-invoked function expression) format, which executes the bundled code on load (see also https://github.com/evanw/esbuild/issues/29)
 
-sayHi();
+
+## Tests with Jest
+
+You can write [Jest tests](https://jestjs.io/docs/getting-started) [like this](https://github.com/metachris/typescript-boilerplate/blob/master/src/main.test.ts):
+
+```typescript
+import { greet } from './main'
+
+test('the data is peanut butter', () => {
+  expect(1).toBe(1)
+});
+
+test('greeting', () => {
+  expect(greet('Foo')).toBe('Hello Foo')
+});
 ```
+
+Run the tests with `yarn test`, no separate compile step is necessary.
+
+* See also the [Jest documentation](https://jestjs.io/docs/getting-started).
+* The tests can be automatically run in CI (GitHub Actions, GitLab CI): [`.github/workflows/lint-and-test.yml`](https://github.com/metachris/typescript-boilerplate/blob/master/.github/workflows/lint-and-test.yml), [`.gitlab-ci.yml`](https://github.com/metachris/typescript-boilerplate/blob/master/.gitlab-ci.yml)
+* Take a look at other modern test runners such as [ava](https://github.com/avajs/ava), [uvu](https://github.com/lukeed/uvu) and [tape](https://github.com/substack/tape)
+
+## Documentation, published with CI
+
+You can auto-generate API documentation from the TyoeScript source files using [TypeDoc](https://typedoc.org/guides/doccomments/). The generated documentation can be published to GitHub / GitLab pages through the CI.
+
+Generate the documentation, using `src/main.ts` as entrypoint (configured in package.json):
+
+```bash
+yarn docs
+```
+
+The resulting HTML is saved in `docs/`.
+
+You can publish the documentation through CI:
+* [GitHub pages](https://pages.github.com/): See [`.github/workflows/deploy-gh-pages.yml`](https://github.com/metachris/typescript-boilerplate/blob/master/.github/workflows/deploy-gh-pages.yml)
+* [GitLab pages](https://docs.gitlab.com/ee/user/project/pages/): [`.gitlab-ci.yml`](https://github.com/metachris/typescript-boilerplate/blob/master/.gitlab-ci.yml)
+
+This is the documentation for this boilerplate project: https://metachris.github.io/typescript-boilerplate/
+
+## References
+
+* **[Blog post: Starting a TypeScript Project in 2021](https://www.metachris.com/2021/03/bootstrapping-a-typescript-node.js-project/)**
+* [TypeScript Handbook](https://www.typescriptlang.org/docs/handbook/intro.html)
+* [tsconfig docs](https://www.typescriptlang.org/tsconfig)
+* [esbuild docs](https://esbuild.github.io/)
+* [typescript-eslint docs](https://github.com/typescript-eslint/typescript-eslint/blob/master/docs/getting-started/linting/README.md)
+* [Jest docs](https://jestjs.io/docs/getting-started)
+* [GitHub Actions](https://docs.github.com/en/actions), [GitLab CI](https://docs.gitlab.com/ee/ci/)
+
+
+## Feedback
+
+Reach out with feedback and ideas:
+
+* [twitter.com/metachris](https://twitter.com/metachris)
+* [Create a new issue](https://github.com/metachris/typescript-boilerplate/issues)

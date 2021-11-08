@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { sayHi, test } from 'hashconnect';
+import { HashConnect } from 'hashconnect';
 
 @Component({
   selector: 'app-root',
@@ -8,4 +8,34 @@ import { sayHi, test } from 'hashconnect';
 })
 export class AppComponent {
   title = 'wallet';
+  status = "not started";
+  message = "";
+  incomingMessage = "";
+  private hashconnect: HashConnect;
+
+  constructor() {
+    this.hashconnect = new HashConnect();
+    this.hashconnect.events.connected.on((msg) => {
+      console.log(msg);
+      this.status = msg;
+    });
+
+    
+
+    this.hashconnect.events.messageReceived.on((msg) => {
+      console.log("message from peer received: "+msg);
+      this.status = "message received"
+      this.incomingMessage += msg + "\n";
+    })
+  }
+
+  async initClient() {
+    await this.hashconnect.connect();
+  }
+
+  async send() {
+    this.status = "message sending...";
+    await this.hashconnect.sendMessage(this.message);
+    this.status = "message sent";
+  }
 }

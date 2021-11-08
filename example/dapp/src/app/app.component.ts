@@ -7,7 +7,7 @@ import { HashConnect } from 'hashconnect';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'dapp';
+  title = 'dapp | proposer';
   status = "not started";
   message = "";
   incomingMessage = "";
@@ -15,27 +15,26 @@ export class AppComponent {
 
   constructor() {
     this.hashconnect = new HashConnect();
-    this.hashconnect.events.connected.on((msg) => {
-      console.log(msg);
-      this.status = msg;
-    });
-
-    
-
-    this.hashconnect.events.messageReceived.on((msg) => {
-      console.log("message from peer received: "+msg);
-      this.status = "message received"
-      this.incomingMessage += msg + "\n";
-    })
   }
 
   async initClient() {
     await this.hashconnect.connect();
+    this.status = "connected"
+
+    this.hashconnect.pairingEvent.on((data) => {
+      console.log("Pairing event callback ");
+      console.log(data)
+      this.status = data;
+    })
   }
 
-  async send() {
-    this.status = "message sending...";
-    await this.hashconnect.sendMessage(this.message);
-    this.status = "message sent";
+  async sendTest() {
+    await this.hashconnect.send("THIS IS A TEST")
+  }
+
+  async proposePairing() {
+    this.status = "Proposing pair"
+    // Use the pairing topic in hashconnect, this will eventually be a random string of hex or a UUID
+    await this.hashconnect.proposePairing()
   }
 }

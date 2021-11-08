@@ -7,35 +7,42 @@ import { HashConnect } from 'hashconnect';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'wallet';
+  title = 'wallet | responder';
   status = "not started";
-  message = "";
+  message = "/my-first-pair/pairing";
   incomingMessage = "";
+  pairingTopic = "/my-first-pair/pairing";
   private hashconnect: HashConnect;
 
   constructor() {
     this.hashconnect = new HashConnect();
-    this.hashconnect.events.connected.on((msg) => {
-      console.log(msg);
-      this.status = msg;
-    });
-
-    
-
-    this.hashconnect.events.messageReceived.on((msg) => {
-      console.log("message from peer received: "+msg);
-      this.status = "message received"
-      this.incomingMessage += msg + "\n";
-    })
   }
 
   async initClient() {
     await this.hashconnect.connect();
+    this.hashconnect.pairingEvent.on((data) => {
+      console.log("pairing event received")
+      console.log(data)
+    });
+    this.status = "connected";
   }
 
   async send() {
-    this.status = "message sending...";
-    await this.hashconnect.sendMessage(this.message);
-    this.status = "message sent";
+    // wallet is responder
+  }
+
+  async subscribe() {
+    // this currently ignores the pairing topic param
+    await this.hashconnect.pair(this.pairingTopic)
+  }
+
+  async approvePairing() {
+    // this currently ignores the pairing topic param
+    // await this.hashconnect.sendApproval()
+    await this.hashconnect.pair(this.pairingTopic)
+  }
+
+  async rejectPairing() {
+    await this.hashconnect.reject();
   }
 }

@@ -31,11 +31,6 @@ export class AppComponent {
     // wallet is responder
   }
 
-  async subscribe() {
-    // this currently ignores the pairing topic param
-    await this.hashconnect.pair(this.pairingTopic)
-  }
-
   async approvePairing() {
     // this currently ignores the pairing topic param
     // await this.hashconnect.sendApproval()

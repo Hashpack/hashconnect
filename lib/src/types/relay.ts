@@ -1,12 +1,14 @@
 import { Waku, WakuMessage, getBootstrapNodes } from "js-waku";
-import { IRelayEvents } from "./events";
 import { Event } from "ts-typed-events"
-import { RelayMessage } from "./types";
 
 /**
  * Relay interface
  */
-export interface IRelay extends IRelayEvents {
+export interface IRelay {
+
+    // events
+    connected: Event<any>;
+    payload: Event<any>;
 
     /**
      * Initialize the relay
@@ -16,29 +18,43 @@ export interface IRelay extends IRelayEvents {
     /**
      * Publish a message
      * 
-     * @patam topic topic to publish to
+     * @param topic topic to publish to
      * @param message message to send
      */
-    sendMessage(topic: string, message: string | any): Promise<void>;
+    publish(topic: string, message: string | any): Promise<void>;
 
+    /**
+     * Subscribe to a topic
+     * 
+     * @param topic topic to subscribe to
+     */
     subscribe(topic: string): Promise<void>;
+
+    /**
+     * Unsubscribe from a topic
+     * 
+     * @param topic topic to unsubscribe from
+     */
     unsubscribe(topic: string): Promise<void>;
 }
 
 export class WakuRelay implements IRelay {
 
     private waku!: Waku;
+    
+    // Events
     connected: Event<any>;
-    payload: Event<RelayMessage>;
+    payload: Event<any>;
 
     // TODO: is there a better way to do this?
     private processMessage = async (wakuMessage: { payloadAsUtf8: any; payload: any; }) => {
+        console.log("emitting payload");
         this.payload.emit(wakuMessage.payload)
     }
     
     constructor() {
         this.connected = new Event<any>();
-        this.payload = new Event<RelayMessage>();
+        this.payload = new Event<any>();
     }
 
     async init(): Promise<void> {
@@ -50,6 +66,8 @@ export class WakuRelay implements IRelay {
     
         console.log("Waiting for peer...");
         await this.waku.waitForConnectedPeer()
+
+        console.log("connected");
     }
 
     async subscribe(topic: string): Promise<void> {
@@ -63,7 +81,7 @@ export class WakuRelay implements IRelay {
     }
 
     // TODO: determine appropriate types for sending messages, string should suffice for now
-    async sendMessage(topic: string, message: any): Promise<void> {
+    async publish(topic: string, message: any): Promise<void> {
           const wakuMessage = await WakuMessage.fromBytes(message, topic);
         
           console.log("Sending payload");

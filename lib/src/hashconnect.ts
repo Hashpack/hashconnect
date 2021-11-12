@@ -1,148 +1,149 @@
 import { Event } from "ts-typed-events";
-import { IRelay, WakuRelay } from "./relay";
-import { Pairing, RelayMessage, RelayMessageType, Transaction } from "./types";
-
-const protons = require('protons');
+import { IRelay, WakuRelay } from "./types/relay";
+import { MessageUtil, MessageTypes, RelayMessage, RelayMessageType, Transaction } from "./types";
+import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
 
 /**
  * Main interface with hashpack
  */
-export class HashConnect {
-    /** Relay */
-    private relay: IRelay;
+export class HashConnect implements IHashConnect {
 
+    relay: IRelay;
+
+    // events
     pairingEvent: Event<any>;
     transactionEvent: Event<Transaction>;
 
-    // TODO: move this 
-    private proto = protons(`
-    message SimpleMessage {
-      uint64 timestamp = 1;
-      string type = 2;
-      string data = 3;
-    }
-    `);
-    // TODO: change this to be random hex/uuid
-    private topic = "/my-first-pairing/pairing";
+    // messages util
+    messages: MessageUtil;
 
     constructor() {
         this.relay = new WakuRelay();
         this.pairingEvent = new Event<any>();
         this.transactionEvent = new Event<Transaction>();
+        this.messages = new MessageUtil();
         this.setupEvents();
     }
 
-    async connect() {
+    async sendTransaction(topic: string, transaction: Transaction): Promise<void> {
+        const msg = this.messages.prepareMessage(transaction, RelayMessageType.Transaction);
+        await this.relay.publish(topic, msg);
+    }
+
+    async init(): Promise<void> {
         await this.relay.init();
     }
 
-    async proposePairing() {
-        // First step in pairing is subscribing to a topic, this would then be shared with the wallet
-        // TODO: this will be a random hex string or UUID
+    async connect(topic?: string, metadata?: HashConnectTypes.AppMetadata): Promise<HashConnectTypes.ConnectionState> {
+        // If the topic is not valid, then create a new topic id
+        if(!topic) {
+            topic = this.messages.createRandomTopicId();
+        }
 
-        // this subscribes to the specified topic with the function defined in relay
-        await this.relay.subscribe(this.topic);
-        console.log("pairing proposed");
-        this.pairingEvent.emit("The pairing has been proposed")
+        if(!metadata) {
+            console.log("metadata unused yet");
+        }
+        
+        // Create state for client application
+        // TODO: peer/self public keys and encryption
+        let state: HashConnectTypes.ConnectionState = {
+            topic: topic,
+            expires: 0,
+            extra: "some extra data"
+        }
+
+        await this.relay.subscribe(state.topic);
+
+        return state;        
     }
 
     // TODO: URI/qrcode/some kind of data to pair with, this is the out of band part
-    // TODO: break out into approve/reject
-    // this is called by the responder/wallet 
-    async pair(uri: string) {
-        // TODO: this will be a random hex string or UUID 
-        console.log("subscribing to paired topic " + uri);
-        await this.relay.subscribe(this.topic)
-        // await new Promise(f => setTimeout(f, 1000))
-        // for now use an arbitrary topic set here
-        const approval: Pairing.Approval = {
-            topic: this.topic
+    async pair(pairingStr: string) {
+        
+        // UUID passed into the application responding to the pairing
+        // pairingstr is just the topic for now
+        console.log(pairingStr);
+
+        // Subscribe to the proposed topic to begin pairing
+        await this.relay.subscribe(pairingStr);
+
+        const approval: MessageTypes.Approval = {
+            topic: pairingStr
         }
 
-        const payload = this.prepareMessage(JSON.stringify(approval), "approval")
-        await this.relay.sendMessage(this.topic, payload)
+        // create protobuf message
+        const payload = this.messages.prepareMessage(JSON.stringify(approval), RelayMessageType.Pairing)
+        this.relay.publish(pairingStr, payload)
     }
 
-    async reject() {
-        console.log("pairing rejected");
-        const rejected: Pairing.Rejected = {
-            topic: this.topic,
-            reason: "We are rejecting you for various reasons kkthxbai"
+    async reject(topic: string, reason?: string) {
+        let reject: MessageTypes.Rejected = {
+            topic: topic,
+            reason: reason
         }
-        const payload = this.prepareMessage(JSON.stringify(rejected), "rejected");
-        await this.relay.sendMessage(this.topic, payload)
-        this.relay.unsubscribe(this.topic)
+        
+        // create protobuf message
+        const msg = this.messages.prepareMessage(JSON.stringify(reject), RelayMessageType.RejectPairing)
+        console.log("topic: "+topic);
+        
+        // Publish the rejection
+        await this.relay.publish(topic, msg);
+        
+        // Unsubscribe
+        await this.relay.unsubscribe(topic);
     }
 
     /**
      * Set up event connections
      */
     private setupEvents() {
-        // THis will listen for a payload emission from the relay
+        // This will listen for a payload emission from the relay
         this.relay.payload.on(async (payload) => {
             console.log("hashconnect: payload received");
             if (!payload) return;
 
-            const message: RelayMessage = this.proto.SimpleMessage.decode(
+            const message: RelayMessage = this.messages.decode(
                 payload
             );
-            debugger
             console.log(`Message Received: ${message.data}, of type ${message.type}, sent at ${message.timestamp.toString()}`);
+            
+            // Should always have a topic
+            const jsonMsg = JSON.parse(message.data);
+            if(!jsonMsg['topic']) {
+                console.error("no topic in json data");
+            }
 
             // TODO: move and refactor this to be more elegant in terms of event handling
             switch (message.type) {
                 case RelayMessageType.Pairing:
-                    console.log("approved", message);
+                    console.log("approved", message.data);
                     this.pairingEvent.emit("pairing approved!")
-                    await this.ack()
+                    await this.ack(jsonMsg.topic)
                     break;
-                // case "ack":
-                //     console.log("acknowledged");
-                //     break;
-                // case "rejected":
-                //     console.log("rejected");
-                //     this.pairingEvent.emit("rejected");
-                //     break;
+                case RelayMessageType.Ack:
+                    console.log("acknowledged");
+                    break;
                 case RelayMessageType.Transaction:
                     console.log("Got transaction", message)
+                    await this.ack(jsonMsg.topic);
                     break;
                 default:
                     break;
             }
-            console.log(message)
-
         })
     }
-
-    // FOR DEBUGGING
-    async send(msg: string) {
-        const ack: Pairing.Approval = {
-            topic: msg
-        }
-        this.relay.sendMessage(this.topic, this.prepareMessage(JSON.stringify(ack), RelayMessageType.Transaction));
-    }
-
-    // Move to a pairing/session construct
-    private async ack() {
-        const ack: Pairing.Acknowledgement = {
+    
+    /**
+     * Send an acknowledgement of receipt
+     * 
+     * @param topic topic to publish to
+     */
+    private async ack(topic: string) {
+        const ack: MessageTypes.Ack = {
+            topic: topic,
             result: true
         }
-        const ackPayload = this.prepareMessage(JSON.stringify(ack), RelayMessageType.Pairing);
-        await this.relay.sendMessage(this.topic, ackPayload)
-    }
-
-    /**
-     * Compiles the simple protobuf with the specified paramaters 
-     * 
-     * @param message message to prepare
-     * @param type type of message 
-     * @returns protobuf message
-     */
-    private prepareMessage(data: any, type: RelayMessageType) {
-        return this.proto.SimpleMessage.encode(new RelayMessage(
-            Date.now(),
-            type,
-            data
-        ));
+        const ackPayload = this.messages.prepareMessage(JSON.stringify(ack), RelayMessageType.Ack);
+        await this.relay.publish(topic, ackPayload)
     }
 }

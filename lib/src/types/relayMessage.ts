@@ -12,5 +12,25 @@ export class RelayMessage {
 
 export enum RelayMessageType {
     Transaction="Transaction",
-    Pairing="Pairing"
+    Pairing="Pairing",
+    RejectPairing="RejectPairing",
+    Ack="Ack"
+}
+
+export declare namespace MessageTypes {
+    
+    export interface BaseMessage {
+        topic: string;
+    }
+    // Messages to go through the relay
+
+    export interface Rejected extends BaseMessage {
+        reason?: string;
+    }
+
+    export interface Approval extends BaseMessage { }
+
+    export interface Ack extends BaseMessage {
+        result: boolean;
+    }
 }

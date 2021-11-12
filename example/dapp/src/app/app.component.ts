@@ -18,7 +18,7 @@ export class AppComponent {
   }
 
   async initClient() {
-    await this.hashconnect.connect();
+    await this.hashconnect.init();
     this.status = "connected"
 
     this.hashconnect.pairingEvent.on((data) => {
@@ -28,13 +28,12 @@ export class AppComponent {
     })
   }
 
-  async sendTest() {
-    await this.hashconnect.send("THIS IS A TEST")
-  }
-
   async proposePairing() {
     this.status = "Proposing pair"
     // Use the pairing topic in hashconnect, this will eventually be a random string of hex or a UUID
-    await this.hashconnect.proposePairing()
+    const state = await this.hashconnect.connect();
+    console.log("Received state", state);
+
+    this.incomingMessage = state.topic; 
   }
 }

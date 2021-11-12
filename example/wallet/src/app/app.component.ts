@@ -9,9 +9,9 @@ import { HashConnect } from 'hashconnect';
 export class AppComponent {
   title = 'wallet | responder';
   status = "not started";
-  message = "/my-first-pair/pairing";
+  message = "";
+  pairingTopic = "";
   incomingMessage = "";
-  pairingTopic = "/my-first-pair/pairing";
   private hashconnect: HashConnect;
 
   constructor() {
@@ -19,10 +19,11 @@ export class AppComponent {
   }
 
   async initClient() {
-    await this.hashconnect.connect();
+    await this.hashconnect.init();
     this.hashconnect.pairingEvent.on((data) => {
       console.log("pairing event received")
       console.log(data)
+      this.message = data;
     });
     this.status = "connected";
   }
@@ -32,12 +33,21 @@ export class AppComponent {
   }
 
   async approvePairing() {
+    if(this.pairingTopic == "") {
+      this.pairingTopic = this.message;
+    }
+    
     // this currently ignores the pairing topic param
     // await this.hashconnect.sendApproval()
+    console.log("subscribing: "+this.pairingTopic);
     await this.hashconnect.pair(this.pairingTopic)
   }
 
   async rejectPairing() {
-    await this.hashconnect.reject();
+    if(this.pairingTopic == "") {
+      this.pairingTopic = this.message;
+    }
+    
+    await this.hashconnect.reject(this.pairingTopic, "because I don't want to pair with you");
   }
 }

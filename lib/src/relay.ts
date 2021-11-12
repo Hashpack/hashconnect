@@ -1,6 +1,7 @@
 import { Waku, WakuMessage, getBootstrapNodes } from "js-waku";
 import { IRelayEvents } from "./events";
 import { Event } from "ts-typed-events"
+import { RelayMessage } from "./types";
 
 /**
  * Relay interface
@@ -28,7 +29,7 @@ export class WakuRelay implements IRelay {
 
     private waku!: Waku;
     connected: Event<any>;
-    payload: Event<any>;
+    payload: Event<RelayMessage>;
 
     // TODO: is there a better way to do this?
     private processMessage = async (wakuMessage: { payloadAsUtf8: any; payload: any; }) => {
@@ -37,7 +38,7 @@ export class WakuRelay implements IRelay {
     
     constructor() {
         this.connected = new Event<any>();
-        this.payload = new Event<any>();
+        this.payload = new Event<RelayMessage>();
     }
 
     async init(): Promise<void> {

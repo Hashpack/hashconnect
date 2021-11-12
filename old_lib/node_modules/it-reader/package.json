@@ -1,0 +1,38 @@
+{
+  "name": "it-reader",
+  "version": "3.0.0",
+  "description": "Read an exact number of bytes from a binary (async) iterable",
+  "main": "index.js",
+  "scripts": {
+    "test": "ava test.js --verbose",
+    "lint": "standard",
+    "coverage": "nyc --reporter=text --reporter=lcov npm test"
+  },
+  "author": "Alan Shaw",
+  "license": "MIT",
+  "devDependencies": {
+    "ava": "^3.15.0",
+    "nyc": "^15.1.0"
+  },
+  "dependencies": {
+    "bl": "^5.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alanshaw/it-reader.git"
+  },
+  "keywords": [
+    "it",
+    "iterable",
+    "iterator",
+    "async",
+    "read",
+    "binary",
+    "stream",
+    "buffer"
+  ],
+  "bugs": {
+    "url": "https://github.com/alanshaw/it-reader/issues"
+  },
+  "homepage": "https://github.com/alanshaw/it-reader#readme"
+}

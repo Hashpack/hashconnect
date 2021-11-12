@@ -1,0 +1,40 @@
+{
+  "name": "@cspotcode/source-map-support",
+  "description": "Fixes stack traces for files with source maps",
+  "version": "0.6.1",
+  "main": "./source-map-support.js",
+  "types": "./source-map-support.d.ts",
+  "scripts": {
+    "build": "node build.js",
+    "serve-tests": "http-server -p 1336",
+    "test": "mocha"
+  },
+  "files": [
+    "/register.d.ts",
+    "/register.js",
+    "/source-map-support.d.ts",
+    "/source-map-support.js"
+  ],
+  "dependencies": {
+    "@cspotcode/source-map-consumer": "0.8.0"
+  },
+  "devDependencies": {
+    "browserify": "^4.2.3",
+    "coffeescript": "^1.12.7",
+    "http-server": "^0.11.1",
+    "mocha": "^3.5.3",
+    "source-map": "0.6.1",
+    "webpack": "^1.15.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cspotcode/node-source-map-support"
+  },
+  "bugs": {
+    "url": "https://github.com/cspotcode/node-source-map-support/issues"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=12"
+  }
+}

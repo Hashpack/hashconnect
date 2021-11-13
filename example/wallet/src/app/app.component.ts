@@ -74,10 +74,12 @@ export class AppComponent {
     const privKey = PrivateKey.fromString(this.pk);
     const pubKey = privKey.publicKey;
 
-    const sig = privKey.sign(this.transaction.transaction);
+    const sig = privKey.signTransaction(Transaction.fromBytes(this.transaction.transaction) as any);
 
     let trans = Transaction.fromBytes(this.transaction.transaction)
-    trans = trans.addSignature(pubKey, sig);
-    await trans.execute(this.client);
+    trans = await trans.addSignature(pubKey, sig);
+    const val = await trans.execute(this.client);
+    const rec = await val.getReceipt(this.client);
+    console.log(rec.status.toString());
   }
 }

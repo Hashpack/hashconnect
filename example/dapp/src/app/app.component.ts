@@ -22,11 +22,11 @@ export class AppComponent {
   private hashconnect: HashConnect;
   private pk = "302e020100300506032b65700422042093e3a32a53b0878429043643be0c992cec4f3e2aba8ccbde9905192e9326e0d2";
   private acc = "0.0.572001"
-  private destAcc = "0.0.627028";
-  private destKey = "302e020100300506032b657004220420344c6a0da6028b9dfc4274b89cf365dfca3995ad2f037ac39ccb13e04cd760fc"
+  // private destAcc = "0.0.627028";
+  // private destKey = "302e020100300506032b657004220420344c6a0da6028b9dfc4274b89cf365dfca3995ad2f037ac39ccb13e04cd760fc"
   // private pk = "302e020100300506032b6570042204200540e00115d8f6b3d418134dfbac03c906a29eb4434c858a1ce574acff517e90";
   // private acc = "0.0.3012819"
-  // private destAcc = "0.0.2994249";
+  private destAcc = "0.0.2994249";
   // private destKey = "302e020100300506032b6570042204207ddd56b166a57ae4fdbfc74caebaaded7ad826cf9ac49fc40a8a63beee1c3df2"
   private client: Client;
   
@@ -64,7 +64,7 @@ export class AppComponent {
 
   async createTrans() {
     let amount = 1;
-    let memo = "eyyyyy";
+    let memo = "we are sending across the wire";
     const privKey = PrivateKey.fromString(this.pk);
     const pubKey = privKey.publicKey;
 
@@ -80,28 +80,23 @@ export class AppComponent {
       .setNodeAccountIds(nodeId);
 
     trans = await trans.freezeWith(this.client);
-    
-    const destPrivKey = PrivateKey.fromString(this.destKey);
-    const destPubKey = destPrivKey.publicKey;
 
     let transBytes = trans.toBytes();
-    const sig = privKey.sign(transBytes);
-    const destSig = destPrivKey.sign(transBytes)
-    const out = trans.addSignature(pubKey, sig).addSignature(destPubKey, destSig);
-    console.log(out.getSignatures());
-    // const outBytes = out.toBytes();
-    // const tranny: HCTransaction = {
-    //   transaction: outBytes,
-    //   type: TransactionType.Transaction,
-    // }
-    // const fin = TransferTransaction.fromBytes(outBytes)
+    
+    const sig = await privKey.signTransaction(Transaction.fromBytes(transBytes) as any);
 
-    // Debug
-    const resp = await out.execute(this.client)
-    const rec = await resp.getReceipt(this.client)
-    console.log(rec.status.toString());
-    // await out.execute(this.client)
-    // await this.hashconnect.sendTransaction(this.incomingMessage, tranny)
+    const out = trans.addSignature(pubKey, sig);
+    console.log(out.getSignatures());
+    
+    const outBytes = out.toBytes();
+
+    const tranny: HCTransaction = {
+      transaction: outBytes,
+      type: TransactionType.Transaction,
+    }
+    
+
+    await this.hashconnect.sendTransaction(this.incomingMessage, tranny)
   }
 
 }

@@ -1,9 +1,9 @@
 export class Transaction {
     type: TransactionType;
-    transaction: string; //should be some weird encoded string? or is there a better tpe
-    metadata: TransactionMetadata;
+    transaction: Uint8Array;
+    metadata?: TransactionMetadata;
 
-    constructor(type: TransactionType, transaction: string, metadata: TransactionMetadata) {
+    constructor(type: TransactionType, transaction: Uint8Array, metadata: TransactionMetadata) {
         this.type = type;
         this.transaction = transaction;
         this.metadata = metadata;

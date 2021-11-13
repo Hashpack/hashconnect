@@ -1,12 +1,16 @@
+import { Transaction } from ".";
+
 export class RelayMessage {
     timestamp: number;
     type: RelayMessageType;
     data: any;
+    transaction?: Transaction;
 
-    constructor(timestamp: number, type: RelayMessageType, data: any) {
+    constructor(timestamp: number, type: RelayMessageType, data: any, trans?: Transaction) {
         this.timestamp = timestamp;
         this.type = type;
         this.data = data;
+        this.transaction = trans;
     }
 }
 
@@ -32,5 +36,20 @@ export declare namespace MessageTypes {
 
     export interface Ack extends BaseMessage {
         result: boolean;
+    }
+
+    export interface Transaction extends BaseMessage {
+        type: TransactionType
+        metadata?: TransactionMetadata
+    }
+
+    export enum TransactionType {
+        NFT="NFT",
+        Token="Token",
+        Transaction="Transaction"
+    }
+    
+    export class TransactionMetadata {
+    
     }
 }

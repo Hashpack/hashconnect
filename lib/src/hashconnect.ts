@@ -26,7 +26,11 @@ export class HashConnect implements IHashConnect {
     }
 
     async sendTransaction(topic: string, transaction: Transaction): Promise<void> {
-        const msg = this.messages.prepareMessage(transaction, RelayMessageType.Transaction);
+        const meta: MessageTypes.Transaction = {
+            topic: topic,
+            type: transaction.type
+        }
+        const msg = this.messages.prepareSimpleMessage(JSON.stringify(meta), RelayMessageType.Transaction, transaction);
         await this.relay.publish(topic, msg);
     }
 
@@ -72,7 +76,7 @@ export class HashConnect implements IHashConnect {
         }
 
         // create protobuf message
-        const payload = this.messages.prepareMessage(JSON.stringify(approval), RelayMessageType.Pairing)
+        const payload = this.messages.prepareSimpleMessage(JSON.stringify(approval), RelayMessageType.Pairing)
         this.relay.publish(pairingStr, payload)
     }
 
@@ -83,7 +87,7 @@ export class HashConnect implements IHashConnect {
         }
         
         // create protobuf message
-        const msg = this.messages.prepareMessage(JSON.stringify(reject), RelayMessageType.RejectPairing)
+        const msg = this.messages.prepareSimpleMessage(JSON.stringify(reject), RelayMessageType.RejectPairing)
         console.log("topic: "+topic);
         
         // Publish the rejection
@@ -91,6 +95,8 @@ export class HashConnect implements IHashConnect {
         
         // Unsubscribe
         await this.relay.unsubscribe(topic);
+
+        this.pairingEvent.emit("Pairing rejected");
     }
 
     /**
@@ -116,6 +122,7 @@ export class HashConnect implements IHashConnect {
             // TODO: move and refactor this to be more elegant in terms of event handling
             switch (message.type) {
                 case RelayMessageType.Pairing:
+                    // TODO: differentiate approve/reject
                     console.log("approved", message.data);
                     this.pairingEvent.emit("pairing approved!")
                     await this.ack(jsonMsg.topic)
@@ -126,6 +133,9 @@ export class HashConnect implements IHashConnect {
                 case RelayMessageType.Transaction:
                     console.log("Got transaction", message)
                     await this.ack(jsonMsg.topic);
+                    // TODO: error checking
+                    // If this is a transaction type it should contain a valid transaction
+                    this.transactionEvent.emit(message.transaction!)
                     break;
                 default:
                     break;
@@ -143,7 +153,7 @@ export class HashConnect implements IHashConnect {
             topic: topic,
             result: true
         }
-        const ackPayload = this.messages.prepareMessage(JSON.stringify(ack), RelayMessageType.Ack);
+        const ackPayload = this.messages.prepareSimpleMessage(JSON.stringify(ack), RelayMessageType.Ack);
         await this.relay.publish(topic, ackPayload)
     }
 }

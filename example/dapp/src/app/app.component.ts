@@ -17,7 +17,7 @@ import NodeClient from '@hashgraph/sdk/lib/client/NodeClient';
 })
 export class AppComponent {
   title = 'dapp | proposer';
-  status = "not started";
+  status = "Initializing";
   message = "";
   incomingMessage = "";
   private hashconnect: HashConnect;
@@ -39,12 +39,13 @@ export class AppComponent {
     console.log("initializing hashgroid client");
     this.client = Client.forTestnet();
     this.client.setOperator(this.acc, this.pk);
+    this.initHashconnect();
   }
 
-  async initClient() {
+  async initHashconnect() {
 
     await this.hashconnect.init();
-    this.status = "connected"
+    this.status = "Connected"
 
     this.hashconnect.pairingEvent.on((data) => {
       console.log("Pairing event callback ");

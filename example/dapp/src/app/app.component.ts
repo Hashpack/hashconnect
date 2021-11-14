@@ -8,6 +8,7 @@ import { Client,
 	AccountId,
 	Hbar} from "@hashgraph/sdk"
 import { Transaction as HCTransaction, TransactionType } from 'hashconnect/dist/types';
+import NodeClient from '@hashgraph/sdk/lib/client/NodeClient';
 
 @Component({
   selector: 'app-root',
@@ -28,9 +29,12 @@ export class AppComponent {
   // private acc = "0.0.3012819"
   private destAcc = "0.0.2994249";
   // private destKey = "302e020100300506032b6570042204207ddd56b166a57ae4fdbfc74caebaaded7ad826cf9ac49fc40a8a63beee1c3df2"
-  private client: Client;
+  private client: NodeClient;
   
   constructor() {
+  }
+
+  ngOnInit() {
     this.hashconnect = new HashConnect();
     console.log("initializing hashgroid client");
     this.client = Client.forTestnet();

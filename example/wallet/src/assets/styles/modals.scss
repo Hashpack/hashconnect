@@ -26,6 +26,14 @@
                 background: var(--blue-1) !important;
             }
         }
+
+        .ed-btn-danger {
+            background: var(--error-dark) !important;
+
+            &:hover {
+                background: var(--error-2) !important;
+            }
+        }
     }
 
     .content-holder {
@@ -34,11 +42,6 @@
 
     .ed-btn {
         border-radius: 8px !important;
-        background: var(--blue-2) !important;
-
-        &:hover {
-            background: var(--blue-1) !important;
-        }
     }
 }
 

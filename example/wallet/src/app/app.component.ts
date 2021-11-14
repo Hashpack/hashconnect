@@ -10,6 +10,7 @@ import {
     Hbar
 } from "@hashgraph/sdk"
 import { Transaction as HCTransaction } from 'hashconnect/dist/types';
+import { HashconnectService } from './services/hashconnect.service';
 
 @Component({
     selector: 'app-root',
@@ -29,7 +30,9 @@ export class AppComponent {
     private client: Client;
     private transaction: any;
 
-    constructor() {
+    constructor(
+        private HashconnectService: HashconnectService
+    ) {
     }
 
     ngOnInit() {
@@ -48,9 +51,10 @@ export class AppComponent {
             this.message = data;
         });
 
-        this.hashconnect.transactionEvent.on(async (data) => {
+        this.hashconnect.transactionEvent.on((data) => {
             console.log("transaction event callback");
             this.transaction = data;
+            this.HashconnectService.recievedTransaction(data);
             // await this.onTransaction(data)
         })
         this.status = "connected";
@@ -64,7 +68,8 @@ export class AppComponent {
         // this currently ignores the pairing topic param
         // await this.hashconnect.sendApproval()
         console.log("subscribing: " + this.pairingTopic);
-        await this.hashconnect.pair(this.pairingTopic)
+        await this.hashconnect.pair(this.pairingTopic);
+        this.status = "paired";
     }
 
     async rejectPairing() {

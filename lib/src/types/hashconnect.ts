@@ -1,6 +1,6 @@
 import { IRelay } from "./relay";
 import { Event } from "ts-typed-events";
-import { Transaction } from ".";
+import { MessageTypes } from ".";
 import { MessageUtil } from ".";
 
 export interface IHashConnect {
@@ -12,7 +12,7 @@ export interface IHashConnect {
     pairingEvent: Event<any>;
     
     /** Transaction event emitter */
-    transactionEvent: Event<Transaction>;
+    transactionEvent: Event<MessageTypes.Transaction>;
     
     /** Messages util for protobufs */
     messages: MessageUtil;
@@ -48,7 +48,7 @@ export interface IHashConnect {
      * @param topic topic to publish to
      * @param transaction transaction to send
      */
-    sendTransaction(topic: string, transaction: Transaction): Promise<void>;
+    sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<void>;
 
     /**
      * Initialize the client

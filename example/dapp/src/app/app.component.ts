@@ -9,7 +9,7 @@ import {
     AccountId,
     Hbar
 } from "@hashgraph/sdk"
-import { Transaction as HCTransaction, TransactionType } from 'hashconnect/dist/types';
+import { MessageTypes } from 'hashconnect/dist/types';
 
 @Component({
     selector: 'app-root',
@@ -20,7 +20,7 @@ export class AppComponent {
     title = 'dapp | proposer';
     status = "Initializing";
     message = "";
-    incomingMessage = "";
+    topic = "";
     private hashconnect: HashConnect;
     private pk = "302e020100300506032b65700422042093e3a32a53b0878429043643be0c992cec4f3e2aba8ccbde9905192e9326e0d2";
     private acc = "0.0.572001"
@@ -73,7 +73,7 @@ export class AppComponent {
         const state = await this.hashconnect.connect();
         console.log("Received state", state);
 
-        this.incomingMessage = state.topic;
+        this.topic = state.topic;
     }
 
     async createTrans() {
@@ -104,13 +104,14 @@ export class AppComponent {
 
         const outBytes = out.toBytes();
 
-        const tranny: HCTransaction = {
+        const transaction: MessageTypes.Transaction = {
+            topic: this.topic,
             transaction: outBytes,
-            type: TransactionType.Transaction,
+            type: MessageTypes.TransactionType.Transaction,
         }
 
 
-        await this.hashconnect.sendTransaction(this.incomingMessage, tranny)
+        await this.hashconnect.sendTransaction(this.topic, transaction)
     }
 
 }

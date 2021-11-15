@@ -1,12 +1,10 @@
-import { Transaction } from ".";
-
 export class RelayMessage {
     timestamp: number;
     type: RelayMessageType;
     data: any;
-    transaction?: Transaction;
+    transaction?: MessageTypes.Transaction;
 
-    constructor(timestamp: number, type: RelayMessageType, data: any, trans?: Transaction) {
+    constructor(timestamp: number, type: RelayMessageType, data: any, trans?: MessageTypes.Transaction) {
         this.timestamp = timestamp;
         this.type = type;
         this.data = data;
@@ -18,7 +16,8 @@ export enum RelayMessageType {
     Transaction="Transaction",
     Pairing="Pairing",
     RejectPairing="RejectPairing",
-    Ack="Ack"
+    Ack="Ack",
+    AccountInfo="AccountInfo"
 }
 
 export declare namespace MessageTypes {
@@ -39,8 +38,9 @@ export declare namespace MessageTypes {
     }
 
     export interface Transaction extends BaseMessage {
-        type: TransactionType
-        metadata?: TransactionMetadata
+        type: TransactionType;
+        transaction: Uint8Array;
+        metadata?: TransactionMetadata;
     }
 
     export interface AccountInfo extends BaseMessage {

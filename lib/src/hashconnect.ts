@@ -1,6 +1,6 @@
 import { Event } from "ts-typed-events";
 import { IRelay, WakuRelay } from "./types/relay";
-import { MessageUtil, MessageTypes, RelayMessage, RelayMessageType, Transaction } from "./types";
+import { MessageUtil, MessageTypes, RelayMessage, RelayMessageType } from "./types";
 import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
 
 /**
@@ -12,7 +12,8 @@ export class HashConnect implements IHashConnect {
 
     // events
     pairingEvent: Event<any>;
-    transactionEvent: Event<Transaction>;
+    transactionEvent: Event<MessageTypes.Transaction>;
+    // accountInfoEvent: Event<Account>
 
     // messages util
     messages: MessageUtil;
@@ -21,17 +22,13 @@ export class HashConnect implements IHashConnect {
     constructor() {
         this.relay = new WakuRelay();
         this.pairingEvent = new Event<any>();
-        this.transactionEvent = new Event<Transaction>();
+        this.transactionEvent = new Event<MessageTypes.Transaction>();
         this.messages = new MessageUtil();
         this.setupEvents();
     }
 
-    async sendTransaction(topic: string, transaction: Transaction): Promise<void> {
-        const meta: MessageTypes.Transaction = {
-            topic: topic,
-            type: transaction.type,
-        }
-        const msg = this.messages.prepareSimpleMessage(JSON.stringify(meta), RelayMessageType.Transaction, transaction);
+    async sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<void> {
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction);
         await this.relay.publish(topic, msg);
     }
 
@@ -138,6 +135,9 @@ export class HashConnect implements IHashConnect {
                     // TODO: error checking
                     // If this is a transaction type it should contain a valid transaction
                     this.transactionEvent.emit(message.transaction!)
+                    break;
+                    case RelayMessageType.AccountInfo:
+
                     break;
                 default:
                     break;

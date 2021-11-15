@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
 import { Subscription } from 'rxjs';
 import { Transaction as HCTransaction } from 'hashconnect/dist/types';
+import { SigningService } from 'src/app/services/signing.service';
 
 @Component({
     selector: 'app-transaction-recieved',
@@ -10,7 +11,10 @@ import { Transaction as HCTransaction } from 'hashconnect/dist/types';
 })
 export class TransactionRecievedComponent implements OnInit {
 
-    constructor(@Inject('dialogBelonging') private dialogBelonging: DialogBelonging) { }
+    constructor(
+        @Inject('dialogBelonging') private dialogBelonging: DialogBelonging,
+        private SigningService: SigningService
+    ) { }
 
     subscriptions: Subscription = new Subscription();
     transaction: HCTransaction;
@@ -21,6 +25,7 @@ export class TransactionRecievedComponent implements OnInit {
         this.subscriptions.add(
             this.dialogBelonging.EventsController.onButtonClick$.subscribe((_Button) => {
                 if (_Button.ID === 'approve') {
+                    this.SigningService.approveTransaction(this.transaction.transaction);
                     this.dialogBelonging.EventsController.close();
                 }
                 else if (_Button.ID === 'reject') {

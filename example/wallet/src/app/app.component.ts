@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { HashConnect } from 'hashconnect';
+import { HashConnect, HashConnectTypes } from 'hashconnect';
 import {
     Client,
     PrivateKey,
@@ -11,6 +11,7 @@ import {
 } from "@hashgraph/sdk"
 import { Transaction as HCTransaction } from 'hashconnect/dist/types';
 import { HashconnectService } from './services/hashconnect.service';
+import { SigningService } from './services/signing.service';
 
 @Component({
     selector: 'app-root',
@@ -24,27 +25,28 @@ export class AppComponent {
     pairingTopic = "";
     incomingMessage = "";
     private hashconnect: HashConnect;
-    private pk = "302e020100300506032b6570042204207ddd56b166a57ae4fdbfc74caebaaded7ad826cf9ac49fc40a8a63beee1c3df2";
-    private acc = "0.0.2994249"
-    private destAcc = "0.0.3012819";
-    private client: Client;
-    private transaction: any;
 
     constructor(
-        private HashconnectService: HashconnectService
+        private HashconnectService: HashconnectService,
+        private SigningService: SigningService
     ) {
     }
 
     ngOnInit() {
         this.hashconnect = new HashConnect();
-        this.client = Client.forTestnet();
-        this.client.setOperator(this.acc, this.pk);
+        this.SigningService.init();
         this.initHashconnect();
     }
 
     async initHashconnect() {
+        let walletMetadata: HashConnectTypes.WalletMetadata = {
+            name: "Example Wallet",
+            description: "An example wallet",
+            url: "",
+            icon: ""
+        }
 
-        await this.hashconnect.init();
+        await this.hashconnect.init(walletMetadata);
         this.hashconnect.pairingEvent.on((data) => {
             console.log("pairing event received")
             console.log(data)
@@ -53,9 +55,7 @@ export class AppComponent {
 
         this.hashconnect.transactionEvent.on((data) => {
             console.log("transaction event callback");
-            this.transaction = data;
             this.HashconnectService.recievedTransaction(data);
-            // await this.onTransaction(data)
         })
         this.status = "connected";
     }
@@ -80,17 +80,5 @@ export class AppComponent {
         await this.hashconnect.reject(this.pairingTopic, "because I don't want to pair with you");
     }
 
-    async approveTransaction() {
-        console.log("Received transaction message:");
-        const privKey = PrivateKey.fromString(this.pk);
-        const pubKey = privKey.publicKey;
-
-        const sig = privKey.signTransaction(Transaction.fromBytes(this.transaction.transaction) as any);
-
-        let trans = Transaction.fromBytes(this.transaction.transaction)
-        trans = await trans.addSignature(pubKey, sig);
-        const val = await trans.execute(this.client);
-        const rec = await val.getReceipt(this.client);
-        console.log(rec.status.toString());
-    }
+    
 }

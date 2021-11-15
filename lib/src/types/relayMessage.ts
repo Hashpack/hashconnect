@@ -43,6 +43,11 @@ export declare namespace MessageTypes {
         metadata?: TransactionMetadata
     }
 
+    export interface AccountInfo extends BaseMessage {
+        accountId: string;
+        network: string;
+    }
+
     export enum TransactionType {
         NFT="NFT",
         Token="Token",

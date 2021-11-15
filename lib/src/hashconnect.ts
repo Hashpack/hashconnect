@@ -16,6 +16,7 @@ export class HashConnect implements IHashConnect {
 
     // messages util
     messages: MessageUtil;
+    metadata!:  HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
 
     constructor() {
         this.relay = new WakuRelay();
@@ -28,13 +29,14 @@ export class HashConnect implements IHashConnect {
     async sendTransaction(topic: string, transaction: Transaction): Promise<void> {
         const meta: MessageTypes.Transaction = {
             topic: topic,
-            type: transaction.type
+            type: transaction.type,
         }
         const msg = this.messages.prepareSimpleMessage(JSON.stringify(meta), RelayMessageType.Transaction, transaction);
         await this.relay.publish(topic, msg);
     }
 
-    async init(): Promise<void> {
+    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<void> {
+        this.metadata = metadata;
         await this.relay.init();
     }
 

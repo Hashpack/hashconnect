@@ -9,7 +9,7 @@ import {
     Transaction,
     Hbar
 } from "@hashgraph/sdk"
-import { Transaction as HCTransaction } from 'hashconnect/dist/types';
+import { MessageTypes } from 'hashconnect';
 import { HashconnectService } from './services/hashconnect.service';
 import { SigningService } from './services/signing.service';
 
@@ -24,13 +24,12 @@ export class AppComponent {
     message = "";
     pairingTopic = "";
     incomingMessage = "";
-    private hashconnect: HashConnect;
+    hashconnect: HashConnect;
 
     constructor(
         private HashconnectService: HashconnectService,
         private SigningService: SigningService
-    ) {
-    }
+    ) {}
 
     ngOnInit() {
         this.hashconnect = new HashConnect();
@@ -47,6 +46,7 @@ export class AppComponent {
         }
 
         await this.hashconnect.init(walletMetadata);
+        
         this.hashconnect.pairingEvent.on((data) => {
             console.log("pairing event received")
             console.log(data)

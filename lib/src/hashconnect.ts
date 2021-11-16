@@ -75,7 +75,7 @@ export class HashConnect implements IHashConnect {
         }
 
         // create protobuf message
-        const payload = this.messages.prepareSimpleMessage(JSON.stringify(approval), RelayMessageType.Pairing)
+        const payload = this.messages.prepareSimpleMessage(RelayMessageType.Pairing, approval)
         this.relay.publish(pairingStr, payload)
     }
 
@@ -86,7 +86,7 @@ export class HashConnect implements IHashConnect {
         }
         
         // create protobuf message
-        const msg = this.messages.prepareSimpleMessage(JSON.stringify(reject), RelayMessageType.RejectPairing)
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.RejectPairing, reject)
         console.log("topic: "+topic);
         
         // Publish the rejection
@@ -107,10 +107,9 @@ export class HashConnect implements IHashConnect {
             console.log("hashconnect: payload received");
             if (!payload) return;
 
-            const message: RelayMessage = this.messages.decode(
-                payload
-            );
-            console.log(`Message Received: ${message.data}, of type ${message.type}, sent at ${message.timestamp.toString()}`);
+            const message: RelayMessage = this.messages.decode(payload);
+
+            console.log(`Message Received of type ${message.type}, sent at ${message.timestamp.toString()}`, message.data);
             
             // Should always have a topic
             const jsonMsg = JSON.parse(message.data);
@@ -131,10 +130,9 @@ export class HashConnect implements IHashConnect {
                     break;
                 case RelayMessageType.Transaction:
                     console.log("Got transaction", message)
-                    await this.ack(jsonMsg.topic);
-                    // TODO: error checking
-                    // If this is a transaction type it should contain a valid transaction
-                    this.transactionEvent.emit(message.transaction!)
+                    let transaction_data: MessageTypes.Transaction = JSON.parse(message.data);
+                    // await this.ack(jsonMsg.topic);
+                    this.transactionEvent.emit(transaction_data);
                     break;
                     case RelayMessageType.AccountInfo:
 
@@ -155,7 +153,7 @@ export class HashConnect implements IHashConnect {
             topic: topic,
             result: true
         }
-        const ackPayload = this.messages.prepareSimpleMessage(JSON.stringify(ack), RelayMessageType.Ack);
+        const ackPayload = this.messages.prepareSimpleMessage(RelayMessageType.Ack, ack);
         await this.relay.publish(topic, ackPayload)
     }
 }

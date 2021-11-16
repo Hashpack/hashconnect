@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { HashConnect, HashConnectTypes } from 'hashconnect';
+import { HashConnect, HashConnectTypes, MessageTypes, RelayMessageType, TransactionType } from 'hashconnect';
 import {
     Client,
     PrivateKey,
@@ -9,7 +9,6 @@ import {
     AccountId,
     Hbar
 } from "@hashgraph/sdk"
-import { MessageTypes } from 'hashconnect/dist/types';
 
 @Component({
     selector: 'app-root',
@@ -107,7 +106,7 @@ export class AppComponent {
         const transaction: MessageTypes.Transaction = {
             topic: this.topic,
             transaction: outBytes,
-            type: MessageTypes.TransactionType.Transaction,
+            type: TransactionType.Transaction,
         }
 
 

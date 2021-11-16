@@ -2,13 +2,11 @@ export class RelayMessage {
     timestamp: number;
     type: RelayMessageType;
     data: any;
-    transaction?: MessageTypes.Transaction;
 
-    constructor(timestamp: number, type: RelayMessageType, data: any, trans?: MessageTypes.Transaction) {
+    constructor(timestamp: number, type: RelayMessageType, data: any) {
         this.timestamp = timestamp;
         this.type = type;
         this.data = data;
-        this.transaction = trans;
     }
 }
 
@@ -18,6 +16,12 @@ export enum RelayMessageType {
     RejectPairing="RejectPairing",
     Ack="Ack",
     AccountInfo="AccountInfo"
+}
+
+export enum TransactionType {
+    NFT="NFT",
+    Token="Token",
+    Transaction="Transaction"
 }
 
 export declare namespace MessageTypes {
@@ -48,11 +52,7 @@ export declare namespace MessageTypes {
         network: string;
     }
 
-    export enum TransactionType {
-        NFT="NFT",
-        Token="Token",
-        Transaction="Transaction"
-    }
+    
     
     export class TransactionMetadata {
     

@@ -1,7 +1,7 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
 import { Subscription } from 'rxjs';
-import { Transaction as HCTransaction } from 'hashconnect/dist/types';
+import { MessageTypes } from 'hashconnect';
 import { SigningService } from 'src/app/services/signing.service';
 
 @Component({
@@ -17,7 +17,7 @@ export class TransactionRecievedComponent implements OnInit {
     ) { }
 
     subscriptions: Subscription = new Subscription();
-    transaction: HCTransaction;
+    transaction: MessageTypes.Transaction;
 
     ngOnInit(): void {
         this.transaction = this.dialogBelonging.CustomData.transaction;

@@ -1,22 +1,16 @@
 import { v4 as uuidv4 } from 'uuid';
-import { RelayMessage, RelayMessageType, MessageTypes } from '.';
+import { RelayMessage, RelayMessageType } from '.';
 
 const protons = require('protons');
 
 export class MessageUtil {
 
     private proto = protons(`
-    message Transaction {
-        string type = 1;
-        bytes transaction = 2;
-    }
-    
     message SimpleMessage {
-    uint64 timestamp = 1;
-    string type = 2;
-    optional Transaction transaction = 3;
-    }
-    `);
+        uint64 timestamp = 1;
+        string type = 2;
+        string data = 3;
+    }`);
 
     /**
      * Compiles the simple protobuf with the specified paramaters 
@@ -26,13 +20,13 @@ export class MessageUtil {
      * @param trans optional transaction
      * @returns protobuf message
      */
-     public prepareSimpleMessage(type: RelayMessageType, trans?: MessageTypes.Transaction) {
+     public prepareSimpleMessage(type: RelayMessageType, data: object) {
         return this.proto.SimpleMessage.encode(new RelayMessage(
             Date.now(),
             type,
-            trans
+            JSON.stringify(data)
           ));
-    }    
+    }
 
     public decode(payload: any): RelayMessage {
         return this.proto.SimpleMessage.decode(payload)

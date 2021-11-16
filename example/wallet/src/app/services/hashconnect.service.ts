@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Transaction as HCTransaction } from 'hashconnect/dist/types';
+import { MessageTypes } from 'hashconnect';
 import {
     DialogLayoutDisplay,
     DialogInitializer,
@@ -15,7 +15,7 @@ export class HashconnectService {
 
     constructor() { }
 
-    recievedTransaction(transaction: HCTransaction) {
+    recievedTransaction(transaction: MessageTypes.Transaction) {
         const dialogPopup = new DialogInitializer(TransactionRecievedComponent);
 
         dialogPopup.setCustomData({ transaction: transaction }); // optional

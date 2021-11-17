@@ -43,7 +43,7 @@ export declare namespace MessageTypes {
 
     export interface Transaction extends BaseMessage {
         type: TransactionType;
-        transaction: Uint8Array;
+        byteArray: Uint8Array | string;
         metadata?: TransactionMetadata;
     }
 

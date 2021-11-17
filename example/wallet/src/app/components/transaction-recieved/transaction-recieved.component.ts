@@ -25,7 +25,7 @@ export class TransactionRecievedComponent implements OnInit {
         this.subscriptions.add(
             this.dialogBelonging.EventsController.onButtonClick$.subscribe((_Button) => {
                 if (_Button.ID === 'approve') {
-                    this.SigningService.approveTransaction(this.transaction.transaction);
+                    this.SigningService.approveTransaction(this.transaction.byteArray as Uint8Array);
                     this.dialogBelonging.EventsController.close();
                 }
                 else if (_Button.ID === 'reject') {

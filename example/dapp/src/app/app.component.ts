@@ -103,9 +103,11 @@ export class AppComponent {
 
         const outBytes = out.toBytes();
 
+        console.log("Transaction bytes", outBytes);
+
         const transaction: MessageTypes.Transaction = {
             topic: this.topic,
-            transaction: outBytes,
+            byteArray: outBytes,
             type: TransactionType.Transaction,
         }
 

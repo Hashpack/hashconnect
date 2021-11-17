@@ -17,7 +17,6 @@ export class MessageUtil {
      * 
      * @param message message to prepare
      * @param type type of message
-     * @param trans optional transaction
      * @returns protobuf message
      */
      public prepareSimpleMessage(type: RelayMessageType, data: object) {
@@ -25,7 +24,7 @@ export class MessageUtil {
             Date.now(),
             type,
             JSON.stringify(data)
-          ));
+        ));
     }
 
     public decode(payload: any): RelayMessage {

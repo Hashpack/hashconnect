@@ -28,6 +28,8 @@ export class HashConnect implements IHashConnect {
     }
 
     async sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<void> {
+        transaction.byteArray = Buffer.from(transaction.byteArray).toString("base64");
+        
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction);
         await this.relay.publish(topic, msg);
     }
@@ -131,6 +133,7 @@ export class HashConnect implements IHashConnect {
                 case RelayMessageType.Transaction:
                     console.log("Got transaction", message)
                     let transaction_data: MessageTypes.Transaction = JSON.parse(message.data);
+                    transaction_data.byteArray = new Uint8Array(Buffer.from(transaction_data.byteArray as string,'base64'));
                     // await this.ack(jsonMsg.topic);
                     this.transactionEvent.emit(transaction_data);
                     break;

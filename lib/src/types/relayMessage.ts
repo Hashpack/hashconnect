@@ -15,7 +15,8 @@ export enum RelayMessageType {
     Pairing="Pairing",
     RejectPairing="RejectPairing",
     Ack="Ack",
-    AccountInfo="AccountInfo"
+    AccountInfoRequest="AccountInfoRequest",
+    AccountInfoResponse="AccountInfoResponse"
 }
 
 export enum TransactionType {
@@ -27,7 +28,7 @@ export enum TransactionType {
 export declare namespace MessageTypes {
     
     export interface BaseMessage {
-        topic: string;
+        topic: string; //todo we should move this to RelayMessage so we dont have to include it with everything
     }
     // Messages to go through the relay
 
@@ -47,14 +48,16 @@ export declare namespace MessageTypes {
         metadata?: TransactionMetadata;
     }
 
-    export interface AccountInfo extends BaseMessage {
-        accountId: string;
+    export interface AccountInfoRequest extends BaseMessage {
         network: string;
     }
 
-    
+    export interface AccountInfoResponse extends BaseMessage {
+        accountId: string;
+        network: string;
+    }
     
     export class TransactionMetadata {
-    
+        
     }
 }

@@ -14,10 +14,10 @@ import {
 })
 export class SigningService {
 
-    private pk = "302e020100300506032b6570042204207ddd56b166a57ae4fdbfc74caebaaded7ad826cf9ac49fc40a8a63beee1c3df2";
-    private acc = "0.0.2994249"
-    private destAcc = "0.0.3012819";
-    private client: Client;
+    pk = "302e020100300506032b6570042204207ddd56b166a57ae4fdbfc74caebaaded7ad826cf9ac49fc40a8a63beee1c3df2";
+    acc = "0.0.2994249"
+    destAcc = "0.0.3012819";
+    client: Client;
 
     constructor() { }
 

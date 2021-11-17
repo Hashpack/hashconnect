@@ -6,12 +6,14 @@ import { AppComponent } from './app.component';
 import { TransactionRecievedComponent } from './components/transaction-recieved/transaction-recieved.component';
 import { DialogConfigModule, NgxAwesomePopupModule } from '@costlydeveloper/ngx-awesome-popup';
 import { PairingRequestComponent } from './components/pairing-request/pairing-request.component';
+import { AccountInfoRequestComponent } from './components/account-info-request/account-info-request.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     TransactionRecievedComponent,
-    PairingRequestComponent
+    PairingRequestComponent,
+    AccountInfoRequestComponent
   ],
   imports: [
     BrowserModule,

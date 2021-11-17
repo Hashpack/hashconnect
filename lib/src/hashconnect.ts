@@ -13,7 +13,8 @@ export class HashConnect implements IHashConnect {
     // events
     pairingEvent: Event<any>;
     transactionEvent: Event<MessageTypes.Transaction>;
-    // accountInfoEvent: Event<Account>
+    accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
+    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
 
     // messages util
     messages: MessageUtil;
@@ -21,9 +22,14 @@ export class HashConnect implements IHashConnect {
 
     constructor() {
         this.relay = new WakuRelay();
+        
         this.pairingEvent = new Event<any>();
         this.transactionEvent = new Event<MessageTypes.Transaction>();
+        this.accountInfoRequestEvent = new Event<MessageTypes.AccountInfoRequest>();
+        this.accountInfoResponseEvent = new Event<MessageTypes.AccountInfoResponse>();
+        
         this.messages = new MessageUtil();
+
         this.setupEvents();
     }
 
@@ -31,6 +37,18 @@ export class HashConnect implements IHashConnect {
         transaction.byteArray = Buffer.from(transaction.byteArray).toString("base64");
         
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction);
+        await this.relay.publish(topic, msg);
+    }
+
+    async requestAccountInfo(topic: string, message: MessageTypes.AccountInfoRequest) {
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AccountInfoRequest, message);
+
+        await this.relay.publish(topic, msg);
+    }
+
+    async sendAccountInfo(topic: string, message: MessageTypes.AccountInfoResponse) {
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AccountInfoResponse, message);
+
         await this.relay.publish(topic, msg);
     }
 
@@ -124,22 +142,35 @@ export class HashConnect implements IHashConnect {
                 case RelayMessageType.Pairing:
                     // TODO: differentiate approve/reject
                     console.log("approved", message.data);
+                
                     this.pairingEvent.emit("pairing approved!")
                     await this.ack(jsonMsg.topic)
-                    break;
+                break;
                 case RelayMessageType.Ack:
                     console.log("acknowledged");
-                    break;
+                break;
                 case RelayMessageType.Transaction:
                     console.log("Got transaction", message)
+                    
                     let transaction_data: MessageTypes.Transaction = JSON.parse(message.data);
                     transaction_data.byteArray = new Uint8Array(Buffer.from(transaction_data.byteArray as string,'base64'));
-                    // await this.ack(jsonMsg.topic);
+                    
                     this.transactionEvent.emit(transaction_data);
-                    break;
-                    case RelayMessageType.AccountInfo:
+                break;
+                case RelayMessageType.AccountInfoRequest:
+                    console.log("Got account info request", message);
 
-                    break;
+                    let request_data: MessageTypes.AccountInfoRequest = JSON.parse(message.data);
+
+                    this.accountInfoRequestEvent.emit(request_data);
+                break;
+                case RelayMessageType.AccountInfoResponse:
+                    console.log("Got account info response", message);
+
+                    let response_data: MessageTypes.AccountInfoResponse = JSON.parse(message.data);
+
+                    this.accountInfoResponseEvent.emit(response_data);
+                break;
                 default:
                     break;
             }

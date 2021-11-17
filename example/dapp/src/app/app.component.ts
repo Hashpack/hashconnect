@@ -63,6 +63,10 @@ export class AppComponent {
 
         this.hashconnect.transactionEvent.on((data) => {
             console.log("transaction event callback");
+        });
+
+        this.hashconnect.accountInfoResponseEvent.on((data) => {
+            console.log("Received account info", data);
         })
     }
 
@@ -113,6 +117,16 @@ export class AppComponent {
 
 
         await this.hashconnect.sendTransaction(this.topic, transaction)
+    }
+
+
+    async requestAccountInfo() {
+        let request:MessageTypes.AccountInfoRequest = {
+            topic: this.topic,
+            network: "mainnet"
+        } 
+
+        await this.hashconnect.requestAccountInfo(this.topic, request);
     }
 
 }

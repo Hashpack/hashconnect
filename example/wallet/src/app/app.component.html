@@ -1,13 +1,13 @@
 <div>
   <h1>{{title}}</h1>
-  <h2>Status: {{status}}</h2>
-  <input type="text" [(ngModel)]="message" placeholder="topic to subscribe to"/>
+  <h2>Status: {{HashconnectService.status}}</h2>
+  <input type="text" [(ngModel)]="HashconnectService.message" placeholder="topic to subscribe to"/>
 </div>
 <div>
-  <button class="primary" (click)="approvePairing()">Approve Pairing</button>
-  <button class="primary" (click)="rejectPairing()">Reject Pairing</button>
+  <button class="primary" (click)="HashconnectService.approvePairing()">Approve Pairing</button>
+  <button class="primary" (click)="HashconnectService.rejectPairing()">Reject Pairing</button>
 </div>
 <div>
-  <textarea class="testTextArea">{{incomingMessage}}</textarea>
+  <textarea class="testTextArea">{{HashconnectService.incomingMessage}}</textarea>
 </div>
 <router-outlet></router-outlet>

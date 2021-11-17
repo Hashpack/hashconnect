@@ -1,3 +1,3 @@
-export * from "./events"
-export * from "./hashconnect"
-export * from "./relay"
+export * from "./hashconnect";
+export { HashConnectTypes } from "./types/hashconnect";
+export * from "./types/relayMessage";

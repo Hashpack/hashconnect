@@ -1,11 +1,13 @@
 <div>
-  <h1>{{title}}</h1>
-  <h2>Status: {{status}}</h2>
-  <button class="testBtn" (click)="initClient()">Init Client</button>
-  <button class="testBtn" (click)="send()">Send Message</button>
-  <input type="text" [(ngModel)]="message" placeholder="message"/>
+    <h1>{{title}}</h1>
+    <h2>Status: {{status}}</h2>
+    <button class="primary" (click)="proposePairing()">Propose pairing</button>
+    <!-- <button class="primary" (click)="sendTest()">Send Test</button> -->
+    <!-- <input type="text" [(ngModel)]="message" placeholder="message"/> -->
+    <button class="primary" (click)="createTrans()">Create basic transaction</button>
+    <button class="primary" (click)="requestAccountInfo()">Request Account Info</button>
 </div>
-<div>
-  <textarea class="testTextArea">{{incomingMessage}}</textarea>
-</div>
+<!-- <div>
+    <textarea class="testTextArea">{{incomingMessage}}</textarea>
+</div> -->
 <router-outlet></router-outlet>

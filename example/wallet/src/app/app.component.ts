@@ -1,41 +1,26 @@
 import { Component } from '@angular/core';
-import { HashConnect } from 'hashconnect';
+import { HashconnectService } from './services/hashconnect.service';
+import { SigningService } from './services/signing.service';
 
 @Component({
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+    selector: 'app-root',
+    templateUrl: './app.component.html',
+    styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
-  title = 'wallet';
-  status = "not started";
-  message = "";
-  incomingMessage = "";
-  private hashconnect: HashConnect;
+    title = 'wallet | responder';    
 
-  constructor() {
-    this.hashconnect = new HashConnect();
-    this.hashconnect.events.connected.on((msg) => {
-      console.log(msg);
-      this.status = msg;
-    });
+    constructor(
+        public HashconnectService: HashconnectService,
+        private SigningService: SigningService
+    ) {}
+
+    ngOnInit() {
+        this.SigningService.init();
+        this.HashconnectService.initHashconnect();
+    }
 
     
 
-    this.hashconnect.events.messageReceived.on((msg) => {
-      console.log("message from peer received: "+msg);
-      this.status = "message received"
-      this.incomingMessage += msg + "\n";
-    })
-  }
-
-  async initClient() {
-    await this.hashconnect.connect();
-  }
-
-  async send() {
-    this.status = "message sending...";
-    await this.hashconnect.sendMessage(this.message);
-    this.status = "message sent";
-  }
+    
 }

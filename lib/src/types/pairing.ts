@@ -1,3 +1,5 @@
+import { HashConnectTypes } from ".";
+
 export declare namespace Pairing {
     
     export interface Approval {
@@ -12,4 +14,9 @@ export declare namespace Pairing {
     export interface Acknowledgement {
         result: boolean;
     }
+}
+
+export interface PairingData {
+    metadata: HashConnectTypes.AppMetadata,
+    topic: string;
 }

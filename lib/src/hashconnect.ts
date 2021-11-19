@@ -1,6 +1,6 @@
 import { Event } from "ts-typed-events";
 import { IRelay, WakuRelay } from "./types/relay";
-import { MessageUtil, MessageTypes, RelayMessage, RelayMessageType } from "./types";
+import { MessageUtil, MessageTypes, RelayMessage, RelayMessageType, PairingData } from "./types";
 import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
 
 /**
@@ -55,7 +55,7 @@ export class HashConnect implements IHashConnect {
     async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<void> {
         this.metadata = metadata;
         this.metadata.url = window.location.origin;
-        
+
         await this.relay.init();
     }
 
@@ -80,6 +80,24 @@ export class HashConnect implements IHashConnect {
         await this.relay.subscribe(state.topic);
 
         return state;        
+    }
+
+    generatePairingString(topic: string) {
+        let data: PairingData = {
+            metadata: this.metadata,
+            topic: topic
+        }
+
+        let pairingString: string = Buffer.from(JSON.stringify(data)).toString("base64")
+
+        return pairingString;
+    }
+
+    decodePairingString(pairingString: string) {
+        let json_string: string = Buffer.from(pairingString,'base64').toString();
+        let data: PairingData = JSON.parse(json_string);
+
+        return data;
     }
 
     // TODO: URI/qrcode/some kind of data to pair with, this is the out of band part

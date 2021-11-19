@@ -47,7 +47,6 @@ export class AppComponent {
         let appMetadata: HashConnectTypes.AppMetadata = {
             name: "dApp Example",
             description: "An example hedera dApp",
-            url: "",
             icon: ""
         }
 

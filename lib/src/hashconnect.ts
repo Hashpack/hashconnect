@@ -18,7 +18,7 @@ export class HashConnect implements IHashConnect {
 
     // messages util
     messages: MessageUtil;
-    metadata!:  HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
+    private metadata!:  HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
 
     constructor() {
         this.relay = new WakuRelay();
@@ -54,7 +54,8 @@ export class HashConnect implements IHashConnect {
 
     async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<void> {
         this.metadata = metadata;
-
+        this.metadata.url = window.location.origin;
+        
         await this.relay.init();
     }
 
@@ -196,13 +197,14 @@ export class HashConnect implements IHashConnect {
     findLocalWallets() {
         console.log("Finding local wallets");
         window.addEventListener("message", (event) => {
-            console.log("CCCCCCCCCCC", event.data)
             if (event.data.type && (event.data.type == "hashconnect-query-extension-response")) {
-                console.log("Local wallet metadata recieved" + event.data);
+                console.log("Local wallet metadata recieved", event.data);
             }
         }, false);
 
-        window.postMessage({ type: "hashconnect-query-extension" }, "*");
+        setTimeout(() => {
+            window.postMessage({ type: "hashconnect-query-extension" }, "*");
+        }, 50);
     }
 
 }

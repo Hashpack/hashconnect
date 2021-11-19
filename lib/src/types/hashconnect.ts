@@ -61,14 +61,14 @@ export declare namespace HashConnectTypes {
     export interface AppMetadata {
         name: string;
         description: string;
-        url: string; //insecure, lib needs to set this or can be spoofed
+        url?: string; //insecure, lib needs to set this or can be spoofed
         icon: string;
     }
 
     export interface WalletMetadata {
         name: string;
         description: string;
-        url: string; //insecure, lib needs to set this or can be spoofed
+        url?: string; //insecure, lib needs to set this or can be spoofed
         icon: string;
     }
 

@@ -31,7 +31,6 @@ export class HashconnectService {
         let walletMetadata: HashConnectTypes.WalletMetadata = {
             name: "Example Wallet",
             description: "An example wallet",
-            url: "",
             icon: ""
         }
 

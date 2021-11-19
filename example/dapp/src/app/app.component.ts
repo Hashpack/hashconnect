@@ -20,6 +20,7 @@ export class AppComponent {
     status = "Initializing";
     message = "";
     topic = "";
+    pairingString: string = "";
     private hashconnect: HashConnect;
     private pk = "302e020100300506032b65700422042093e3a32a53b0878429043643be0c992cec4f3e2aba8ccbde9905192e9326e0d2";
     private acc = "0.0.572001"
@@ -47,11 +48,18 @@ export class AppComponent {
         let appMetadata: HashConnectTypes.AppMetadata = {
             name: "dApp Example",
             description: "An example hedera dApp",
-            url: "",
             icon: ""
         }
 
         await this.hashconnect.init(appMetadata);
+
+        const state = await this.hashconnect.connect();
+        console.log("Received state", state);
+        this.topic = state.topic;
+        
+        this.pairingString = this.hashconnect.generatePairingString(this.topic);
+
+        this.hashconnect.findLocalWallets();
 
         this.status = "Connected";
 
@@ -73,10 +81,7 @@ export class AppComponent {
     async proposePairing() {
         this.status = "Proposing pair"
         // Use the pairing topic in hashconnect, this will eventually be a random string of hex or a UUID
-        const state = await this.hashconnect.connect();
-        console.log("Received state", state);
-
-        this.topic = state.topic;
+        
     }
 
     async createTrans() {
@@ -114,7 +119,6 @@ export class AppComponent {
             byteArray: outBytes,
             type: TransactionType.Transaction,
         }
-
 
         await this.hashconnect.sendTransaction(this.topic, transaction)
     }

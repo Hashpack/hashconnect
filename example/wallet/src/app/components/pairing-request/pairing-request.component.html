@@ -1,1 +1,13 @@
-<p>pairing-request works!</p>
+<input type="text" [(ngModel)]="pairingString" (change)="parsePairingString()" placeholder="Pairing string"/>
+
+<div *ngIf="pairingData">
+
+    <div>
+        <p>{{pairingData.metadata.name}} would like to connect to your wallet.</p>
+        <p>{{ pairingData.metadata.url }}</p>
+
+    </div>
+
+    <button class="primary" (click)="approvePairing()">Approve Pairing</button>
+    <button class="primary" (click)="rejectPairing()">Reject Pairing</button>
+</div>

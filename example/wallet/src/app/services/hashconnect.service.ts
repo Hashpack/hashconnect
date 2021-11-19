@@ -21,8 +21,7 @@ export class HashconnectService {
 
     hashconnect: HashConnect;
     status: string = "";
-    message = "";
-    pairingTopic = "";
+    pairingTopic: string = "";
     incomingMessage = "";
 
     async initHashconnect() {
@@ -93,7 +92,7 @@ export class HashconnectService {
 
     async approvePairing() {
         if (this.pairingTopic == "") {
-            this.pairingTopic = this.message;
+            return;
         }
 
         // this currently ignores the pairing topic param
@@ -105,7 +104,7 @@ export class HashconnectService {
 
     async rejectPairing() {
         if (this.pairingTopic == "") {
-            this.pairingTopic = this.message;
+            return;
         }
 
         await this.hashconnect.reject(this.pairingTopic, "because I don't want to pair with you");

@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { ButtonLayoutDisplay, ButtonMaker, DialogInitializer, DialogLayoutDisplay } from '@costlydeveloper/ngx-awesome-popup';
+import { PairingRequestComponent } from './components/pairing-request/pairing-request.component';
 import { HashconnectService } from './services/hashconnect.service';
 import { SigningService } from './services/signing.service';
 
@@ -21,6 +23,21 @@ export class AppComponent {
     }
 
     
+    connectToDapp() {
+        const dialogPopup = new DialogInitializer(PairingRequestComponent);
 
+        dialogPopup.setConfig({
+            Width: '500px',
+            LayoutType: DialogLayoutDisplay.NONE
+        });
+
+        dialogPopup.setButtons([
+            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
+        ]);
+
+        dialogPopup.openDialog$().subscribe(resp => {
+            console.log('dialog response: ', resp);
+        });
+    }
     
 }

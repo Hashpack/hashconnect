@@ -52,6 +52,7 @@ export class AppComponent {
         }
 
         await this.hashconnect.init(appMetadata);
+        this.hashconnect.findLocalWallets();
 
         this.status = "Connected";
 

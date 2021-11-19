@@ -54,6 +54,7 @@ export class HashConnect implements IHashConnect {
 
     async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<void> {
         this.metadata = metadata;
+
         await this.relay.init();
     }
 
@@ -190,4 +191,18 @@ export class HashConnect implements IHashConnect {
         const ackPayload = this.messages.prepareSimpleMessage(RelayMessageType.Ack, ack);
         await this.relay.publish(topic, ackPayload)
     }
+
+
+    findLocalWallets() {
+        console.log("Finding local wallets");
+        window.addEventListener("message", (event) => {
+            console.log("CCCCCCCCCCC", event.data)
+            if (event.data.type && (event.data.type == "hashconnect-query-extension-response")) {
+                console.log("Local wallet metadata recieved" + event.data);
+            }
+        }, false);
+
+        window.postMessage({ type: "hashconnect-query-extension" }, "*");
+    }
+
 }

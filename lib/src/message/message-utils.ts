@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { RelayMessage, RelayMessageType } from '.';
+import { RelayMessage, RelayMessageType } from './';
 
 const protons = require('protons');
 

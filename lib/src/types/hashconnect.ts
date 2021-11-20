@@ -1,7 +1,7 @@
 import { IRelay } from "./relay";
 import { Event } from "ts-typed-events";
-import { MessageTypes } from ".";
-import { MessageUtil } from ".";
+import { MessageTypes, MessageUtil } from "../message";
+import { MessageHandler } from "../message/message-handler";
 
 export interface IHashConnect {
     
@@ -14,8 +14,17 @@ export interface IHashConnect {
     /** Transaction event emitter */
     transactionEvent: Event<MessageTypes.Transaction>;
     
+    /** Account info request event emitter */
+    accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
+
+    /** Account info response event emitter */
+    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
+
     /** Messages util for protobufs */
     messages: MessageUtil;
+
+    /** Message event parser */
+    messageParser: MessageHandler;
 
     /**
      * Connect to a topic and produce a topic ID for a peer
@@ -49,6 +58,13 @@ export interface IHashConnect {
      * @param transaction transaction to send
      */
     sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<void>;
+
+    /**
+     * Send an acknowledgement of receipt
+     * 
+     * @param topic topic to publish to
+     */
+    ack(topic: string): Promise<void>
 
     /**
      * Initialize the client

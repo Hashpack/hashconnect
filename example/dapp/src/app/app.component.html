@@ -1,11 +1,11 @@
 <div>
     <h1>{{title}}</h1>
     <h2>Status: {{status}}</h2>
-    <input type="text" [(ngModel)]="pairingString">
+    <input type="text" [(ngModel)]="HashConnectService.pairingString">
     <!-- <button class="primary" (click)="sendTest()">Send Test</button> -->
     <!-- <input type="text" [(ngModel)]="message" placeholder="message"/> -->
-    <button class="primary" (click)="createTrans()">Create basic transaction</button>
-    <button class="primary" (click)="requestAccountInfo()">Request Account Info</button>
+    <button class="primary" (click)="HashConnectService.createTrans()">Create basic transaction</button>
+    <button class="primary" (click)="HashConnectService.requestAccountInfo()">Request Account Info</button>
 </div>
 <!-- <div>
     <textarea class="testTextArea">{{incomingMessage}}</textarea>

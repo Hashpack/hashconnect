@@ -117,7 +117,7 @@ export class AppComponent {
         const transaction: MessageTypes.Transaction = {
             topic: this.topic,
             byteArray: outBytes,
-            type: TransactionType.Transaction,
+            type: TransactionType.cryptoTransfer,
         }
 
         await this.hashconnect.sendTransaction(this.topic, transaction)

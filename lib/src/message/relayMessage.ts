@@ -20,9 +20,40 @@ export enum RelayMessageType {
 }
 
 export enum TransactionType {
-    NFT="NFT",
-    Token="Token",
-    Transaction="Transaction"
+    contractCall="contractCall",
+    contractCreateInstance="contractCreateInstance",
+    contractUpdateInstance="contractUpdateInstance",
+    contractDeleteInstance="contractDeleteInstance",
+    cryptoCreateAccount="cryptoCreateAccount",
+    cryptoDelete="cryptoDelete",
+    cryptoTransfer="cryptoTransfer",
+    cryptoUpdateAccount="cryptoUpdateAccount",
+    fileAppend="fileAppend",
+    fileCreate="fileCreate",
+    fileDelete="fileDelete",
+    fileUpdate="fileUpdate",
+    systemDelete="systemDelete",
+    systemUndelete="systemUndelete",
+    freeze="freeze",
+    consensusCreateTopic="consensusCreateTopic",
+    consensusUpdateTopic="consensusUpdateTopic",
+    consensusDeleteTopic="consensusDeleteTopic",
+    consensusSubmitMessage="consensusSubmitMessage",
+    tokenCreation="tokenCreation",
+    tokenFreeze="tokenFreeze",
+    tokenUnfreeze="tokenUnfreeze",
+    tokenGrantKyc="tokenGrantKyc",
+    tokenRevokeKyc="tokenRevokeKyc",
+    tokenDeletion="tokenDeletion",
+    tokenUpdate="tokenUpdate",
+    tokenMint="tokenMint",
+    tokenBurn="tokenBurn",
+    tokenWipe="tokenWipe",
+    tokenAssociate="tokenAssociate",
+    tokenDissociate="tokenDissociate",
+    token_pause="token_pause",
+    token_unpause="token_unpause",
+    scheduleDelete="scheduleDelete",
 }
 
 export declare namespace MessageTypes {

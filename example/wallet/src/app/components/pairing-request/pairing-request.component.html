@@ -1,12 +1,13 @@
-<input type="text" [(ngModel)]="pairingString" (change)="parsePairingString()" placeholder="Pairing string"/>
+<input *ngIf="!pairingData" type="text" [(ngModel)]="pairingString" (ngModelChange)="parsePairingString()" placeholder="Pairing string"/>
 
 <div *ngIf="pairingData">
 
-    <div>
-        <p>{{pairingData.metadata.name}} would like to connect to your wallet.</p>
+    <div class="top">
+        <img [src]="pairingData.metadata.icon" alt="">
         <p>{{ pairingData.metadata.url }}</p>
-
     </div>
+
+    <p>{{pairingData.metadata.name}} would like to connect to your wallet.</p>
 
     <button class="primary" (click)="approvePairing()">Approve Pairing</button>
     <button class="primary" (click)="rejectPairing()">Reject Pairing</button>

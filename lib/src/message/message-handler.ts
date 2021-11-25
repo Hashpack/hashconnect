@@ -12,19 +12,18 @@ export class MessageHandler implements IMessageHandler {
         console.log(`Message Received of type ${message.type}, sent at ${message.timestamp.toString()}`, message.data);
             
         // Should always have a topic
-        const jsonMsg = JSON.parse(message.data);
-        if(!jsonMsg['topic']) {
-            console.error("no topic in json data");
+        const parsedData = JSON.parse(message.data);
+        if(!parsedData.topic) {
+            console.error("no topic in message");
         }
 
-        // TODO: move and refactor this to be more elegant in terms of event handling
         switch (message.type) {
-            case RelayMessageType.Pairing:
-                // TODO: differentiate approve/reject
+            case RelayMessageType.ApprovePairing:
                 console.log("approved", message.data);
-            
-                hc.pairingEvent.emit("pairing approved!")
-                await hc.ack(jsonMsg.topic)
+                let approval_data: MessageTypes.ApprovePairing = JSON.parse(message.data);
+                
+                hc.pairingEvent.emit(approval_data)
+                await hc.ack(parsedData.topic)
             break;
             case RelayMessageType.Ack:
                 console.log("acknowledged");

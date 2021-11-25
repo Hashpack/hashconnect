@@ -21,19 +21,23 @@ export class HashconnectService {
 
     hashconnect: HashConnect;
     status: string = "";
-    pairingTopic: string = "";
+    pairingEncodedData: string = "";
     incomingMessage = "";
+    
+    walletMetadata: HashConnectTypes.WalletMetadata = {
+        name: "Example Wallet",
+        description: "An example wallet",
+        icon: ""
+    }
+
+    dappPairings: Record<string, HashConnectTypes.AppMetadata> = {
+        
+    };
 
     async initHashconnect() {
         this.hashconnect = new HashConnect();
 
-        let walletMetadata: HashConnectTypes.WalletMetadata = {
-            name: "Example Wallet",
-            description: "An example wallet",
-            icon: ""
-        }
-
-        await this.hashconnect.init(walletMetadata);
+        await this.hashconnect.init(this.walletMetadata);
         
         this.hashconnect.pairingEvent.on((data) => {
             console.log("pairing event received")
@@ -90,33 +94,31 @@ export class HashconnectService {
 
     ////////////////////////////////////SENDERS
 
-    async approvePairing() {
-        if (this.pairingTopic == "") {
-            return;
+    async approvePairing(topic: string, accounts: string[], dappData: HashConnectTypes.AppMetadata) {
+        this.dappPairings[topic] = dappData;
+
+        let msg: MessageTypes.ApprovePairing = {
+            metadata: this.walletMetadata,
+            topic: topic,
+            accounts: accounts
         }
 
-        // this currently ignores the pairing topic param
-        // await this.hashconnect.sendApproval()
-        console.log("subscribing: " + this.pairingTopic);
-        await this.hashconnect.pair(this.pairingTopic);
+        console.log("subscribing: " + topic);
+        await this.hashconnect.pair(topic, msg);
         this.status = "paired";
     }
 
-    async rejectPairing() {
-        if (this.pairingTopic == "") {
-            return;
-        }
-
-        await this.hashconnect.reject(this.pairingTopic, "because I don't want to pair with you");
+    async rejectPairing(topic: string) {
+        await this.hashconnect.reject(topic, "because I don't want to pair with you");
     }
 
-    async approveAccountInfoRequest() {
+    async approveAccountInfoRequest(topic: string) {
         let msg: MessageTypes.AccountInfoResponse = {
-            accountId: this.SigningService.acc,
+            accountIds: [this.SigningService.acc],
             network: "mainnet",
-            topic: this.pairingTopic
+            topic: topic
         }
 
-        await this.hashconnect.sendAccountInfo(this.pairingTopic, msg);
+        await this.hashconnect.sendAccountInfo(topic, msg);
     }
 }

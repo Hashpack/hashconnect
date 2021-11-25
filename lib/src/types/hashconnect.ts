@@ -8,16 +8,10 @@ export interface IHashConnect {
     /** Relay */
     relay: IRelay;
 
-    /** Pairing event emitter */
+    /** Event emitters */
     pairingEvent: Event<any>;
-    
-    /** Transaction event emitter */
     transactionEvent: Event<MessageTypes.Transaction>;
-    
-    /** Account info request event emitter */
     accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
-
-    /** Account info response event emitter */
     accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
 
     /** Messages util for protobufs */
@@ -41,7 +35,7 @@ export interface IHashConnect {
      * 
      * @param pairingStr string containing topic and meta data
      */
-    pair(pairingStr: string): Promise<void>;
+    pair(pairingStr: string, message: MessageTypes.ApprovePairing): Promise<void>;
 
     /**
      * Reject a pairing request

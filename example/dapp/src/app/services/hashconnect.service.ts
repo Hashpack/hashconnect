@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HashConnect, HashConnectTypes, MessageTypes, TransactionType } from 'hashconnect';
+import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
 import { SigningService } from './signing.service';
 
 
@@ -13,22 +13,21 @@ export class HashconnectService {
     ) { }
 
     hashconnect: HashConnect;
-    status: string = "";
+    status: string = "Initializing";
     topic: string = "";
     pairingString: string = "";
-    
+    pairedData: MessageTypes.AccountInfoResponse
+    appMetadata: HashConnectTypes.AppMetadata = {
+        name: "dApp Example",
+        description: "An example hedera dApp",
+        icon: "https://www.hashpack.app/img/logo.svg"
+    }
 
     async initHashconnect() {
 
         this.hashconnect = new HashConnect();
 
-        let appMetadata: HashConnectTypes.AppMetadata = {
-            name: "dApp Example",
-            description: "An example hedera dApp",
-            icon: ""
-        }
-
-        await this.hashconnect.init(appMetadata);
+        await this.hashconnect.init(this.appMetadata);
 
         const state = await this.hashconnect.connect();
         console.log("Received state", state);
@@ -44,11 +43,6 @@ export class HashconnectService {
     }
 
     setUpEvents() {
-        this.hashconnect.pairingEvent.on((data) => {
-            console.log("Pairing event callback ");
-            console.log(data)
-            this.status = data;
-        })
 
         this.hashconnect.transactionEvent.on((data) => {
             console.log("transaction event callback");
@@ -56,6 +50,12 @@ export class HashconnectService {
 
         this.hashconnect.accountInfoResponseEvent.on((data) => {
             console.log("Received account info", data);
+
+        })
+
+        this.hashconnect.pairingEvent.on((data) => {
+            console.log("Paired with wallet", data);
+            this.status = "Paired";
         })
     }
 
@@ -67,7 +67,9 @@ export class HashconnectService {
         const transaction: MessageTypes.Transaction = {
             topic: this.topic,
             byteArray: transactionBytes,
-            type: TransactionType.cryptoTransfer,
+            metadata: {
+                accountToSign: this.pairedData.accountIds[0]
+            }
         }
 
         await this.hashconnect.sendTransaction(this.topic, transaction)

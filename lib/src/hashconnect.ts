@@ -25,7 +25,7 @@ export class HashConnect implements IHashConnect {
     constructor() {
         this.relay = new WakuRelay();
         
-        this.pairingEvent = new Event<any>();
+        this.pairingEvent = new Event<MessageTypes.ApprovePairing>();
         this.transactionEvent = new Event<MessageTypes.Transaction>();
         this.accountInfoRequestEvent = new Event<MessageTypes.AccountInfoRequest>();
         this.accountInfoResponseEvent = new Event<MessageTypes.AccountInfoResponse>();
@@ -36,6 +36,32 @@ export class HashConnect implements IHashConnect {
         this.setupEvents();
     }
 
+    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<void> {
+        this.metadata = metadata;
+        this.metadata.url = window.location.origin;
+
+        await this.relay.init();
+    }
+
+    /**
+     * Set up event connections
+     */
+     private setupEvents() {
+        // This will listen for a payload emission from the relay
+        this.relay.payload.on(async (payload) => {
+            console.log("hashconnect: payload received");
+            if (!payload) return;
+
+            const message: RelayMessage = this.messages.decode(payload);
+
+            await this.messageParser.onPayload(message, this);
+        })
+    }
+
+
+    /**
+     * Send functions
+     */
     async sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<void> {
         transaction.byteArray = Buffer.from(transaction.byteArray).toString("base64");
         
@@ -53,13 +79,6 @@ export class HashConnect implements IHashConnect {
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.AccountInfoResponse, message);
 
         await this.relay.publish(topic, msg);
-    }
-
-    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<void> {
-        this.metadata = metadata;
-        this.metadata.url = window.location.origin;
-
-        await this.relay.init();
     }
 
     async connect(topic?: string, metadata?: HashConnectTypes.AppMetadata): Promise<HashConnectTypes.ConnectionState> {
@@ -85,6 +104,53 @@ export class HashConnect implements IHashConnect {
         return state;        
     }
 
+    async pair(topic: string, message: MessageTypes.ApprovePairing) {
+        
+        // UUID passed into the application responding to the pairing
+        // topic is just the topic for now
+        console.log(topic);
+
+        // Subscribe to the proposed topic to begin pairing
+        await this.relay.subscribe(topic);
+
+        // create protobuf message
+        const payload = this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, message)
+        this.relay.publish(topic, payload)
+    }
+
+    async reject(topic: string, reason?: string) {
+        let reject: MessageTypes.Rejected = {
+            reason: reason,
+            topic: topic
+        }
+        
+        // create protobuf message
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.RejectPairing, reject)
+        console.log("topic: "+topic);
+        
+        // Publish the rejection
+        await this.relay.publish(topic, msg);
+        
+        // Unsubscribe
+        await this.relay.unsubscribe(topic);
+
+        this.pairingEvent.emit("Pairing rejected");
+    }
+
+    async ack(topic: string) {
+        const ack: MessageTypes.Ack = {
+            result: true,
+            topic: topic
+        }
+        const ackPayload = this.messages.prepareSimpleMessage(RelayMessageType.Ack, ack);
+        await this.relay.publish(topic, ackPayload)
+    }  
+    
+
+    /**
+     * Helpers
+     */
+
     generatePairingString(topic: string) {
         let data: PairingData = {
             metadata: this.metadata,
@@ -103,68 +169,9 @@ export class HashConnect implements IHashConnect {
         return data;
     }
 
-    // TODO: URI/qrcode/some kind of data to pair with, this is the out of band part
-    async pair(pairingStr: string) {
-        
-        // UUID passed into the application responding to the pairing
-        // pairingstr is just the topic for now
-        console.log(pairingStr);
-
-        // Subscribe to the proposed topic to begin pairing
-        await this.relay.subscribe(pairingStr);
-
-        const approval: MessageTypes.Approval = {
-            topic: pairingStr
-        }
-
-        // create protobuf message
-        const payload = this.messages.prepareSimpleMessage(RelayMessageType.Pairing, approval)
-        this.relay.publish(pairingStr, payload)
-    }
-
-    async reject(topic: string, reason?: string) {
-        let reject: MessageTypes.Rejected = {
-            topic: topic,
-            reason: reason
-        }
-        
-        // create protobuf message
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.RejectPairing, reject)
-        console.log("topic: "+topic);
-        
-        // Publish the rejection
-        await this.relay.publish(topic, msg);
-        
-        // Unsubscribe
-        await this.relay.unsubscribe(topic);
-
-        this.pairingEvent.emit("Pairing rejected");
-    }
-
     /**
-     * Set up event connections
+     * Local wallet stuff
      */
-    private setupEvents() {
-        // This will listen for a payload emission from the relay
-        this.relay.payload.on(async (payload) => {
-            console.log("hashconnect: payload received");
-            if (!payload) return;
-
-            const message: RelayMessage = this.messages.decode(payload);
-
-            await this.messageParser.onPayload(message, this);
-        })
-    }
-    
-    async ack(topic: string) {
-        const ack: MessageTypes.Ack = {
-            topic: topic,
-            result: true
-        }
-        const ackPayload = this.messages.prepareSimpleMessage(RelayMessageType.Ack, ack);
-        await this.relay.publish(topic, ackPayload)
-    }
-
 
     findLocalWallets() {
         console.log("Finding local wallets");

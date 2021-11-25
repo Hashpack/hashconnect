@@ -3,6 +3,7 @@ import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
 import { Subscription } from 'rxjs';
 import { MessageTypes } from 'hashconnect';
 import { SigningService } from 'src/app/services/signing.service';
+import { Transaction, TransferTransaction } from '@hashgraph/sdk';
 
 @Component({
     selector: 'app-transaction-recieved',
@@ -18,6 +19,10 @@ export class TransactionRecievedComponent implements OnInit {
 
     subscriptions: Subscription = new Subscription();
     transaction: MessageTypes.Transaction;
+    parsedTransaction: Transaction;
+    display = {
+        text: ""
+    }
 
     ngOnInit(): void {
         this.transaction = this.dialogBelonging.CustomData.transaction;
@@ -33,6 +38,15 @@ export class TransactionRecievedComponent implements OnInit {
                 }
             })
         );
+
+        this.parsedTransaction = Transaction.fromBytes(this.transaction.byteArray as Uint8Array);
+
+        switch(true) {
+            case this.parsedTransaction instanceof TransferTransaction:
+                this.display.text = ""
+            break;
+        }
+        // debugger
     }
 
 }

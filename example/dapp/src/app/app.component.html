@@ -1,6 +1,10 @@
 <div>
     <h1>{{title}}</h1>
-    <h2>Status: {{status}}</h2>
+    <h2>Status: {{HashConnectService.status}}</h2>
+
+    <h3>Connected accounts: {{ HashConnectService.pairedData | json}}</h3>
+
+    <button class="primary" (click)="pair()">Pair</button>
     <input type="text" [(ngModel)]="HashConnectService.pairingString">
     <!-- <button class="primary" (click)="sendTest()">Send Test</button> -->
     <!-- <input type="text" [(ngModel)]="message" placeholder="message"/> -->

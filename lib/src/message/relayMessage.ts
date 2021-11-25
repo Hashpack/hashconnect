@@ -1,4 +1,7 @@
+import { HashConnectTypes } from "../types";
+
 export class RelayMessage {
+    
     timestamp: number;
     type: RelayMessageType;
     data: any;
@@ -12,54 +15,54 @@ export class RelayMessage {
 
 export enum RelayMessageType {
     Transaction="Transaction",
-    Pairing="Pairing",
+    ApprovePairing="ApprovePairing",
     RejectPairing="RejectPairing",
     Ack="Ack",
     AccountInfoRequest="AccountInfoRequest",
     AccountInfoResponse="AccountInfoResponse"
 }
 
-export enum TransactionType {
-    contractCall="contractCall",
-    contractCreateInstance="contractCreateInstance",
-    contractUpdateInstance="contractUpdateInstance",
-    contractDeleteInstance="contractDeleteInstance",
-    cryptoCreateAccount="cryptoCreateAccount",
-    cryptoDelete="cryptoDelete",
-    cryptoTransfer="cryptoTransfer",
-    cryptoUpdateAccount="cryptoUpdateAccount",
-    fileAppend="fileAppend",
-    fileCreate="fileCreate",
-    fileDelete="fileDelete",
-    fileUpdate="fileUpdate",
-    systemDelete="systemDelete",
-    systemUndelete="systemUndelete",
-    freeze="freeze",
-    consensusCreateTopic="consensusCreateTopic",
-    consensusUpdateTopic="consensusUpdateTopic",
-    consensusDeleteTopic="consensusDeleteTopic",
-    consensusSubmitMessage="consensusSubmitMessage",
-    tokenCreation="tokenCreation",
-    tokenFreeze="tokenFreeze",
-    tokenUnfreeze="tokenUnfreeze",
-    tokenGrantKyc="tokenGrantKyc",
-    tokenRevokeKyc="tokenRevokeKyc",
-    tokenDeletion="tokenDeletion",
-    tokenUpdate="tokenUpdate",
-    tokenMint="tokenMint",
-    tokenBurn="tokenBurn",
-    tokenWipe="tokenWipe",
-    tokenAssociate="tokenAssociate",
-    tokenDissociate="tokenDissociate",
-    token_pause="token_pause",
-    token_unpause="token_unpause",
-    scheduleDelete="scheduleDelete",
-}
+// export enum TransactionType {
+//     contractCall="contractCall",
+//     contractCreateInstance="contractCreateInstance",
+//     contractUpdateInstance="contractUpdateInstance",
+//     contractDeleteInstance="contractDeleteInstance",
+//     cryptoCreateAccount="cryptoCreateAccount",
+//     cryptoDelete="cryptoDelete",
+//     cryptoTransfer="cryptoTransfer",
+//     cryptoUpdateAccount="cryptoUpdateAccount",
+//     fileAppend="fileAppend",
+//     fileCreate="fileCreate",
+//     fileDelete="fileDelete",
+//     fileUpdate="fileUpdate",
+//     systemDelete="systemDelete",
+//     systemUndelete="systemUndelete",
+//     freeze="freeze",
+//     consensusCreateTopic="consensusCreateTopic",
+//     consensusUpdateTopic="consensusUpdateTopic",
+//     consensusDeleteTopic="consensusDeleteTopic",
+//     consensusSubmitMessage="consensusSubmitMessage",
+//     tokenCreation="tokenCreation",
+//     tokenFreeze="tokenFreeze",
+//     tokenUnfreeze="tokenUnfreeze",
+//     tokenGrantKyc="tokenGrantKyc",
+//     tokenRevokeKyc="tokenRevokeKyc",
+//     tokenDeletion="tokenDeletion",
+//     tokenUpdate="tokenUpdate",
+//     tokenMint="tokenMint",
+//     tokenBurn="tokenBurn",
+//     tokenWipe="tokenWipe",
+//     tokenAssociate="tokenAssociate",
+//     tokenDissociate="tokenDissociate",
+//     token_pause="token_pause",
+//     token_unpause="token_unpause",
+//     scheduleDelete="scheduleDelete",
+// }
 
 export declare namespace MessageTypes {
     
     export interface BaseMessage {
-        topic: string; //todo we should move this to RelayMessage so we dont have to include it with everything
+        topic: string;
     }
     // Messages to go through the relay
 
@@ -67,16 +70,19 @@ export declare namespace MessageTypes {
         reason?: string;
     }
 
-    export interface Approval extends BaseMessage { }
+    export interface ApprovePairing extends BaseMessage {
+        metadata: HashConnectTypes.WalletMetadata,
+        accounts: string[]
+    }
 
     export interface Ack extends BaseMessage {
         result: boolean;
     }
 
     export interface Transaction extends BaseMessage {
-        type: TransactionType;
+        // type: TransactionType;
         byteArray: Uint8Array | string;
-        metadata?: TransactionMetadata;
+        metadata: TransactionMetadata;
     }
 
     export interface AccountInfoRequest extends BaseMessage {
@@ -84,11 +90,11 @@ export declare namespace MessageTypes {
     }
 
     export interface AccountInfoResponse extends BaseMessage {
-        accountId: string;
+        accountIds: string[];
         network: string;
     }
     
     export class TransactionMetadata {
-        
+        accountToSign: string;
     }
 }

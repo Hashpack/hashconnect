@@ -7,9 +7,10 @@ export class MessageUtil {
 
     private proto = protons(`
     message SimpleMessage {
-        uint64 timestamp = 1;
-        string type = 2;
-        string data = 3;
+        string topic = 1;
+        uint64 timestamp = 2;
+        string type = 3;
+        string data = 4;
     }`);
 
     /**
@@ -23,7 +24,7 @@ export class MessageUtil {
         return this.proto.SimpleMessage.encode(new RelayMessage(
             Date.now(),
             type,
-            JSON.stringify(data)
+            JSON.stringify(data),
         ));
     }
 

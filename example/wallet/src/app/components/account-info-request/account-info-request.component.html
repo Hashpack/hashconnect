@@ -1,3 +1,8 @@
 <h2>Account Info Request</h2>
 
-{{request | json}}
+<div class="top">
+    <img [src]="sentBy.metadata.icon" alt="">
+    <p>{{ sentBy.metadata.url }}</p>
+</div>
+
+<p>{{sentBy.metadata.name}} would like to connect to your {{ request.network }} wallet.</p>

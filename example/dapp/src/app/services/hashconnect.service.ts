@@ -16,7 +16,9 @@ export class HashconnectService {
     status: string = "Initializing";
     topic: string = "";
     pairingString: string = "";
-    pairedData: MessageTypes.AccountInfoResponse
+    pairedWalletData: HashConnectTypes.WalletMetadata;
+    pairedAccounts: string[];
+
     appMetadata: HashConnectTypes.AppMetadata = {
         name: "dApp Example",
         description: "An example hedera dApp",
@@ -68,7 +70,7 @@ export class HashconnectService {
             topic: this.topic,
             byteArray: transactionBytes,
             metadata: {
-                accountToSign: this.pairedData.accountIds[0]
+                accountToSign: this.pairedAccounts[0]
             }
         }
 

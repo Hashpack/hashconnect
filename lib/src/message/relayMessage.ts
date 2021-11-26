@@ -22,6 +22,48 @@ export enum RelayMessageType {
     AccountInfoResponse="AccountInfoResponse"
 }
 
+export declare namespace MessageTypes {
+    
+    export interface BaseMessage {
+        topic: string;
+    }
+    // Messages to go through the relay
+
+    export interface Rejected extends BaseMessage {
+        reason?: string;
+    }
+
+    export interface ApprovePairing extends BaseMessage {
+        metadata: HashConnectTypes.WalletMetadata,
+        accountIds: string[]
+    }
+
+    export interface Ack extends BaseMessage {
+        result: boolean;
+    }
+
+    export interface Transaction extends BaseMessage {
+        // type: TransactionType;
+        byteArray: Uint8Array | string;
+        metadata: TransactionMetadata;
+    }
+
+    export interface AccountInfoRequest extends BaseMessage {
+        network: string;
+    }
+
+    export interface AccountInfoResponse extends BaseMessage {
+        accountIds: string[];
+        network: string;
+    }
+    
+    export class TransactionMetadata {
+        accountToSign: string;
+    }
+}
+
+
+
 // export enum TransactionType {
 //     contractCall="contractCall",
 //     contractCreateInstance="contractCreateInstance",
@@ -58,43 +100,3 @@ export enum RelayMessageType {
 //     token_unpause="token_unpause",
 //     scheduleDelete="scheduleDelete",
 // }
-
-export declare namespace MessageTypes {
-    
-    export interface BaseMessage {
-        topic: string;
-    }
-    // Messages to go through the relay
-
-    export interface Rejected extends BaseMessage {
-        reason?: string;
-    }
-
-    export interface ApprovePairing extends BaseMessage {
-        metadata: HashConnectTypes.WalletMetadata,
-        accounts: string[]
-    }
-
-    export interface Ack extends BaseMessage {
-        result: boolean;
-    }
-
-    export interface Transaction extends BaseMessage {
-        // type: TransactionType;
-        byteArray: Uint8Array | string;
-        metadata: TransactionMetadata;
-    }
-
-    export interface AccountInfoRequest extends BaseMessage {
-        network: string;
-    }
-
-    export interface AccountInfoResponse extends BaseMessage {
-        accountIds: string[];
-        network: string;
-    }
-    
-    export class TransactionMetadata {
-        accountToSign: string;
-    }
-}

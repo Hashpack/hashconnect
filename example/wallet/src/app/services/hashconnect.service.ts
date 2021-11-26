@@ -9,6 +9,7 @@ import {
 import { TransactionRecievedComponent } from '../components/transaction-recieved/transaction-recieved.component';
 import { AccountInfoRequestComponent } from '../components/account-info-request/account-info-request.component';
 import { SigningService } from './signing.service';
+import { DappPairing } from '../classes/dapp-pairing';
 
 @Injectable({
     providedIn: 'root'
@@ -20,7 +21,7 @@ export class HashconnectService {
     ) { }
 
     hashconnect: HashConnect;
-    status: string = "";
+    status: string = "Connecting";
     pairingEncodedData: string = "";
     incomingMessage = "";
     
@@ -30,9 +31,7 @@ export class HashconnectService {
         icon: ""
     }
 
-    dappPairings: Record<string, HashConnectTypes.AppMetadata> = {
-        
-    };
+    dappPairings: DappPairing[] = [];
 
     async initHashconnect() {
         this.hashconnect = new HashConnect();
@@ -47,7 +46,7 @@ export class HashconnectService {
         this.hashconnect.transactionEvent.on(this.recievedTransactionRequest)
         this.hashconnect.accountInfoRequestEvent.on(this.accountInfoRequest);
 
-        this.status = "connected";
+        this.status = "Connected";
     }
 
     ////////////////////////////////////RECIEVERS
@@ -95,17 +94,17 @@ export class HashconnectService {
     ////////////////////////////////////SENDERS
 
     async approvePairing(topic: string, accounts: string[], dappData: HashConnectTypes.AppMetadata) {
-        this.dappPairings[topic] = dappData;
+        this.dappPairings.push(new DappPairing(topic, accounts, dappData));
 
         let msg: MessageTypes.ApprovePairing = {
             metadata: this.walletMetadata,
             topic: topic,
-            accounts: accounts
+            accountIds: accounts
         }
 
         console.log("subscribing: " + topic);
         await this.hashconnect.pair(topic, msg);
-        this.status = "paired";
+        this.status = "Paired";
     }
 
     async rejectPairing(topic: string) {
@@ -120,5 +119,14 @@ export class HashconnectService {
         }
 
         await this.hashconnect.sendAccountInfo(topic, msg);
+    }
+
+    getDataByTopic(topic: string): DappPairing {
+        let data = this.dappPairings.filter(pairing => {
+            if(pairing.topic == topic) return true;
+            else return false;
+        })
+
+        return data[0];
     }
 }

@@ -1,9 +1,11 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
 import { Subscription } from 'rxjs';
-import { MessageTypes } from 'hashconnect';
+import { HashConnectTypes, MessageTypes } from 'hashconnect';
 import { SigningService } from 'src/app/services/signing.service';
 import { Transaction, TransferTransaction } from '@hashgraph/sdk';
+import { HashconnectService } from 'src/app/services/hashconnect.service';
+import { DappPairing } from 'src/app/classes/dapp-pairing';
 
 @Component({
     selector: 'app-transaction-recieved',
@@ -14,12 +16,14 @@ export class TransactionRecievedComponent implements OnInit {
 
     constructor(
         @Inject('dialogBelonging') private dialogBelonging: DialogBelonging,
-        private SigningService: SigningService
+        private SigningService: SigningService,
+        private HashConnectService: HashconnectService
     ) { }
 
     subscriptions: Subscription = new Subscription();
     transaction: MessageTypes.Transaction;
     parsedTransaction: Transaction;
+    sentBy: DappPairing;
     display = {
         text: ""
     }
@@ -40,13 +44,13 @@ export class TransactionRecievedComponent implements OnInit {
         );
 
         this.parsedTransaction = Transaction.fromBytes(this.transaction.byteArray as Uint8Array);
+        this.sentBy = this.HashConnectService.getDataByTopic(this.transaction.topic);
 
         switch(true) {
             case this.parsedTransaction instanceof TransferTransaction:
                 this.display.text = ""
             break;
         }
-        // debugger
     }
 
 }

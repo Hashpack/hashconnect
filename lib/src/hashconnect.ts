@@ -12,10 +12,10 @@ export class HashConnect implements IHashConnect {
     relay: IRelay;
 
     // events
-    pairingEvent: Event<any>;
+    pairingEvent: Event<MessageTypes.ApprovePairing | MessageTypes.Rejected>;
     transactionEvent: Event<MessageTypes.Transaction>;
     accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
-    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
+    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse | MessageTypes.Rejected>;
 
     // messages util
     messageParser: MessageHandler;
@@ -25,10 +25,10 @@ export class HashConnect implements IHashConnect {
     constructor() {
         this.relay = new WakuRelay();
         
-        this.pairingEvent = new Event<MessageTypes.ApprovePairing>();
+        this.pairingEvent = new Event<MessageTypes.ApprovePairing | MessageTypes.Rejected>();
         this.transactionEvent = new Event<MessageTypes.Transaction>();
         this.accountInfoRequestEvent = new Event<MessageTypes.AccountInfoRequest>();
-        this.accountInfoResponseEvent = new Event<MessageTypes.AccountInfoResponse>();
+        this.accountInfoResponseEvent = new Event<MessageTypes.AccountInfoResponse | MessageTypes.Rejected>();
         
         this.messages = new MessageUtil();
         this.messageParser = new MessageHandler();
@@ -130,11 +130,6 @@ export class HashConnect implements IHashConnect {
         
         // Publish the rejection
         await this.relay.publish(topic, msg);
-        
-        // Unsubscribe
-        await this.relay.unsubscribe(topic);
-
-        this.pairingEvent.emit("Pairing rejected");
     }
 
     async ack(topic: string) {

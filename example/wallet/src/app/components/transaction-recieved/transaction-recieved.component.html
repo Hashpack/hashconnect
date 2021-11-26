@@ -1,3 +1,11 @@
 <p>Transaction Received!</p>
 
+<div class="top">
+    <img [src]="sentBy.metadata" alt="">
+    <p>{{ sentBy.metadata }}</p>
+</div>
+
+<p>{{sentBy.metadata}} would like to connect to your wallet.</p>
+
+
 {{ transaction | json}}

@@ -9,10 +9,10 @@ export interface IHashConnect {
     relay: IRelay;
 
     /** Event emitters */
-    pairingEvent: Event<any>;
+    pairingEvent: Event<MessageTypes.ApprovePairing | MessageTypes.Rejected>;
     transactionEvent: Event<MessageTypes.Transaction>;
     accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
-    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
+    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse | MessageTypes.Rejected>;
 
     /** Messages util for protobufs */
     messages: MessageUtil;
@@ -38,7 +38,7 @@ export interface IHashConnect {
     pair(pairingStr: string, message: MessageTypes.ApprovePairing): Promise<void>;
 
     /**
-     * Reject a pairing request
+     * Reject a request
      * 
      * @param topic topic to publish to
      * @param reason optional rejection reason

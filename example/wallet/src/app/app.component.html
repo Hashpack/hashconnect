@@ -3,7 +3,7 @@
     <h2>Status: {{HashconnectService.status}}</h2>
 </div>
 <div>
-    <button class="primary" (click)="connectToDapp()" [disabled]="HashconnectService.status == 'Connecting'">Connect to dApp</button>
+    <button class="primary" (click)="connectToDapp()" [disabled]="HashconnectService.status == 'Initializing'">Connect to dApp</button>
 </div>
 <div *ngIf="HashconnectService.dappPairings.length > 0">
     <p>Connected to:</p>

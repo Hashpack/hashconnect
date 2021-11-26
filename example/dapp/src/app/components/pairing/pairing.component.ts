@@ -13,7 +13,7 @@ export class PairingComponent implements OnInit {
 
     constructor(
         @Inject('dialogBelonging') private dialogBelonging: DialogBelonging,
-        private HashconnectService: HashconnectService
+        public HashconnectService: HashconnectService
     ) { }
 
     subscriptions: Subscription = new Subscription();
@@ -31,6 +31,7 @@ export class PairingComponent implements OnInit {
         this.HashconnectService.hashconnect.pairingEvent.on((data) => {
             console.log("Pairing event callback ");
             console.log(data)
+            this.dialogBelonging.EventsController.close();
         })
 
         new AwesomeQR({

@@ -21,7 +21,7 @@ export class HashconnectService {
     ) { }
 
     hashconnect: HashConnect;
-    status: string = "Connecting";
+    status: string = "Initializing";
     pairingEncodedData: string = "";
     incomingMessage = "";
     

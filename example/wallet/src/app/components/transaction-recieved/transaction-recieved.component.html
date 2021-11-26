@@ -1,11 +1,15 @@
 <p>Transaction Received!</p>
 
 <div class="top">
-    <img [src]="sentBy.metadata" alt="">
-    <p>{{ sentBy.metadata }}</p>
+    <img [src]="sentBy.metadata.icon" alt="">
+    <p>{{ sentBy.metadata.url }}</p>
 </div>
 
-<p>{{sentBy.metadata}} would like to connect to your wallet.</p>
+<p>{{sentBy.metadata.name}} would like you to sign a transaction.</p>
 
+<div>
+    <div class="hbarTransfer" *ngFor="let transfer of display.hbarTransfers">
+        {{ transfer.account }}: {{ transfer.value }}
+    </div>
+</div>
 
-{{ transaction | json}}

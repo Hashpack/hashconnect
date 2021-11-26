@@ -3,7 +3,7 @@ import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
 import { Subscription } from 'rxjs';
 import { HashConnectTypes, MessageTypes } from 'hashconnect';
 import { SigningService } from 'src/app/services/signing.service';
-import { Transaction, TransferTransaction } from '@hashgraph/sdk';
+import { Hbar, Transaction, TransferTransaction } from '@hashgraph/sdk';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { DappPairing } from 'src/app/classes/dapp-pairing';
 
@@ -24,8 +24,10 @@ export class TransactionRecievedComponent implements OnInit {
     transaction: MessageTypes.Transaction;
     parsedTransaction: Transaction;
     sentBy: DappPairing;
-    display = {
-        text: ""
+    display: any = {
+        hbarTransfers: [],
+        nftTransfers: [],
+        tokenTransfers: []
     }
 
     ngOnInit(): void {
@@ -48,7 +50,11 @@ export class TransactionRecievedComponent implements OnInit {
 
         switch(true) {
             case this.parsedTransaction instanceof TransferTransaction:
-                this.display.text = ""
+                let test: TransferTransaction =  this.parsedTransaction as TransferTransaction;
+
+                test.hbarTransfers._map.forEach((value: Hbar, key: string, map: Map<string, Hbar>) => {
+                    this.display.hbarTransfers.push({ account: key, value: value});
+                })
             break;
         }
     }

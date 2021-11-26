@@ -19,14 +19,13 @@ export class SigningService {
     client: Client;
     pk = "302e020100300506032b65700422042093e3a32a53b0878429043643be0c992cec4f3e2aba8ccbde9905192e9326e0d2";
     acc = "0.0.572001";
-    destAcc = "0.0.2994249";
 
     async init() {
         this.client = Client.forTestnet();
         this.client.setOperator(this.acc, this.pk);
     }
 
-    async createTransaction() {
+    async createTransaction(destAcc: string) {
         let amount = 1;
         let memo = "we are sending across the wire";
         const privKey = PrivateKey.fromString(this.pk);
@@ -39,7 +38,7 @@ export class SigningService {
         // DAPP requests a transfer of hbar to their account from the target account
         let trans = new TransferTransaction()
             .addHbarTransfer(this.acc, Hbar.from(amount, HbarUnit.Hbar))
-            .addHbarTransfer(this.destAcc, Hbar.from(-amount, HbarUnit.Hbar))
+            .addHbarTransfer(destAcc, Hbar.from(-amount, HbarUnit.Hbar))
             .setTransactionMemo(memo)
             .setNodeAccountIds(nodeId);
 

@@ -14,21 +14,35 @@ import {
 })
 export class SigningService {
 
-    pk = "302e020100300506032b6570042204207ddd56b166a57ae4fdbfc74caebaaded7ad826cf9ac49fc40a8a63beee1c3df2";
-    acc = "0.0.2994249"
-    destAcc = "0.0.3012819";
+    accounts: Array<{id: string, privKey: string, name: string}> = [
+        {
+            name: "Test account 1",
+            id: "0.0.15655453",
+            privKey: "302e020100300506032b657004220420688bd6bb6b7490af29c87a333de741081acd0bad1b5c5b617e1864b62a3b57d4"
+        },
+        {
+            name: "Test Account 2",
+            id: "0.0.15655455",
+            privKey: "302e020100300506032b6570042204201f374a73fdb1f4a04b0e2f76f94e2543d2c6f5f43dd121948a176722bcea20a7"
+        }
+    ]
+
     client: Client;
 
     constructor() { }
 
     init() {
-        this.client = Client.forTestnet();
-        this.client.setOperator(this.acc, this.pk);
+        
     }
 
-    async approveTransaction(transaction: Uint8Array) {
+    async approveTransaction(transaction: Uint8Array, accountToSign: string) {
+        let account: {id: string, privKey: string, name: string} = this.accounts.find(account => account.id == accountToSign )!
+        
+        this.client = Client.forTestnet();
+        this.client.setOperator(account.id, account.privKey);
+
         console.log("Received transaction message:");
-        const privKey = PrivateKey.fromString(this.pk);
+        const privKey = PrivateKey.fromString(account.privKey);
         const pubKey = privKey.publicKey;
 
         const sig = privKey.signTransaction(Transaction.fromBytes(transaction) as any);

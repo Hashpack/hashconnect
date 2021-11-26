@@ -12,10 +12,10 @@ export class HashConnect implements IHashConnect {
     relay: IRelay;
 
     // events
-    pairingEvent: Event<MessageTypes.ApprovePairing | MessageTypes.Rejected>;
+    pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
     accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
-    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse | MessageTypes.Rejected>;
+    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
 
     // messages util
     messageParser: MessageHandler;
@@ -25,10 +25,10 @@ export class HashConnect implements IHashConnect {
     constructor() {
         this.relay = new WakuRelay();
         
-        this.pairingEvent = new Event<MessageTypes.ApprovePairing | MessageTypes.Rejected>();
+        this.pairingEvent = new Event<MessageTypes.ApprovePairing>();
         this.transactionEvent = new Event<MessageTypes.Transaction>();
         this.accountInfoRequestEvent = new Event<MessageTypes.AccountInfoRequest>();
-        this.accountInfoResponseEvent = new Event<MessageTypes.AccountInfoResponse | MessageTypes.Rejected>();
+        this.accountInfoResponseEvent = new Event<MessageTypes.AccountInfoResponse>();
         
         this.messages = new MessageUtil();
         this.messageParser = new MessageHandler();

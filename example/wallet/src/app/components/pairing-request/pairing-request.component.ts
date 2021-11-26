@@ -4,6 +4,7 @@ import { HashConnect } from 'hashconnect';
 import { PairingData } from 'hashconnect/dist/types';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
+import { SigningService } from 'src/app/services/signing.service';
 
 @Component({
     selector: 'app-pairing-request',
@@ -15,6 +16,7 @@ export class PairingRequestComponent implements OnInit {
     constructor(
         @Inject('dialogBelonging') private dialogBelonging: DialogBelonging,
         public HashconnectService: HashconnectService,
+        public SigningService: SigningService
     ) { }
 
     subscriptions: Subscription = new Subscription();
@@ -36,7 +38,7 @@ export class PairingRequestComponent implements OnInit {
     }
 
     async approvePairing() {
-        await this.HashconnectService.approvePairing(this.pairingData.topic, ["test"], this.pairingData.metadata);
+        await this.HashconnectService.approvePairing(this.pairingData.topic, [this.SigningService.accounts[0].id], this.pairingData.metadata);
         this.dialogBelonging.EventsController.close();
     }
 

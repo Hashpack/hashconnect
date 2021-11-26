@@ -9,6 +9,18 @@
 
     <p>{{pairingData.metadata.name}} would like to connect to your wallet.</p>
 
+    <p>Please select what accounts you wish to connect with.</p>
+
+    <div class="accountSelect">
+        <div class="account" *ngFor="let account of SigningService.accounts">
+            <input type="checkbox" name="" id="">
+            <div>
+                <p>{{account.name}}</p>
+                <p>{{account.id}}</p>
+            </div>
+        </div>
+    </div>
+
     <button class="primary" (click)="approvePairing()">Approve Pairing</button>
     <button class="primary" (click)="rejectPairing()">Reject Pairing</button>
 </div>

@@ -17,7 +17,7 @@ export class HashconnectService {
     topic: string = "";
     pairingString: string = "";
     pairedWalletData: HashConnectTypes.WalletMetadata;
-    pairedAccounts: string[];
+    pairedAccounts: string[] = [];
 
     appMetadata: HashConnectTypes.AppMetadata = {
         name: "dApp Example",
@@ -53,18 +53,27 @@ export class HashconnectService {
         this.hashconnect.accountInfoResponseEvent.on((data) => {
             console.log("Received account info", data);
 
+            data.accountIds.forEach(id => {
+                if(this.pairedAccounts.indexOf(id) == -1)
+                    this.pairedAccounts.push(id);
+            })
         })
 
         this.hashconnect.pairingEvent.on((data) => {
             console.log("Paired with wallet", data);
             this.status = "Paired";
+
+            data.accountIds.forEach(id => {
+                if(this.pairedAccounts.indexOf(id) == -1)
+                    this.pairedAccounts.push(id);
+            })
         })
     }
 
 
-    async createTrans() {
+    async createTrans(destAcc: string) {
         
-        let transactionBytes: Uint8Array = await this.SigningService.createTransaction();
+        let transactionBytes: Uint8Array = await this.SigningService.createTransaction(destAcc);
 
         const transaction: MessageTypes.Transaction = {
             topic: this.topic,

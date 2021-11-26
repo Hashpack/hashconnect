@@ -9,10 +9,10 @@ export interface IHashConnect {
     relay: IRelay;
 
     /** Event emitters */
-    pairingEvent: Event<MessageTypes.ApprovePairing | MessageTypes.Rejected>;
+    pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
     accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
-    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse | MessageTypes.Rejected>;
+    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
 
     /** Messages util for protobufs */
     messages: MessageUtil;

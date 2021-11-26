@@ -113,7 +113,7 @@ export class HashconnectService {
 
     async approveAccountInfoRequest(topic: string) {
         let msg: MessageTypes.AccountInfoResponse = {
-            accountIds: [this.SigningService.acc],
+            accountIds: [this.SigningService.accounts[0].id],
             network: "mainnet",
             topic: topic
         }

@@ -27,9 +27,9 @@ export class MessageHandler implements IMessageHandler {
                 await hc.acknowledge(parsedData.topic, approval_data.id!);
             break;
             case RelayMessageType.Acknowledge:
-                console.log("acknowledged");
-
                 let ack_data: MessageTypes.Acknowledge = JSON.parse(message.data);
+                
+                console.log("acknowledged - id: " + ack_data.msg_id);
 
                 hc.acknowledgeMessageEvent.emit(ack_data)
             break;

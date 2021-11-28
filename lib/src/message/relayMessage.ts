@@ -41,6 +41,7 @@ export declare namespace MessageTypes {
 
     export interface Rejected extends BaseMessage {
         reason?: string;
+        msg_id: string;
     }
 
     export interface Transaction extends BaseMessage {

@@ -121,10 +121,11 @@ export class HashConnect implements IHashConnect {
         this.relay.publish(topic, payload)
     }
 
-    async reject(topic: string, reason?: string) {
+    async reject(topic: string, reason: string, msg_id: string) {
         let reject: MessageTypes.Rejected = {
             reason: reason,
-            topic: topic
+            topic: topic,
+            msg_id: msg_id
         }
         
         // create protobuf message

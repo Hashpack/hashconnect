@@ -23,6 +23,8 @@ export class MessageUtil {
      public prepareSimpleMessage(type: RelayMessageType, data: MessageTypes.BaseMessage) {
 
         data.id = uuidv4();
+
+        console.log("Sending message - id: " + data.id);
         
         return this.proto.SimpleMessage.encode(new RelayMessage(
             Date.now(),

@@ -103,8 +103,8 @@ export class HashconnectService {
         this.status = "Paired";
     }
 
-    async rejectPairing(topic: string) {
-        await this.hashconnect.reject(topic, "because I don't want to pair with you");
+    async rejectPairing(topic: string, msg_id: string) {
+        await this.hashconnect.reject(topic, "because I don't want to pair with you", msg_id);
     }
 
     async approveAccountInfoRequest(topic: string) {

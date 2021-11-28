@@ -44,7 +44,7 @@ export interface IHashConnect {
      * @param topic topic to publish to
      * @param reason optional rejection reason
      */
-    reject(topic: string, reason?: string): Promise<void>;
+    reject(topic: string, reason: string, msg_id: string): Promise<void>;
 
     /**
      * Send a transaction

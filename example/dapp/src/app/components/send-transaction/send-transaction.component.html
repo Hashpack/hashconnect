@@ -1,0 +1,15 @@
+<h3>Send transaction</h3>
+
+<p>To: {{ toAcc}}</p>
+
+<p>From: 
+    <select [(ngModel)]="fromAcc">
+        <option *ngFor="let acc of HashconnectService.pairedAccounts" [value]="acc" [selected]="fromAcc == acc">{{acc}}</option>
+    </select>
+</p>
+
+<p>Amount: <input type="number" name="" id="" [(ngModel)]="amount" max="5" min="1"></p>
+
+<p>Memo: <input type="text" [(ngModel)]="memo"></p>
+
+<button class="primary" (click)="buildTransaction()">Send</button>

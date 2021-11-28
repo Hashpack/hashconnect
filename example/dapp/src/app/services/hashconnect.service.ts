@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Transaction } from '@hashgraph/sdk';
 import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
 import { SigningService } from './signing.service';
 
@@ -71,15 +72,15 @@ export class HashconnectService {
     }
 
 
-    async createTrans(destAcc: string) {
+    async sendTransaction(trans: Transaction, acctToSign: string) {
         
-        let transactionBytes: Uint8Array = await this.SigningService.createTransaction(destAcc);
+        let transactionBytes: Uint8Array = await this.SigningService.signAndMakeBytes(trans);
 
         const transaction: MessageTypes.Transaction = {
             topic: this.topic,
             byteArray: transactionBytes,
             metadata: {
-                accountToSign: this.pairedAccounts[0]
+                accountToSign: acctToSign
             }
         }
 

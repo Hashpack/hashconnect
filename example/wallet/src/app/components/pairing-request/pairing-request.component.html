@@ -13,7 +13,7 @@
 
     <div class="accountSelect">
         <div class="account" *ngFor="let account of SigningService.accounts">
-            <input type="checkbox" name="" id="">
+            <input type="checkbox" (change)="checkbox($event, account.id)">
             <div>
                 <p>{{account.name}}</p>
                 <p>{{account.id}}</p>

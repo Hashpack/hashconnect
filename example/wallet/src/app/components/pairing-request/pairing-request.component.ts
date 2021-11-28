@@ -22,6 +22,7 @@ export class PairingRequestComponent implements OnInit {
     subscriptions: Subscription = new Subscription();
     pairingString: string;
     pairingData: PairingData;
+    selectedAccounts: string[] = [];
 
     ngOnInit(): void {
         this.subscriptions.add(
@@ -38,12 +39,23 @@ export class PairingRequestComponent implements OnInit {
     }
 
     async approvePairing() {
-        await this.HashconnectService.approvePairing(this.pairingData.topic, [this.SigningService.accounts[0].id], this.pairingData.metadata);
+        await this.HashconnectService.approvePairing(this.pairingData.topic, this.selectedAccounts, this.pairingData.metadata);
         this.dialogBelonging.EventsController.close();
     }
 
     rejectPairing() {
         this.dialogBelonging.EventsController.close();
+    }
+
+    checkbox(event: any, accId: string) {
+        if(event.target.checked)
+            this.selectedAccounts.push(accId);
+        else {
+            this.selectedAccounts = this.selectedAccounts.filter(id => id != accId);
+        }
+
+        console.log(this.selectedAccounts);
+
     }
 
 }

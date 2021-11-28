@@ -80,7 +80,8 @@ export class HashconnectService {
             topic: this.topic,
             byteArray: transactionBytes,
             metadata: {
-                accountToSign: acctToSign
+                accountToSign: acctToSign,
+                multisig: false
             }
         }
 

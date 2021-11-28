@@ -61,6 +61,7 @@ export declare namespace MessageTypes {
     
     export class TransactionMetadata {
         accountToSign: string;
+        multisig: boolean;
     }
 }
 

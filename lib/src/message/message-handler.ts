@@ -28,6 +28,10 @@ export class MessageHandler implements IMessageHandler {
             break;
             case RelayMessageType.Acknowledge:
                 console.log("acknowledged");
+
+                let ack_data: MessageTypes.Acknowledge = JSON.parse(message.data);
+
+                hc.acknowledgeMessageEvent.emit(ack_data)
             break;
             case RelayMessageType.Transaction:
                 console.log("Got transaction", message)

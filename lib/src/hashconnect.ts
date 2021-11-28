@@ -3,7 +3,6 @@ import { IRelay, WakuRelay } from "./types/relay";
 import { PairingData } from "./types";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
 import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
-import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Main interface with hashpack
@@ -65,23 +64,29 @@ export class HashConnect implements IHashConnect {
     /**
      * Send functions
      */
-    async sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<void> {
+    async sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<string> {
         transaction.byteArray = Buffer.from(transaction.byteArray).toString("base64");
         
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction);
         await this.relay.publish(topic, msg);
+
+        return msg.id;
     }
 
-    async requestAccountInfo(topic: string, message: MessageTypes.AccountInfoRequest) {
+    async requestAccountInfo(topic: string, message: MessageTypes.AccountInfoRequest): Promise<string> {
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.AccountInfoRequest, message);
 
         await this.relay.publish(topic, msg);
+
+        return msg.id;
     }
 
-    async sendAccountInfo(topic: string, message: MessageTypes.AccountInfoResponse) {
+    async sendAccountInfo(topic: string, message: MessageTypes.AccountInfoResponse): Promise<string> {
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.AccountInfoResponse, message);
 
         await this.relay.publish(topic, msg);
+
+        return msg.id;
     }
 
     async connect(topic?: string, metadata?: HashConnectTypes.AppMetadata): Promise<HashConnectTypes.ConnectionState> {
@@ -168,10 +173,6 @@ export class HashConnect implements IHashConnect {
         let data: PairingData = JSON.parse(json_string);
 
         return data;
-    }
-
-    generateMessageId(): string {
-        return uuidv4()
     }
 
     /**

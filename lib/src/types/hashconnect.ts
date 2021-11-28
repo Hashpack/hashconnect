@@ -52,7 +52,12 @@ export interface IHashConnect {
      * @param topic topic to publish to
      * @param transaction transaction to send
      */
-    sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<void>;
+    sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<string>;
+
+    requestAccountInfo(topic: string, message: MessageTypes.AccountInfoRequest): Promise<string>;
+
+    sendAccountInfo(topic: string, message: MessageTypes.AccountInfoResponse): Promise<string>;
+    
 
     /**
      * Send an acknowledgement of receipt

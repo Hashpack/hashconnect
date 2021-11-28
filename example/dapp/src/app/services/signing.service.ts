@@ -31,7 +31,6 @@ export class SigningService {
         const privKey = PrivateKey.fromString(this.pk);
         const pubKey = privKey.publicKey;
 
-        console.log(pubKey);
         let nodeId = [];
         nodeId.push(new AccountId(3))
 
@@ -49,7 +48,6 @@ export class SigningService {
         const sig = await privKey.signTransaction(Transaction.fromBytes(transBytes) as any);
 
         const out = trans.addSignature(pubKey, sig);
-        console.log(out.getSignatures());
 
         const outBytes = out.toBytes();
         

@@ -3,6 +3,7 @@ import { IRelay, WakuRelay } from "./types/relay";
 import { PairingData } from "./types";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
 import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
+import { v4 as uuidv4 } from 'uuid';
 
 /**
  * Main interface with hashpack
@@ -14,6 +15,7 @@ export class HashConnect implements IHashConnect {
     // events
     pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
+    acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
     accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
 
@@ -27,6 +29,7 @@ export class HashConnect implements IHashConnect {
         
         this.pairingEvent = new Event<MessageTypes.ApprovePairing>();
         this.transactionEvent = new Event<MessageTypes.Transaction>();
+        this.acknowledgeMessageEvent = new Event<MessageTypes.Acknowledge>();
         this.accountInfoRequestEvent = new Event<MessageTypes.AccountInfoRequest>();
         this.accountInfoResponseEvent = new Event<MessageTypes.AccountInfoResponse>();
         
@@ -132,12 +135,14 @@ export class HashConnect implements IHashConnect {
         await this.relay.publish(topic, msg);
     }
 
-    async ack(topic: string) {
-        const ack: MessageTypes.Ack = {
+    async acknowledge(topic: string, msg_id: string) {
+        const ack: MessageTypes.Acknowledge = {
             result: true,
-            topic: topic
+            topic: topic,
+            msg_id: msg_id
         }
-        const ackPayload = this.messages.prepareSimpleMessage(RelayMessageType.Ack, ack);
+        console.log("ACCCKKKK", ack)
+        const ackPayload = this.messages.prepareSimpleMessage(RelayMessageType.Acknowledge, ack);
         await this.relay.publish(topic, ackPayload)
     }  
     
@@ -162,6 +167,10 @@ export class HashConnect implements IHashConnect {
         let data: PairingData = JSON.parse(json_string);
 
         return data;
+    }
+
+    generateMessageId(): string {
+        return uuidv4()
     }
 
     /**

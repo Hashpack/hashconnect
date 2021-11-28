@@ -11,6 +11,7 @@ export interface IHashConnect {
     /** Event emitters */
     pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
+    acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
     accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
 
@@ -58,7 +59,7 @@ export interface IHashConnect {
      * 
      * @param topic topic to publish to
      */
-    ack(topic: string): Promise<void>
+    acknowledge(topic: string, mgs_id: string): Promise<void>
 
     /**
      * Initialize the client

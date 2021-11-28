@@ -37,8 +37,6 @@ export class AppComponent {
             new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
         ]);
 
-        dialogPopup.openDialog$().subscribe(resp => {
-            console.log('dialog response: ', resp);
-        });
+        dialogPopup.openDialog$().subscribe(resp => {});
     }
 }

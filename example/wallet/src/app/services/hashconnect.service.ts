@@ -66,9 +66,7 @@ export class HashconnectService {
             new ButtonMaker('Reject', 'reject', ButtonLayoutDisplay.DANGER)
         ]);
 
-        dialogPopup.openDialog$().subscribe(resp => {
-            console.log('dialog response: ', resp);
-        });
+        dialogPopup.openDialog$().subscribe(resp => {});
     }
 
     accountInfoRequest(request: MessageTypes.AccountInfoRequest) {
@@ -86,9 +84,7 @@ export class HashconnectService {
             new ButtonMaker('Reject', 'reject', ButtonLayoutDisplay.DANGER)
         ]);
 
-        dialogPopup.openDialog$().subscribe(resp => {
-            console.log('dialog response: ', resp);
-        });
+        dialogPopup.openDialog$().subscribe(resp => {});
     }
 
     ////////////////////////////////////SENDERS

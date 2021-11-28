@@ -22,10 +22,11 @@ export class MessageHandler implements IMessageHandler {
                 console.log("approved", message.data);
                 let approval_data: MessageTypes.ApprovePairing = JSON.parse(message.data);
                 
-                hc.pairingEvent.emit(approval_data)
-                await hc.ack(parsedData.topic)
+                hc.pairingEvent.emit(approval_data);
+
+                await hc.acknowledge(parsedData.topic, approval_data.id!);
             break;
-            case RelayMessageType.Ack:
+            case RelayMessageType.Acknowledge:
                 console.log("acknowledged");
             break;
             case RelayMessageType.Transaction:
@@ -35,6 +36,8 @@ export class MessageHandler implements IMessageHandler {
                 transaction_data.byteArray = new Uint8Array(Buffer.from(transaction_data.byteArray as string,'base64'));
                 
                 hc.transactionEvent.emit(transaction_data);
+
+                await hc.acknowledge(parsedData.topic, transaction_data.id!);
             break;
             case RelayMessageType.AccountInfoRequest:
                 console.log("Got account info request", message);
@@ -42,6 +45,8 @@ export class MessageHandler implements IMessageHandler {
                 let request_data: MessageTypes.AccountInfoRequest = JSON.parse(message.data);
 
                 hc.accountInfoRequestEvent.emit(request_data);
+
+                await hc.acknowledge(parsedData.topic, request_data.id!);
             break;
             case RelayMessageType.AccountInfoResponse:
                 console.log("Got account info response", message);
@@ -49,6 +54,8 @@ export class MessageHandler implements IMessageHandler {
                 let response_data: MessageTypes.AccountInfoResponse = JSON.parse(message.data);
 
                 hc.accountInfoResponseEvent.emit(response_data);
+
+                await hc.acknowledge(parsedData.topic, response_data.id!);
             break;
             default:
                 break;

@@ -17,7 +17,7 @@ export enum RelayMessageType {
     Transaction="Transaction",
     ApprovePairing="ApprovePairing",
     RejectPairing="RejectPairing",
-    Ack="Ack",
+    Acknowledge="Acknowledge",
     AccountInfoRequest="AccountInfoRequest",
     AccountInfoResponse="AccountInfoResponse"
 }
@@ -26,20 +26,21 @@ export declare namespace MessageTypes {
     
     export interface BaseMessage {
         topic: string;
-    }
-    // Messages to go through the relay
-
-    export interface Rejected extends BaseMessage {
-        reason?: string;
-    }
+        id?: string;
+    }    
 
     export interface ApprovePairing extends BaseMessage {
         metadata: HashConnectTypes.WalletMetadata,
         accountIds: string[]
     }
 
-    export interface Ack extends BaseMessage {
+    export interface Acknowledge extends BaseMessage {
         result: boolean;
+        msg_id: string;
+    }
+
+    export interface Rejected extends BaseMessage {
+        reason?: string;
     }
 
     export interface Transaction extends BaseMessage {

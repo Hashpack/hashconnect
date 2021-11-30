@@ -3,9 +3,13 @@
     <h2>Status: {{HashconnectService.status}}</h2>
 </div>
 <div>
-    <button class="primary" (click)="connectToDapp()">Connect to dApp</button>
+    <button class="primary" (click)="connectToDapp()" [disabled]="HashconnectService.status == 'Initializing'">Connect to dApp</button>
 </div>
-<div>
+<div *ngIf="HashconnectService.dappPairings.length > 0">
+    <p>Connected to:</p>
+    <p *ngFor="let pairing of HashconnectService.dappPairings">{{ pairing.metadata.name }}</p>
+</div>
+<!-- <div>
     <textarea class="testTextArea">{{HashconnectService.incomingMessage}}</textarea>
-</div>
+</div> -->
 <router-outlet></router-outlet>

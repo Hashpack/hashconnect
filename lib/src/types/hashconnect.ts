@@ -8,16 +8,11 @@ export interface IHashConnect {
     /** Relay */
     relay: IRelay;
 
-    /** Pairing event emitter */
-    pairingEvent: Event<any>;
-    
-    /** Transaction event emitter */
+    /** Event emitters */
+    pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
-    
-    /** Account info request event emitter */
+    acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
-
-    /** Account info response event emitter */
     accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
 
     /** Messages util for protobufs */
@@ -41,15 +36,15 @@ export interface IHashConnect {
      * 
      * @param pairingStr string containing topic and meta data
      */
-    pair(pairingStr: string): Promise<void>;
+    pair(pairingStr: string, message: MessageTypes.ApprovePairing): Promise<void>;
 
     /**
-     * Reject a pairing request
+     * Reject a request
      * 
      * @param topic topic to publish to
      * @param reason optional rejection reason
      */
-    reject(topic: string, reason?: string): Promise<void>;
+    reject(topic: string, reason: string, msg_id: string): Promise<void>;
 
     /**
      * Send a transaction
@@ -57,14 +52,19 @@ export interface IHashConnect {
      * @param topic topic to publish to
      * @param transaction transaction to send
      */
-    sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<void>;
+    sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<string>;
+
+    requestAccountInfo(topic: string, message: MessageTypes.AccountInfoRequest): Promise<string>;
+
+    sendAccountInfo(topic: string, message: MessageTypes.AccountInfoResponse): Promise<string>;
+    
 
     /**
      * Send an acknowledgement of receipt
      * 
      * @param topic topic to publish to
      */
-    ack(topic: string): Promise<void>
+    acknowledge(topic: string, mgs_id: string): Promise<void>
 
     /**
      * Initialize the client

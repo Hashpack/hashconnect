@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { RelayMessage, RelayMessageType } from './';
+import { MessageTypes } from './relayMessage';
 
 const protons = require('protons');
 
@@ -19,11 +20,16 @@ export class MessageUtil {
      * @param type type of message
      * @returns protobuf message
      */
-     public prepareSimpleMessage(type: RelayMessageType, data: object) {
+     public prepareSimpleMessage(type: RelayMessageType, data: MessageTypes.BaseMessage) {
+
+        data.id = uuidv4();
+
+        console.log("Sending message - id: " + data.id);
+        
         return this.proto.SimpleMessage.encode(new RelayMessage(
             Date.now(),
             type,
-            JSON.stringify(data)
+            JSON.stringify(data),
         ));
     }
 

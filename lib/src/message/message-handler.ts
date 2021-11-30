@@ -12,22 +12,26 @@ export class MessageHandler implements IMessageHandler {
         console.log(`Message Received of type ${message.type}, sent at ${message.timestamp.toString()}`, message.data);
             
         // Should always have a topic
-        const jsonMsg = JSON.parse(message.data);
-        if(!jsonMsg['topic']) {
-            console.error("no topic in json data");
+        const parsedData = JSON.parse(message.data);
+        if(!parsedData.topic) {
+            console.error("no topic in message");
         }
 
-        // TODO: move and refactor this to be more elegant in terms of event handling
         switch (message.type) {
-            case RelayMessageType.Pairing:
-                // TODO: differentiate approve/reject
+            case RelayMessageType.ApprovePairing:
                 console.log("approved", message.data);
-            
-                hc.pairingEvent.emit("pairing approved!")
-                await hc.ack(jsonMsg.topic)
+                let approval_data: MessageTypes.ApprovePairing = JSON.parse(message.data);
+                
+                hc.pairingEvent.emit(approval_data);
+
+                await hc.acknowledge(parsedData.topic, approval_data.id!);
             break;
-            case RelayMessageType.Ack:
-                console.log("acknowledged");
+            case RelayMessageType.Acknowledge:
+                let ack_data: MessageTypes.Acknowledge = JSON.parse(message.data);
+                
+                console.log("acknowledged - id: " + ack_data.msg_id);
+
+                hc.acknowledgeMessageEvent.emit(ack_data)
             break;
             case RelayMessageType.Transaction:
                 console.log("Got transaction", message)
@@ -36,6 +40,8 @@ export class MessageHandler implements IMessageHandler {
                 transaction_data.byteArray = new Uint8Array(Buffer.from(transaction_data.byteArray as string,'base64'));
                 
                 hc.transactionEvent.emit(transaction_data);
+
+                await hc.acknowledge(parsedData.topic, transaction_data.id!);
             break;
             case RelayMessageType.AccountInfoRequest:
                 console.log("Got account info request", message);
@@ -43,6 +49,8 @@ export class MessageHandler implements IMessageHandler {
                 let request_data: MessageTypes.AccountInfoRequest = JSON.parse(message.data);
 
                 hc.accountInfoRequestEvent.emit(request_data);
+
+                await hc.acknowledge(parsedData.topic, request_data.id!);
             break;
             case RelayMessageType.AccountInfoResponse:
                 console.log("Got account info response", message);
@@ -50,6 +58,8 @@ export class MessageHandler implements IMessageHandler {
                 let response_data: MessageTypes.AccountInfoResponse = JSON.parse(message.data);
 
                 hc.accountInfoResponseEvent.emit(response_data);
+
+                await hc.acknowledge(parsedData.topic, response_data.id!);
             break;
             default:
                 break;

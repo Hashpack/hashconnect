@@ -19,9 +19,11 @@ Hashconnect is a library to connect Hedera apps to wallets, similar to web3 func
 
 The main functionality of Hashconnect is to send Hedera transactions to a wallet to be signed and executed by a user - we assume you are familiar with the [Hedera API's and SDK's](https://docs.hedera.com/guides/docs/hedera-api) used to build these transactions.
 
-Hashconnect uses Waku nodes to communicate between apps. Waku nodes use something called a **topic ID** to publish/subscribe to. **It is your responsibility** to maintain (using localstorage or a cookie or something) topic ID's between user visits.
+Hashconnect uses message relay nodes to communicate between apps. These nodes use something called a **topic ID** to publish/subscribe to. **It is your responsibility** to maintain (using localstorage or a cookie or something) topic ID's between user visits.
 
 **Pairing** is the term used to denote a connection between two apps. Generally pairing is the action of exchanging a **topic ID** and a **metadata** object.
+
+Each message has a **message ID** that will be returned by the function used to send the message. Any events that reference a previously sent message will include the relevant **message id**, this allows you to wait for specific actions to be completed or be notified when specific messages have been rejected by the user.
 
 ## Usage
 

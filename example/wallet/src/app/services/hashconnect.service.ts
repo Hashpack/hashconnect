@@ -9,6 +9,7 @@ import {
 import { TransactionRecievedComponent } from '../components/transaction-recieved/transaction-recieved.component';
 import { AccountInfoRequestComponent } from '../components/account-info-request/account-info-request.component';
 import { SigningService } from './signing.service';
+import { DappPairing } from '../classes/dapp-pairing';
 
 @Injectable({
     providedIn: 'root'
@@ -20,20 +21,22 @@ export class HashconnectService {
     ) { }
 
     hashconnect: HashConnect;
-    status: string = "";
-    pairingTopic: string = "";
+    status: string = "Initializing";
+    pairingEncodedData: string = "";
     incomingMessage = "";
+    
+    walletMetadata: HashConnectTypes.WalletMetadata = {
+        name: "Example Wallet",
+        description: "An example wallet",
+        icon: ""
+    }
+
+    dappPairings: DappPairing[] = [];
 
     async initHashconnect() {
         this.hashconnect = new HashConnect();
 
-        let walletMetadata: HashConnectTypes.WalletMetadata = {
-            name: "Example Wallet",
-            description: "An example wallet",
-            icon: ""
-        }
-
-        await this.hashconnect.init(walletMetadata);
+        await this.hashconnect.init(this.walletMetadata);
         
         this.hashconnect.pairingEvent.on((data) => {
             console.log("pairing event received")
@@ -43,7 +46,7 @@ export class HashconnectService {
         this.hashconnect.transactionEvent.on(this.recievedTransactionRequest)
         this.hashconnect.accountInfoRequestEvent.on(this.accountInfoRequest);
 
-        this.status = "connected";
+        this.status = "Connected";
     }
 
     ////////////////////////////////////RECIEVERS
@@ -63,9 +66,7 @@ export class HashconnectService {
             new ButtonMaker('Reject', 'reject', ButtonLayoutDisplay.DANGER)
         ]);
 
-        dialogPopup.openDialog$().subscribe(resp => {
-            console.log('dialog response: ', resp);
-        });
+        dialogPopup.openDialog$().subscribe(resp => {});
     }
 
     accountInfoRequest(request: MessageTypes.AccountInfoRequest) {
@@ -83,40 +84,45 @@ export class HashconnectService {
             new ButtonMaker('Reject', 'reject', ButtonLayoutDisplay.DANGER)
         ]);
 
-        dialogPopup.openDialog$().subscribe(resp => {
-            console.log('dialog response: ', resp);
-        });
+        dialogPopup.openDialog$().subscribe(resp => {});
     }
 
     ////////////////////////////////////SENDERS
 
-    async approvePairing() {
-        if (this.pairingTopic == "") {
-            return;
+    async approvePairing(topic: string, accounts: string[], dappData: HashConnectTypes.AppMetadata) {
+        this.dappPairings.push(new DappPairing(topic, accounts, dappData));
+
+        let msg: MessageTypes.ApprovePairing = {
+            metadata: this.walletMetadata,
+            topic: topic,
+            accountIds: accounts
         }
 
-        // this currently ignores the pairing topic param
-        // await this.hashconnect.sendApproval()
-        console.log("subscribing: " + this.pairingTopic);
-        await this.hashconnect.pair(this.pairingTopic);
-        this.status = "paired";
+        console.log("subscribing: " + topic);
+        await this.hashconnect.pair(topic, msg);
+        this.status = "Paired";
     }
 
-    async rejectPairing() {
-        if (this.pairingTopic == "") {
-            return;
-        }
-
-        await this.hashconnect.reject(this.pairingTopic, "because I don't want to pair with you");
+    async rejectPairing(topic: string, msg_id: string) {
+        await this.hashconnect.reject(topic, "because I don't want to pair with you", msg_id);
     }
 
-    async approveAccountInfoRequest() {
+    async approveAccountInfoRequest(topic: string) {
         let msg: MessageTypes.AccountInfoResponse = {
-            accountId: this.SigningService.acc,
+            accountIds: [this.SigningService.accounts[0].id],
             network: "mainnet",
-            topic: this.pairingTopic
+            topic: topic
         }
 
-        await this.hashconnect.sendAccountInfo(this.pairingTopic, msg);
+        await this.hashconnect.sendAccountInfo(topic, msg);
+    }
+
+    getDataByTopic(topic: string): DappPairing {
+        let data = this.dappPairings.filter(pairing => {
+            if(pairing.topic == topic) return true;
+            else return false;
+        })
+
+        return data[0];
     }
 }

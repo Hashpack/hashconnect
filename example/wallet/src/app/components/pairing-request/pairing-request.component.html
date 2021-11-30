@@ -1,11 +1,24 @@
-<input type="text" [(ngModel)]="pairingString" (change)="parsePairingString()" placeholder="Pairing string"/>
+<input *ngIf="!pairingData" type="text" [(ngModel)]="pairingString" (ngModelChange)="parsePairingString()" placeholder="Pairing string"/>
 
 <div *ngIf="pairingData">
 
-    <div>
-        <p>{{pairingData.metadata.name}} would like to connect to your wallet.</p>
+    <div class="top">
+        <img [src]="pairingData.metadata.icon" alt="">
         <p>{{ pairingData.metadata.url }}</p>
+    </div>
 
+    <p>{{pairingData.metadata.name}} would like to connect to your wallet.</p>
+
+    <p>Please select what accounts you wish to connect with.</p>
+
+    <div class="accountSelect">
+        <div class="account" *ngFor="let account of SigningService.accounts">
+            <input type="checkbox" (change)="checkbox($event, account.id)">
+            <div>
+                <p>{{account.name}}</p>
+                <p>{{account.id}}</p>
+            </div>
+        </div>
     </div>
 
     <button class="primary" (click)="approvePairing()">Approve Pairing</button>

@@ -4,6 +4,7 @@ import { HashConnect } from 'hashconnect';
 import { PairingData } from 'hashconnect/dist/types';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
+import { SigningService } from 'src/app/services/signing.service';
 
 @Component({
     selector: 'app-pairing-request',
@@ -15,11 +16,13 @@ export class PairingRequestComponent implements OnInit {
     constructor(
         @Inject('dialogBelonging') private dialogBelonging: DialogBelonging,
         public HashconnectService: HashconnectService,
+        public SigningService: SigningService
     ) { }
 
     subscriptions: Subscription = new Subscription();
     pairingString: string;
     pairingData: PairingData;
+    selectedAccounts: string[] = [];
 
     ngOnInit(): void {
         this.subscriptions.add(
@@ -36,13 +39,23 @@ export class PairingRequestComponent implements OnInit {
     }
 
     async approvePairing() {
-        this.HashconnectService.pairingTopic = this.pairingData.topic;
-        await this.HashconnectService.approvePairing();
+        await this.HashconnectService.approvePairing(this.pairingData.topic, this.selectedAccounts, this.pairingData.metadata);
         this.dialogBelonging.EventsController.close();
     }
 
     rejectPairing() {
         this.dialogBelonging.EventsController.close();
+    }
+
+    checkbox(event: any, accId: string) {
+        if(event.target.checked)
+            this.selectedAccounts.push(accId);
+        else {
+            this.selectedAccounts = this.selectedAccounts.filter(id => id != accId);
+        }
+
+        console.log(this.selectedAccounts);
+
     }
 
 }

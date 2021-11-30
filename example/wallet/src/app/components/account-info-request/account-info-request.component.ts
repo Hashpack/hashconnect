@@ -2,6 +2,7 @@ import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
 import { MessageTypes } from 'hashconnect';
 import { Subscription } from 'rxjs';
+import { DappPairing } from 'src/app/classes/dapp-pairing';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 
 @Component({
@@ -18,14 +19,16 @@ export class AccountInfoRequestComponent implements OnInit {
 
     subscriptions: Subscription = new Subscription();
     request: MessageTypes.AccountInfoRequest;
+    sentBy: DappPairing;
 
     ngOnInit(): void {
         this.request = this.dialogBelonging.CustomData.request;
-        
+        this.sentBy = this.HashConnectService.getDataByTopic(this.request.topic);
+
         this.subscriptions.add(
             this.dialogBelonging.EventsController.onButtonClick$.subscribe((_Button) => {
                 if (_Button.ID === 'approve') {
-                    this.HashConnectService.approveAccountInfoRequest();
+                    this.HashConnectService.approveAccountInfoRequest(this.request.topic);
                     this.dialogBelonging.EventsController.close();
                 }
                 else if (_Button.ID === 'reject') {

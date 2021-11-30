@@ -1,18 +1,20 @@
 {
   "name": "hashconnect",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "hashconnect interoperability library",
   "author": "Tyler Coté <tyler@hashpack.app>, Nick Hanna <nick@hashpack.app>",
-  "repository": "https://github.com/metachris/typescript-boilerplate",
+  "repository": "https://github.com/Hashpack/hashconnect",
   "license": "MIT",
   "keywords": [
-    "typescript",
-    "boilerplate",
-    "esbuild"
+    "hashgraph",
+    "hedera",
+    "wallet",
+    "crypto"
   ],
   "main": "./dist/main.js",
   "types": "./dist/main.d.ts",
-  "files": ["./dist"],
+  "files": ["dist/"],
+  "readme": "../README.md",
   "scripts": {
     "cli": "ts-node src/cli.ts",
     "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
@@ -23,7 +25,8 @@
     "build": "tsc -p tsconfig.json",
     "build-watch": "tsc -w -p tsconfig.json",
     "build-all": "yarn clean && yarn build",
-    "prepublish": "npm run build"
+    "copy-readme": "cp ../README.md README.md",
+    "prepack": "npm run build && npm run copy-readme"
   },
   "devDependencies": {
     "@types/jest": "^26.0.21",

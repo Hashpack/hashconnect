@@ -40,7 +40,9 @@ export class HashConnect implements IHashConnect {
 
     async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<void> {
         this.metadata = metadata;
-        this.metadata.url = window.location.origin;
+    
+        if(window)
+            this.metadata.url = window.location.origin;
 
         await this.relay.init();
     }

@@ -1,4 +1,4 @@
-import { HashConnectTypes } from "../types";
+import { HashConnectTypes } from "../main";
 
 export class RelayMessage {
     

@@ -1,0 +1,123 @@
+button,
+input[type="submit"] {
+    appearance: none;
+    border: none;
+    background: none;
+    padding: 10px 24px;
+    border-radius: var(--button-border-radius);
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: var(--main-font);
+    transition: all 200ms;
+
+    &.primary {
+        background: var(--blue-2);
+
+        &:hover,
+        &:focus {
+            background: var(--blue-1);
+        }
+    }
+
+    &.outline {
+        border: solid 1px var(--blue-2);
+
+        &:hover,
+        &:focus {
+            border: solid 1px var(--blue-1);
+        }
+    }
+
+    &.danger {
+        background: var(--error-dark);
+
+        &:hover,
+        &:focus {
+            background: var(--error);
+        }
+    }
+
+    &.green {
+        background: var(--success-2);
+
+        &:hover,
+        &:focus {
+            background: var(--success);
+        }
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        pointer-events: none;
+    }
+}
+
+input[type="text"],
+input[type="password"],
+input[type="number"],
+textarea {
+    appearance: none;
+    border: none;
+    background: none;
+    font-size: 16px;
+    padding: 9px 16px;
+    border-radius: var(--button-border-radius);
+    background: var(--grey-2);
+    color: white;
+    font-family: var(--main-font);
+    font-weight: 400;
+    transition: all 200ms;
+    border: solid 2px var(--grey-2);
+
+    &:hover,
+    &:active,
+    &:focus {
+        background: var(--grey-3);
+    }
+
+    &:focus {
+        outline: 0;
+        border-color: var(--blue-4);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        pointer-events: none;
+
+        &:hover {
+            background: var(--grey-2);
+        }
+    }
+
+    &.normal {
+        background: none;
+        padding: 0;
+        width: 100%;
+        border: none;
+        text-align: left;
+        display: block;
+        font-weight: 500;
+        font-size: 16px;
+        resize: none;
+    }
+}
+
+.input_wrapper {
+    margin-bottom: 16px;
+    display: block;
+
+    input-error {
+        display: block;
+    }
+}
+
+
+select {
+    color: black !important;
+
+    option {
+        color: black !important;
+    }
+}

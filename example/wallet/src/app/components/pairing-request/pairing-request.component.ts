@@ -1,7 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { HashConnect } from 'hashconnect';
-import { PairingData } from 'hashconnect/dist/types';
+import { HashConnect, PairingData } from 'hashconnect';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';

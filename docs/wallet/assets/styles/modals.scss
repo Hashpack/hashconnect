@@ -1,0 +1,51 @@
+.ngx-awesome-popup-overlay {
+    background: rgba(0,0,0,0.4) !important;
+}
+
+.standard-dialog, .danger-dialog {
+    background: var(--grey-1) !important;
+    
+    * {
+        color: #fff;
+    }
+}
+
+.evolve-parent-dialog {
+    box-shadow: none !important;
+    border-radius: 16px !important;
+    overflow: hidden;
+
+    .button-section {
+        background: var(--grey-2) !important;
+        border-top: solid 2px #2e314b !important;
+
+        .ed-btn-success {
+            background: var(--blue-2) !important;
+
+            &:hover {
+                background: var(--blue-1) !important;
+            }
+        }
+
+        .ed-btn-danger {
+            background: var(--error-dark) !important;
+
+            &:hover {
+                background: var(--error-2) !important;
+            }
+        }
+    }
+
+    .content-holder {
+        max-width: 100% !important;
+    }
+
+    .ed-btn {
+        border-radius: 8px !important;
+    }
+}
+
+
+tooltip {
+    z-index: 99999999999999999 !important;
+}

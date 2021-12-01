@@ -33,7 +33,9 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "baseHref" : "/hashconnect/wallet/",
+            "deployUrl": "/hashconnect/wallet/"
           },
           "configurations": {
             "production": {

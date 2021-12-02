@@ -22,7 +22,7 @@
     "@hashgraph/sdk": "2.3.0",
     "awesome-qr": "^2.1.5-rc.0",
     "crypto-browserify": "3.12.0",
-    "hashconnect": "^0.0.4-b",
+    "hashconnect": "^0.0.4-e",
     "process": "^0.11.10",
     "rxjs": "~6.6.0",
     "service": "^0.1.4",

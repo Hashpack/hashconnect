@@ -78,7 +78,7 @@ export class HashconnectService {
     }
 
     async connectToExtension() {
-        this.hashconnect.connectToLocalWallet();
+        this.hashconnect.connectToLocalWallet(this.pairingString);
     }
 
 

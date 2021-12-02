@@ -198,10 +198,10 @@ export class HashConnect implements IHashConnect {
         }, 50);
     }
 
-    connectToLocalWallet() {
+    connectToLocalWallet(pairingString: string) {
         console.log("Connecting to local wallet")
 
-        window.postMessage({ type:"hashconnect-connect-extension", metadata: this.metadata }, "*")
+        window.postMessage({ type:"hashconnect-connect-extension", pairingString: pairingString }, "*")
     }
 
 }

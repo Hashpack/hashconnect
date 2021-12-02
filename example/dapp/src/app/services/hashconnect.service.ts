@@ -19,6 +19,7 @@ export class HashconnectService {
     pairingString: string = "";
     pairedWalletData: HashConnectTypes.WalletMetadata;
     pairedAccounts: string[] = [];
+    availableExtensions: HashConnectTypes.WalletMetadata[] = []
 
     appMetadata: HashConnectTypes.AppMetadata = {
         name: "dApp Example",
@@ -47,6 +48,11 @@ export class HashconnectService {
 
     setUpEvents() {
 
+        this.hashconnect.foundExtensionEvent.on((data) => {
+            this.availableExtensions.push(data);
+            console.log("Found extension", data);
+        })
+
         this.hashconnect.transactionEvent.on((data) => {
             console.log("transaction event callback");
         });
@@ -69,6 +75,10 @@ export class HashconnectService {
                     this.pairedAccounts.push(id);
             })
         })
+    }
+
+    async connectToExtension() {
+        this.hashconnect.connectToLocalWallet();
     }
 
 

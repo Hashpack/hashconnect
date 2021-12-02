@@ -9,6 +9,7 @@ export interface IHashConnect {
     relay: IRelay;
 
     /** Event emitters */
+    foundExtensionEvent: Event<HashConnectTypes.WalletMetadata>;
     pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
@@ -65,6 +66,7 @@ export interface IHashConnect {
      * @param topic topic to publish to
      */
     acknowledge(topic: string, mgs_id: string): Promise<void>
+
 
     /**
      * Initialize the client

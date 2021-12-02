@@ -12,6 +12,7 @@ export class HashConnect implements IHashConnect {
     relay: IRelay;
 
     // events
+    foundExtensionEvent: Event<HashConnectTypes.WalletMetadata>;
     pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
@@ -26,6 +27,7 @@ export class HashConnect implements IHashConnect {
     constructor() {
         this.relay = new WakuRelay();
         
+        this.foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
         this.pairingEvent = new Event<MessageTypes.ApprovePairing>();
         this.transactionEvent = new Event<MessageTypes.Transaction>();
         this.acknowledgeMessageEvent = new Event<MessageTypes.Acknowledge>();
@@ -186,12 +188,20 @@ export class HashConnect implements IHashConnect {
         window.addEventListener("message", (event) => {
             if (event.data.type && (event.data.type == "hashconnect-query-extension-response")) {
                 console.log("Local wallet metadata recieved", event.data);
+                if(event.data.metadata)
+                    this.foundExtensionEvent.emit(event.data.metadata);
             }
         }, false);
 
         setTimeout(() => {
             window.postMessage({ type: "hashconnect-query-extension" }, "*");
         }, 50);
+    }
+
+    connectToLocalWallet() {
+        console.log("Connecting to local wallet")
+
+        window.postMessage({ type:"hashconnect-connect-extension", metadata: this.metadata }, "*")
     }
 
 }

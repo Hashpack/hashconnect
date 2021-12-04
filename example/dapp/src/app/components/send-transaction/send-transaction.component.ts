@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { Hbar, HbarUnit, TransferTransaction } from '@hashgraph/sdk';
+import { Hbar, HbarUnit, TokenAssociateTransaction, TransferTransaction } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -20,10 +20,20 @@ export class SendTransactionComponent implements OnInit {
 
     subscriptions: Subscription = new Subscription();
 
-    amount: number = 1;
     memo: string = "";
-    fromAcc: string = "";
-    toAcc: string;
+    signingAcct: string = "";
+
+    state: TransactionType = TransactionType.Transfer;
+
+    data = {
+        transfer: {
+            amount: 1,
+            toAcc: ""
+        },
+        tokenAssociate: {
+
+        }
+    }
 
 
     ngOnInit(): void {
@@ -35,16 +45,30 @@ export class SendTransactionComponent implements OnInit {
             })
         );
 
-        this.toAcc = this.SigningService.acc;
+        this.signingAcct = this.SigningService.acc;
     }
 
     buildTransaction() {
         let trans = new TransferTransaction()
-            .addHbarTransfer(this.toAcc, Hbar.from(this.amount, HbarUnit.Hbar))
-            .addHbarTransfer(this.fromAcc, Hbar.from(-this.amount, HbarUnit.Hbar))
+            .addHbarTransfer(this.data.transfer.toAcc, Hbar.from(this.data.transfer.amount, HbarUnit.Hbar))
+            .addHbarTransfer(this.signingAcct, Hbar.from(-this.data.transfer.amount, HbarUnit.Hbar))
             .setTransactionMemo(this.memo);
 
-            this.HashconnectService.sendTransaction(trans, this.fromAcc);
+            this.HashconnectService.sendTransaction(trans, this.signingAcct);
     }
 
+    buildTokenAssociate() {
+        let trans = new TokenAssociateTransaction()
+        .setTokenIds(["0.0.13285356"])
+        .setAccountId(this.signingAcct)
+        .setTransactionMemo(this.memo)
+
+        this.HashconnectService.sendTransaction(trans, this.signingAcct);
+    }
+
+}
+
+enum TransactionType {
+    Transfer="Transfer",
+    TokenAssociate="TokenAssociate"
 }

@@ -15,6 +15,7 @@ export class HashConnect implements IHashConnect {
     foundExtensionEvent: Event<HashConnectTypes.WalletMetadata>;
     pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
+    transactionResponseEvent: Event<MessageTypes.TransactionResponse>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
     accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
@@ -30,6 +31,7 @@ export class HashConnect implements IHashConnect {
         this.foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
         this.pairingEvent = new Event<MessageTypes.ApprovePairing>();
         this.transactionEvent = new Event<MessageTypes.Transaction>();
+        this.transactionResponseEvent = new Event<MessageTypes.TransactionResponse>();
         this.acknowledgeMessageEvent = new Event<MessageTypes.Acknowledge>();
         this.accountInfoRequestEvent = new Event<MessageTypes.AccountInfoRequest>();
         this.accountInfoResponseEvent = new Event<MessageTypes.AccountInfoResponse>();

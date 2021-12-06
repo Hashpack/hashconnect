@@ -27,8 +27,27 @@ export class SendTransactionComponent implements OnInit {
 
     data = {
         transfer: {
-            amount: 1,
-            toAcc: ""
+            include_hbar: true,
+            to_hbar_amount: 1,
+            from_hbar_amount: -1,
+            toAcc: "0.0.572001",
+            include_token: false,
+            tokenTransfers: [
+                {
+                    tokenId: "0.0.3084461",
+                    accountId: "",
+                    amount: 1
+                }
+            ],
+            include_nft: false,
+            nftTransfers: [
+                {
+                    tokenId: "",
+                    serialNumber: 0,
+                    treasuryId: "",
+                    toId: ""
+                }
+            ]
         },
         tokenAssociate: {
 
@@ -50,25 +69,46 @@ export class SendTransactionComponent implements OnInit {
 
     buildTransaction() {
         let trans = new TransferTransaction()
-            .addHbarTransfer(this.data.transfer.toAcc, Hbar.from(this.data.transfer.amount, HbarUnit.Hbar))
-            .addHbarTransfer(this.signingAcct, Hbar.from(-this.data.transfer.amount, HbarUnit.Hbar))
             .setTransactionMemo(this.memo);
 
-            this.HashconnectService.sendTransaction(trans, this.signingAcct);
+        if (this.data.transfer.include_hbar) {
+            trans.addHbarTransfer(this.data.transfer.toAcc, Hbar.from(this.data.transfer.to_hbar_amount, HbarUnit.Hbar))
+                .addHbarTransfer(this.signingAcct, Hbar.from(this.data.transfer.from_hbar_amount, HbarUnit.Hbar))
+        }
+
+        if (this.data.transfer.include_token) {
+            this.data.transfer.tokenTransfers.forEach(tokenTrans => {
+                trans.addTokenTransfer(tokenTrans.tokenId, tokenTrans.accountId, tokenTrans.amount)
+            })
+        }
+
+        if (this.data.transfer.include_nft) {
+
+        }
+
+        this.HashconnectService.sendTransaction(trans, this.signingAcct);
     }
 
     buildTokenAssociate() {
         let trans = new TokenAssociateTransaction()
-        .setTokenIds(["0.0.13285356"])
-        .setAccountId(this.signingAcct)
-        .setTransactionMemo(this.memo)
+            .setTokenIds(["0.0.13285356"])
+            .setAccountId(this.signingAcct)
+            .setTransactionMemo(this.memo)
 
         this.HashconnectService.sendTransaction(trans, this.signingAcct);
+    }
+
+    addTokenTransfer() {
+        this.data.transfer.tokenTransfers.push({
+            tokenId: "0.0.3084461",
+            accountId: "",
+            amount: 1
+        })
     }
 
 }
 
 enum TransactionType {
-    Transfer="Transfer",
-    TokenAssociate="TokenAssociate"
+    Transfer = "Transfer",
+    TokenAssociate = "TokenAssociate"
 }

@@ -12,6 +12,7 @@ export interface IHashConnect {
     foundExtensionEvent: Event<HashConnectTypes.WalletMetadata>;
     pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
+    transactionResponseEvent: Event<MessageTypes.TransactionResponse>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
     accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;

@@ -97,6 +97,7 @@ A pairing string is a base64 encoded string containing the topic to subscribe to
 ## Errors
 
 ### Crypto-browserify
+```
 BREAKING CHANGE: webpack < 5 used to include polyfills for node.js core modules by default.
 This is no longer the case. Verify if you need this module and configure a polyfill for it.
 
@@ -105,12 +106,14 @@ If you want to include a polyfill, you need to:
         - install 'crypto-browserify'
 If you don't want to include a polyfill, you can use an empty module like this:
         resolve.fallback: { "crypto": false }
-
+```
 **Fix**
 
-npm i crypto-browserify --save
+```npm i crypto-browserify --save```
 
 Then add to your tsconfig.json:
+
+```js
 "compilerOptions": {
     "paths": {
         "crypto": [
@@ -118,10 +121,11 @@ Then add to your tsconfig.json:
         ]
     }
 }
-
+```
 
 ### Stream-browserify
 
+```
 BREAKING CHANGE: webpack < 5 used to include polyfills for node.js core modules by default.
 This is no longer the case. Verify if you need this module and configure a polyfill for it.
 
@@ -130,12 +134,16 @@ If you want to include a polyfill, you need to:
         - install 'stream-browserify'
 If you don't want to include a polyfill, you can use an empty module like this:
         resolve.fallback: { "stream": false }
+```
 
 **Fix**
 
-npm i stream-browserify --save
+```npm i stream-browserify --save```
+
 
 Then add to your tsconfig.json:
+
+```js
 "compilerOptions": {
     "paths": {
         "crypto": [
@@ -143,15 +151,20 @@ Then add to your tsconfig.json:
         ]
     }
 }
-
+```
 
 ### DUMP_SESSION_KEYS
 
+```
 constants.js:6 Uncaught TypeError: Cannot read properties of undefined (reading 'DUMP_SESSION_KEYS')
+```
 
 **Fix**
 
-npm i process --save
+```npm i process --save```
 
 Add polyfill somewhere:
+
+```js
 global.process = require('process');
+```

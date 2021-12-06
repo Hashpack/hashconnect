@@ -91,7 +91,7 @@ export class HashconnectService {
             byteArray: transactionBytes,
             metadata: {
                 accountToSign: acctToSign,
-                multisig: false
+                returnTransaction: false
             }
         }
 

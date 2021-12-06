@@ -54,8 +54,13 @@ export class HashconnectService {
         })
 
         this.hashconnect.transactionEvent.on((data) => {
+            //this will not be common to be used in a dapp
             console.log("transaction event callback");
         });
+
+        this.hashconnect.transactionResponseEvent.on((data) => {
+            console.log("transaction response", data)
+        })
 
         this.hashconnect.accountInfoResponseEvent.on((data) => {
             console.log("Received account info", data);

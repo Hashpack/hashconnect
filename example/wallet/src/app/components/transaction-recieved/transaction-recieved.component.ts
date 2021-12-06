@@ -37,11 +37,12 @@ export class TransactionRecievedComponent implements OnInit {
         this.subscriptions.add(
             this.dialogBelonging.EventsController.onButtonClick$.subscribe((_Button) => {
                 if (_Button.ID === 'approve') {
-                    this.SigningService.approveTransaction(this.transaction.byteArray as Uint8Array, this.transaction.metadata.accountToSign);
+                    this.SigningService.approveTransaction(this.transaction.byteArray as Uint8Array, this.transaction.metadata.accountToSign, this.transaction.topic);
                     this.dialogBelonging.EventsController.close();
                 }
                 else if (_Button.ID === 'reject') {
                     this.dialogBelonging.EventsController.close();
+                    this.HashConnectService.transactionResponse(this.transaction.topic, false, "User rejected")
                 }
             })
         );

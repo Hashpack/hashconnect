@@ -95,6 +95,14 @@ export class HashConnect implements IHashConnect {
         return msg.id;
     }
 
+    async sendTransactionResponse(topic: string, message: MessageTypes.TransactionResponse): Promise<string> {
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.TransactionResponse, message);
+
+        await this.relay.publish(topic, msg);
+
+        return msg.id;
+    }
+
     async connect(topic?: string, metadata?: HashConnectTypes.AppMetadata): Promise<HashConnectTypes.ConnectionState> {
         // If the topic is not valid, then create a new topic id
         if(!topic) {

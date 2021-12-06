@@ -60,6 +60,7 @@ export interface IHashConnect {
 
     sendAccountInfo(topic: string, message: MessageTypes.AccountInfoResponse): Promise<string>;
     
+    sendTransactionResponse(topic: string, message: MessageTypes.TransactionResponse): Promise<string>;
 
     /**
      * Send an acknowledgement of receipt

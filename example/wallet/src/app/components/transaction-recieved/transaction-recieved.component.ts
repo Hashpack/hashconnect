@@ -52,13 +52,13 @@ export class TransactionRecievedComponent implements OnInit {
 
         switch(true) {
             case this.parsedTransaction instanceof TransferTransaction:
-                let test: TransferTransaction =  this.parsedTransaction as TransferTransaction;
+                let trans: TransferTransaction =  this.parsedTransaction as TransferTransaction;
 
-                test.hbarTransfers._map.forEach((value: Hbar, key: string, map: Map<string, Hbar>) => {
+                trans.hbarTransfers._map.forEach((value: Hbar, key: string, map: Map<string, Hbar>) => {
                     this.display.hbarTransfers.push({ account: key, value: value});
                 })
 
-                test.tokenTransfers._map.forEach((transfers: TokenTransferAccountMap, tokenId: string) => {
+                trans.tokenTransfers._map.forEach((transfers: TokenTransferAccountMap, tokenId: string) => {
                     let tokenTransferData: any = { tokenId: tokenId, transfers: []};
 
                     transfers._map.forEach((value: Long, key: string) => {

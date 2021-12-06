@@ -16,6 +16,14 @@ export class SigningService {
 
     constructor() { }
 
+    /*****************************
+     * 
+     *  PLEASE NOTE
+     *  THIS SHOULD BE SERVER SIDE, 
+     *  NEVER PUT YOUR DAPP PRIVATE KEYS CLIENT SIDE 
+     * 
+     */
+
     client: Client;
     pk = "302e020100300506032b65700422042093e3a32a53b0878429043643be0c992cec4f3e2aba8ccbde9905192e9326e0d2";
     acc = "0.0.572001";

@@ -43,6 +43,18 @@ export class MessageHandler implements IMessageHandler {
 
                 await hc.acknowledge(parsedData.topic, transaction_data.id!);
             break;
+            case RelayMessageType.TransactionResponse:
+                console.log("Got transaction", message)
+                
+                let transaction_response_data: MessageTypes.TransactionResponse = JSON.parse(message.data);
+    
+                if(transaction_response_data.signedTransaction)
+                    transaction_response_data.signedTransaction = new Uint8Array(Buffer.from(transaction_response_data.signedTransaction as string,'base64'));
+                
+                hc.transactionResponseEvent.emit(transaction_response_data);
+
+                await hc.acknowledge(parsedData.topic, transaction_response_data.id!);
+            break;
             case RelayMessageType.AccountInfoRequest:
                 console.log("Got account info request", message);
 

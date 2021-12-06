@@ -8,7 +8,6 @@ import {
 } from '@costlydeveloper/ngx-awesome-popup';
 import { TransactionRecievedComponent } from '../components/transaction-recieved/transaction-recieved.component';
 import { AccountInfoRequestComponent } from '../components/account-info-request/account-info-request.component';
-import { SigningService } from './signing.service';
 import { DappPairing } from '../classes/dapp-pairing';
 
 @Injectable({
@@ -17,7 +16,6 @@ import { DappPairing } from '../classes/dapp-pairing';
 export class HashconnectService {
 
     constructor(
-        private SigningService: SigningService
     ) { }
 
     hashconnect: HashConnect;
@@ -107,15 +105,28 @@ export class HashconnectService {
         await this.hashconnect.reject(topic, "because I don't want to pair with you", msg_id);
     }
 
-    async approveAccountInfoRequest(topic: string) {
+    async approveAccountInfoRequest(topic: string, accountId: string) {
         let msg: MessageTypes.AccountInfoResponse = {
-            accountIds: [this.SigningService.accounts[0].id],
+            accountIds: [accountId],
             network: "mainnet",
             topic: topic
         }
 
         await this.hashconnect.sendAccountInfo(topic, msg);
     }
+
+    async transactionResponse(topic: string, success: boolean, error?: string) {
+        let msg: MessageTypes.TransactionResponse = {
+            topic: topic,
+            success: success
+        }
+
+        if(!success && error)
+            msg.error = error;
+
+        await this.hashconnect.sendTransactionResponse(topic, msg);
+    }
+
 
     getDataByTopic(topic: string): DappPairing {
         let data = this.dappPairings.filter(pairing => {

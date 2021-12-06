@@ -15,6 +15,7 @@ export class RelayMessage {
 
 export enum RelayMessageType {
     Transaction="Transaction",
+    TransactionResponse="TransactionResponse",
     ApprovePairing="ApprovePairing",
     RejectPairing="RejectPairing",
     Acknowledge="Acknowledge",
@@ -44,12 +45,6 @@ export declare namespace MessageTypes {
         msg_id: string;
     }
 
-    export interface Transaction extends BaseMessage {
-        // type: TransactionType;
-        byteArray: Uint8Array | string;
-        metadata: TransactionMetadata;
-    }
-
     export interface AccountInfoRequest extends BaseMessage {
         network: string;
     }
@@ -59,10 +54,22 @@ export declare namespace MessageTypes {
         network: string;
     }
     
+    export interface Transaction extends BaseMessage {
+        // type: TransactionType;
+        byteArray: Uint8Array | string;
+        metadata: TransactionMetadata;
+    }
+
     export class TransactionMetadata {
         accountToSign: string;
-        multisig: boolean;
+        returnTransaction: boolean;
         nftPreviewUrl?: string;
+    }
+
+    export interface TransactionResponse extends BaseMessage {
+        success: boolean;
+        signedTransaction?: Uint8Array | string;
+        error?: string;
     }
 }
 

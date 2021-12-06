@@ -6,8 +6,10 @@ import {
     TransferTransaction,
     AccountId,
     Transaction,
-    Hbar
+    Hbar,
+    Status
 } from "@hashgraph/sdk"
+import { HashconnectService } from './hashconnect.service';
 
 @Injectable({
     providedIn: 'root'
@@ -29,13 +31,15 @@ export class SigningService {
 
     client: Client;
 
-    constructor() { }
+    constructor(
+        private HashconnectService: HashconnectService
+    ) { }
 
     init() {
         
     }
 
-    async approveTransaction(transaction: Uint8Array, accountToSign: string) {
+    async approveTransaction(transaction: Uint8Array, accountToSign: string, topic: string) {
         let account: {id: string, privKey: string, name: string} = this.accounts.find(account => account.id == accountToSign )!
         
         this.client = Client.forTestnet();
@@ -52,5 +56,11 @@ export class SigningService {
         const val = await trans.execute(this.client);
         const rec = await val.getReceipt(this.client);
         console.log(rec.status.toString());
+
+        if(rec.status == Status.Success) {
+            this.HashconnectService.transactionResponse(topic, true);
+        } else {
+            this.HashconnectService.transactionResponse(topic, false, rec.status.toString());
+        }
     }
 }

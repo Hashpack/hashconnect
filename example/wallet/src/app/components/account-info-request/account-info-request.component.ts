@@ -4,6 +4,7 @@ import { MessageTypes } from 'hashconnect';
 import { Subscription } from 'rxjs';
 import { DappPairing } from 'src/app/classes/dapp-pairing';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
+import { SigningService } from 'src/app/services/signing.service';
 
 @Component({
   selector: 'app-account-info-request',
@@ -14,13 +15,14 @@ export class AccountInfoRequestComponent implements OnInit {
 
     constructor(
         @Inject('dialogBelonging') private dialogBelonging: DialogBelonging,
-        private HashConnectService: HashconnectService
+        private HashConnectService: HashconnectService,
+        private SigningService: SigningService
     ) { }
 
     subscriptions: Subscription = new Subscription();
     request: MessageTypes.AccountInfoRequest;
     sentBy: DappPairing;
-
+        //todo: make this handle multiple accounts
     ngOnInit(): void {
         this.request = this.dialogBelonging.CustomData.request;
         this.sentBy = this.HashConnectService.getDataByTopic(this.request.topic);
@@ -28,7 +30,7 @@ export class AccountInfoRequestComponent implements OnInit {
         this.subscriptions.add(
             this.dialogBelonging.EventsController.onButtonClick$.subscribe((_Button) => {
                 if (_Button.ID === 'approve') {
-                    this.HashConnectService.approveAccountInfoRequest(this.request.topic);
+                    this.HashConnectService.approveAccountInfoRequest(this.request.topic, this.SigningService.accounts[0].id);
                     this.dialogBelonging.EventsController.close();
                 }
                 else if (_Button.ID === 'reject') {

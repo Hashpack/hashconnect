@@ -73,7 +73,7 @@ export class WakuRelay implements IRelay {
     async subscribe(topic: string, encKey: Uint8Array): Promise<void> {
         // Add observer to waku relay for the specified topic
         // TODO: make this more dynamic
-        debugger
+        
         this.waku.addDecryptionKey(encKey)
         this.waku.relay.addObserver(this.processMessage, [topic])
     }

@@ -136,6 +136,7 @@ export class HashConnect implements IHashConnect {
         // UUID passed into the application responding to the pairing
         // topic is just the topic for now
         console.log(topic);
+        this.encryptionKeys[topic] = encKey;
 
         // Subscribe to the proposed topic to begin pairing
         await this.relay.subscribe(topic, encKey);
@@ -223,7 +224,7 @@ export class HashConnect implements IHashConnect {
 
     connectToLocalWallet(pairingString: string) {
         console.log("Connecting to local wallet")
-
+        //todo: add extension metadata support
         window.postMessage({ type:"hashconnect-connect-extension", pairingString: pairingString }, "*")
     }
 

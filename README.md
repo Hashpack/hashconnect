@@ -9,7 +9,13 @@
     - [Metadata](#metadata)
     - [Connecting](#connecting)
     - [Pairing](#pairing)
+    - [Pairing to extension](#pairing-to-extension)
+    - [Sending Requests](#sending-requests)
     - [Events](#events)
+      - [FoundExtensionEvent](#foundextensionevent)
+      - [PairingEvent](#pairingevent)
+      - [Transaction Response](#transaction-response)
+    - [Types](#types)
   - [Errors](#errors)
     - [Crypto-browserify](#crypto-browserify)
     - [Stream-browserify](#stream-browserify)
@@ -64,6 +70,8 @@ let appMetadata: HashConnectTypes.AppMetadata = {
 }
 ```
 
+The url of your app is auto-populated by HashConnect, to prevent spoofing.
+
 ### Connecting
 
 Call init on the Hashconnect variable, passing in the metadata you've defined.
@@ -75,24 +83,83 @@ await hashconnect.init(appMetadata);
 You then need to connect to a node, if this is the first time a user is connecting to a node you don't need to pass anything in to the connect function. If it's a returning user pass in the topic ID that the user was previously connected to.
 
 ```js
-let state = await this.hashconnect.connect();
+let state = await hashconnect.connect();
 ```
 
-This function returns a *state* object, containing a new topic ID (if you passed nothing in). Make sure you store this topic for reuse on subsequent user visits.
+This function returns a *state* object, containing a new **topic ID** and **encryption key** (if you passed nothing in). **Make sure you store** this topic and encryption key for reuse on subsequent user visits.
 
 ### Pairing
 
 If this is the first time a user is pairing, you will need to generate a new pairing string. If it is not the first time a user is using your app you can skip this step, as both apps will already be subscribed to the topic ID.
 
 ```js
-let pairingString = this.hashconnect.generatePairingString(this.topic);
+let pairingString = hashconnect.generatePairingString(state.topic, state.encKey);
 ```
 
 A pairing string is a base64 encoded string containing the topic to subscribe to and the metadata about your app.
 
-**todo: add section about this.hashconnect.findLocalWallets();**
+### Pairing to extension
+
+HashConnect has 1-click pairing with supported installed extensions. Currently the only supported wallet extension is [HashPack](https://www.hashpack.app/).
+
+```js
+hashconnect.findLocalWallets();
+```
+
+Calling this function will send a ping out, and supported wallets will return their metadata in a ```foundExtensionEvent```. You should take this metadata, and display buttons with the available extensions. More extensions will be supported in the future!
+
+You should then call:
+
+```js
+hashconnect.connectToLocalWallet(pairingString, extensionMetadata);
+```
+
+And it will pop up a modal in the extension allowing the user to pair. 
+
+### Sending Requests
+//todo
 
 ### Events
+
+Events are emitted by HashConnect to let you know when a request has been fufilled.
+
+You can listen to them by calling .on() or .once() on them. All events return typed data.
+
+#### FoundExtensionEvent
+
+This event returns the metadata of the found extensions.
+
+```js
+hashconnect.foundExtensionEvent.once((walletMetadata) => {
+    //do something with metadata
+})
+```
+
+#### PairingEvent
+
+The pairing event is triggered when a user accepts a pairing. It returns an array containing accountId's and a WalletMetadata.
+
+```js
+this.hashconnect.pairingEvent.on((pairingData) => {
+    
+    //example
+    pairingData.accountIds.forEach(id => {
+        if(this.pairedAccounts.indexOf(id) == -1)
+            this.pairedAccounts.push(id);
+    })
+})
+```
+
+#### Transaction Response
+```js
+hashconnect.transactionResponseEvent.once((transactionResponse) => {
+    //do something with transaction response data
+})
+```
+
+### Types
+
+
 
 ## Errors
 

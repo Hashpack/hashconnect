@@ -38,7 +38,7 @@ export class PairingRequestComponent implements OnInit {
     }
 
     async approvePairing() {
-        await this.HashconnectService.approvePairing(this.pairingData.topic, this.selectedAccounts, this.pairingData.metadata);
+        await this.HashconnectService.approvePairing(this.pairingData.topic, this.selectedAccounts, this.pairingData);
         this.dialogBelonging.EventsController.close();
     }
 

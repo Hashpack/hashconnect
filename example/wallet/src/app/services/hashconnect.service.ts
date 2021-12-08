@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
+import { HashConnect, HashConnectTypes, MessageTypes, PairingData } from 'hashconnect';
 import {
     DialogLayoutDisplay,
     DialogInitializer,
@@ -43,7 +43,7 @@ export class HashconnectService {
 
         this.hashconnect.transactionEvent.on(this.recievedTransactionRequest)
         this.hashconnect.accountInfoRequestEvent.on(this.accountInfoRequest);
-
+        
         this.status = "Connected";
     }
 
@@ -87,8 +87,8 @@ export class HashconnectService {
 
     ////////////////////////////////////SENDERS
 
-    async approvePairing(topic: string, accounts: string[], dappData: HashConnectTypes.AppMetadata) {
-        this.dappPairings.push(new DappPairing(topic, accounts, dappData));
+    async approvePairing(topic: string, accounts: string[], dappData: PairingData) {
+        this.dappPairings.push(new DappPairing(topic, accounts, dappData.metadata, dappData.encKey as Uint8Array));
 
         let msg: MessageTypes.ApprovePairing = {
             metadata: this.walletMetadata,
@@ -97,7 +97,7 @@ export class HashconnectService {
         }
 
         console.log("subscribing: " + topic);
-        await this.hashconnect.pair(topic, msg);
+        await this.hashconnect.pair(topic, msg, dappData.encKey as Uint8Array);
         this.status = "Paired";
     }
 

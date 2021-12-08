@@ -23,8 +23,8 @@ export class MessageHandler implements IMessageHandler {
                 let approval_data: MessageTypes.ApprovePairing = JSON.parse(message.data);
                 
                 hc.pairingEvent.emit(approval_data);
-
-                await hc.acknowledge(parsedData.topic, approval_data.id!);
+            
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[approval_data.topic], approval_data.id!);
             break;
             case RelayMessageType.Acknowledge:
                 let ack_data: MessageTypes.Acknowledge = JSON.parse(message.data);
@@ -41,7 +41,7 @@ export class MessageHandler implements IMessageHandler {
                 
                 hc.transactionEvent.emit(transaction_data);
 
-                await hc.acknowledge(parsedData.topic, transaction_data.id!);
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[transaction_data.topic], transaction_data.id!);
             break;
             case RelayMessageType.TransactionResponse:
                 console.log("Got transaction", message)
@@ -53,7 +53,7 @@ export class MessageHandler implements IMessageHandler {
                 
                 hc.transactionResponseEvent.emit(transaction_response_data);
 
-                await hc.acknowledge(parsedData.topic, transaction_response_data.id!);
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[transaction_response_data.topic], transaction_response_data.id!);
             break;
             case RelayMessageType.AccountInfoRequest:
                 console.log("Got account info request", message);
@@ -62,7 +62,7 @@ export class MessageHandler implements IMessageHandler {
 
                 hc.accountInfoRequestEvent.emit(request_data);
 
-                await hc.acknowledge(parsedData.topic, request_data.id!);
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[request_data.topic], request_data.id!);
             break;
             case RelayMessageType.AccountInfoResponse:
                 console.log("Got account info response", message);
@@ -71,7 +71,7 @@ export class MessageHandler implements IMessageHandler {
 
                 hc.accountInfoResponseEvent.emit(response_data);
 
-                await hc.acknowledge(parsedData.topic, response_data.id!);
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[response_data.topic], response_data.id!);
             break;
             default:
                 break;

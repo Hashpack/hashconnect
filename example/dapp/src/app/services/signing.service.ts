@@ -21,7 +21,7 @@ export class SigningService {
      *  PLEASE NOTE
      *  THIS SHOULD BE SERVER SIDE, 
      *  NEVER PUT YOUR DAPP PRIVATE KEYS CLIENT SIDE 
-     * 
+     *  GENERATE A FROZEN TRANSACTION ON YOUR SERVER USING YOUR KEYS AND RETURN IT
      */
 
     client: Client;

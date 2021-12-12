@@ -193,9 +193,6 @@ export class HashConnect implements IHashConnect {
     generatePairingString(state: HashConnectTypes.ConnectionState) {
         console.log(getPublicKey(this.privateKey));
 
-        let metadata = this.metadata;
-        metadata.publicKey = Buffer.from(getPublicKey(this.privateKey)).toString('base64')
-
         let data: PairingData = {
             metadata: this.metadata,
             topic: state.topic,

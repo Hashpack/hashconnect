@@ -149,7 +149,7 @@ export class HashConnect implements IHashConnect {
         
         const payload = this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, msg)
 
-        this.relay.publish(pairingData.topic, payload, pairingData.pubKey as Uint8Array)
+        this.relay.publish(pairingData.topic, payload, pairingData.metadata.publicKey as Uint8Array)
 
         return state;
     }
@@ -187,10 +187,13 @@ export class HashConnect implements IHashConnect {
 
     generatePairingString(state: HashConnectTypes.ConnectionState) {
         console.log(getPublicKey(this.privateKey));
+
+        let metadata = this.metadata;
+        metadata.publicKey = Buffer.from(getPublicKey(this.privateKey)).toString('base64')
+
         let data: PairingData = {
             metadata: this.metadata,
             topic: state.topic,
-            pubKey: Buffer.from(getPublicKey(this.privateKey)).toString('base64')
         }
         
         let pairingString: string = Buffer.from(JSON.stringify(data)).toString("base64")
@@ -201,7 +204,7 @@ export class HashConnect implements IHashConnect {
     decodePairingString(pairingString: string) {
         let json_string: string = Buffer.from(pairingString,'base64').toString();
         let data: PairingData = JSON.parse(json_string);
-        data.pubKey = Buffer.from(data.pubKey as string, 'base64');
+        data.metadata.publicKey = Buffer.from(data.metadata.publicKey as string, 'base64');
 
         return data;
     }

@@ -7,7 +7,7 @@
     - [Installation](#installation)
     - [Initialization](#initialization)
     - [Metadata](#metadata)
-    - [Connecting](#connecting)
+    - [First Time Connecting](#first-time-connecting)
     - [Pairing](#pairing)
     - [Pairing to extension](#pairing-to-extension)
     - [Sending Requests](#sending-requests)
@@ -29,7 +29,7 @@ Hashconnect is a library to connect Hedera apps to wallets, similar to web3 func
 
 The main functionality of Hashconnect is to send Hedera transactions to a wallet to be signed and executed by a user - we assume you are familiar with the [Hedera API's and SDK's](https://docs.hedera.com/guides/docs/hedera-api) used to build these transactions.
 
-Hashconnect uses message relay nodes to communicate between apps. These nodes use something called a **topic ID** to publish/subscribe to. **It is your responsibility** to maintain (using localstorage or a cookie or something) topic ID's between user visits.
+Hashconnect uses message relay nodes to communicate between apps. These nodes use something called a **topic ID** to publish/subscribe to. **It is your responsibility** to maintain (using localstorage or a cookie or something) topic ID's and hashconnect encryption keys between user visits.
 
 **Pairing** is the term used to denote a connection between two apps. Generally pairing is the action of exchanging a **topic ID** and a **metadata** object.
 
@@ -72,29 +72,30 @@ let appMetadata: HashConnectTypes.AppMetadata = {
 
 The url of your app is auto-populated by HashConnect, to prevent spoofing.
 
-### Connecting
+### First Time Connecting
 
-Call init on the Hashconnect variable, passing in the metadata you've defined. This function returns an object containing a PrivateKey, **you should save this** for reuse.
+Call init on the Hashconnect variable, passing in the metadata you've defined. This function returns an object containing a PrivateKey, **you should save this** for reuse on subsequent user visits.
 
 ```js
 let initData = await hashconnect.init(appMetadata);
-let privateKey = initData.privKey;
+let privateKey = initData.privKey; 
 ```
 
 You then need to connect to a node, if this is the first time a user is connecting to a node you don't need to pass anything in to the connect function. If it's a returning user pass in the topic ID that the user was previously connected to.
 
 ```js
 let state = await hashconnect.connect();
+let topic = state.topic;
 ```
 
-This function returns a *state* object, containing a new **topic ID** and **encryption key** (if you passed nothing in). **Make sure you store** this topic and encryption key for reuse on subsequent user visits.
+This function returns a *state* object, containing a new **topic ID** (if you passed nothing in). **Make sure you store** this topic for reuse on subsequent user visits.
 
 ### Pairing
 
-If this is the first time a user is pairing, you will need to generate a new pairing string. If it is not the first time a user is using your app you can skip this step, as both apps will already be subscribed to the topic ID.
+If this is the first time a user is pairing, you will need to generate a new pairing string. If it is not the first time a user is using your app you can skip this step, as both apps will already be subscribed to the topic ID. Pass in the ```state``` variable from the ```.connect()``` function.
 
 ```js
-let pairingString = hashconnect.generatePairingString(state.topic, state.encKey);
+let pairingString = hashconnect.generatePairingString(state);
 ```
 
 A pairing string is a base64 encoded string containing the topic to subscribe to and the metadata about your app.

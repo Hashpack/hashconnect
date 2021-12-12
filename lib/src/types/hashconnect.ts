@@ -81,7 +81,7 @@ export declare namespace HashConnectTypes {
         description: string;
         url?: string; //insecure, lib needs to set this or can be spoofed
         icon: string;
-        publicKey?: string;
+        publicKey?: string | Uint8Array;
     }
 
     export interface WalletMetadata {

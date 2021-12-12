@@ -90,8 +90,8 @@ export class HashconnectService {
     ////////////////////////////////////SENDERS
 
     async approvePairing(topic: string, accounts: string[], dappData: PairingData) {
-        this.dappPairings.push(new DappPairing(topic, accounts, dappData.metadata, dappData.pubKey as Uint8Array));
-debugger
+        this.dappPairings.push(new DappPairing(topic, accounts, dappData.metadata, dappData.metadata.publicKey as Uint8Array));
+
         console.log("subscribing: " + topic);
         await this.hashconnect.pair(dappData, accounts);
         this.status = "Paired";

@@ -30,17 +30,22 @@ export class HashconnectService {
 
     async initHashconnect() {
 
+        //create the hashconnect instance
         this.hashconnect = new HashConnect();
 
+        //first init, store the private key in localstorage
         let initData = await this.hashconnect.init(this.appMetadata);
+        this.privateKey = initData.privKey;
 
+        //then connect, storing the new topic in localstorage
         const state = await this.hashconnect.connect();
         console.log("Received state", state);
         this.topic = state.topic;
-        this.privateKey = initData.privKey;
         
+        //generate a pairing string, which you can display and generate a QR code from
         this.pairingString = this.hashconnect.generatePairingString(state);
 
+        //find any supported local wallets
         this.hashconnect.findLocalWallets();
 
         this.status = "Connected";

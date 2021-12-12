@@ -19,5 +19,4 @@ import { HashConnectTypes } from ".";
 export interface PairingData {
     metadata: HashConnectTypes.AppMetadata;
     topic: string;
-    pubKey: Uint8Array | string;
 }

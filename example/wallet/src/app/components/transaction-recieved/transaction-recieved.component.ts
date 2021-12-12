@@ -68,7 +68,6 @@ export class TransactionRecievedComponent implements OnInit {
                     this.display.tokenTransfers.push(tokenTransferData);
                 })
 
-                // debugger
             break;
         }
     }

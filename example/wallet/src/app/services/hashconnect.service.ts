@@ -22,6 +22,7 @@ export class HashconnectService {
     status: string = "Initializing";
     pairingEncodedData: string = "";
     incomingMessage = "";
+    privateKey: Uint8Array;
     
     walletMetadata: HashConnectTypes.WalletMetadata = {
         name: "Example Wallet",
@@ -34,7 +35,8 @@ export class HashconnectService {
     async initHashconnect() {
         this.hashconnect = new HashConnect();
 
-        await this.hashconnect.init(this.walletMetadata);
+        let initData = await this.hashconnect.init(this.walletMetadata);
+        this.privateKey = initData.privKey;
         
         this.hashconnect.pairingEvent.on((data) => {
             console.log("pairing event received")
@@ -88,7 +90,7 @@ export class HashconnectService {
     ////////////////////////////////////SENDERS
 
     async approvePairing(topic: string, accounts: string[], dappData: PairingData) {
-        this.dappPairings.push(new DappPairing(topic, accounts, dappData.metadata, dappData.encKey as Uint8Array));
+        this.dappPairings.push(new DappPairing(topic, accounts, dappData.metadata, dappData.pubKey as Uint8Array));
 
         let msg: MessageTypes.ApprovePairing = {
             metadata: this.walletMetadata,
@@ -97,7 +99,7 @@ export class HashconnectService {
         }
 
         console.log("subscribing: " + topic);
-        await this.hashconnect.pair(topic, msg, dappData.encKey as Uint8Array);
+        await this.hashconnect.pair(topic, msg, dappData.pubKey as Uint8Array);
         this.status = "Paired";
     }
 

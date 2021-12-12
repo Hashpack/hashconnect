@@ -3,7 +3,7 @@ import { IRelay, WakuRelay } from "./types/relay";
 import { PairingData } from "./types";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
 import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
-import { generateSymmetricKey } from 'js-waku';
+import { generatePrivateKey, getPublicKey } from 'js-waku';
 
 /**
  * Main interface with hashpack
@@ -25,7 +25,9 @@ export class HashConnect implements IHashConnect {
     messageParser: MessageHandler;
     messages: MessageUtil;
     private metadata!:  HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
-    encryptionKeys: Record<string, Uint8Array> = {};
+    
+    publicKeys: Record<string, Uint8Array> = {};
+    privateKey: Uint8Array;
 
     constructor() {
         this.relay = new WakuRelay();
@@ -44,37 +46,42 @@ export class HashConnect implements IHashConnect {
         this.setupEvents();
     }
 
-    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<void> {
+    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: Uint8Array): Promise<HashConnectTypes.InitilizationData> {
         this.metadata = metadata;
-    
+
+        if(!privKey)
+            this.privateKey = this.generateEncryptionKeys().privKey;
+        else
+            this.privateKey = privKey;
+        
+        metadata.publicKey = Buffer.from(getPublicKey(this.privateKey)).toString('base64');
+
+        let initData: HashConnectTypes.InitilizationData = {
+            privKey: this.privateKey
+        }
+
         if(window)
             this.metadata.url = window.location.origin;
 
         await this.relay.init();
+
+        this.relay.addDecryptionKey(this.privateKey);
+
+        return initData;
     }
 
 
-    async connect(topic?: string, encKey?: Uint8Array): Promise<HashConnectTypes.ConnectionState> {
-        // If the topic is not valid, then create a new topic id
+    async connect(topic?: string): Promise<HashConnectTypes.ConnectionState> {
         if(!topic) {
             topic = this.messages.createRandomTopicId();
         }
 
-        if(!encKey) {
-            encKey = this.generateEncryptionKey();
-        }
-
-        this.encryptionKeys[topic] = encKey;
-
-        // Create state for client application
-        // TODO: peer/self public keys and encryption
         let state: HashConnectTypes.ConnectionState = {
             topic: topic,
-            expires: 0,
-            encKey: encKey
+            expires: 0
         }
 
-        await this.relay.subscribe(state.topic, state.encKey);
+        await this.relay.subscribe(state.topic);
 
         return state;
     }
@@ -102,7 +109,7 @@ export class HashConnect implements IHashConnect {
         transaction.byteArray = Buffer.from(transaction.byteArray).toString("base64");
         
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction);
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
+        await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
         return msg.id;
     }
@@ -110,7 +117,7 @@ export class HashConnect implements IHashConnect {
     async requestAccountInfo(topic: string, message: MessageTypes.AccountInfoRequest): Promise<string> {
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.AccountInfoRequest, message);
 
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
+        await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
         return msg.id;
     }
@@ -118,7 +125,7 @@ export class HashConnect implements IHashConnect {
     async sendAccountInfo(topic: string, message: MessageTypes.AccountInfoResponse): Promise<string> {
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.AccountInfoResponse, message);
 
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
+        await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
         return msg.id;
     }
@@ -126,24 +133,19 @@ export class HashConnect implements IHashConnect {
     async sendTransactionResponse(topic: string, message: MessageTypes.TransactionResponse): Promise<string> {
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.TransactionResponse, message);
 
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
+        await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
         return msg.id;
     }
 
-    async pair(topic: string, message: MessageTypes.ApprovePairing, encKey: Uint8Array) {
-        
-        // UUID passed into the application responding to the pairing
-        // topic is just the topic for now
-        console.log(topic);
-        this.encryptionKeys[topic] = encKey;
-
-        // Subscribe to the proposed topic to begin pairing
-        await this.relay.subscribe(topic, encKey);
+    async pair(topic: string, message: MessageTypes.ApprovePairing, publicKey: Uint8Array): Promise<HashConnectTypes.ConnectionState> {
+        let state = await this.connect(topic);
 
         // create protobuf message
         const payload = this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, message)
-        this.relay.publish(topic, payload, encKey)
+        this.relay.publish(topic, payload, publicKey)
+
+        return state;
     }
 
     async reject(topic: string, reason: string, msg_id: string) {
@@ -158,10 +160,10 @@ export class HashConnect implements IHashConnect {
         console.log("topic: "+topic);
         
         // Publish the rejection
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
+        await this.relay.publish(topic, msg, this.publicKeys[topic]);
     }
 
-    async acknowledge(topic: string, encKey: Uint8Array, msg_id: string) {
+    async acknowledge(topic: string, pubKey: Uint8Array, msg_id: string) {
         const ack: MessageTypes.Acknowledge = {
             result: true,
             topic: topic,
@@ -169,7 +171,7 @@ export class HashConnect implements IHashConnect {
         }
         console.log("send acknowledge", ack)
         const ackPayload = this.messages.prepareSimpleMessage(RelayMessageType.Acknowledge, ack);
-        await this.relay.publish(topic, ackPayload, encKey)
+        await this.relay.publish(topic, ackPayload, pubKey)
     }  
     
 
@@ -177,11 +179,12 @@ export class HashConnect implements IHashConnect {
      * Helpers
      */
 
-    generatePairingString(topic: string, encKey: Uint8Array) {
+    generatePairingString(state: HashConnectTypes.ConnectionState) {
+        console.log(getPublicKey(this.privateKey));
         let data: PairingData = {
             metadata: this.metadata,
-            topic: topic,
-            encKey: Buffer.from(encKey).toString('base64')
+            topic: state.topic,
+            pubKey: Buffer.from(getPublicKey(this.privateKey)).toString('base64')
         }
         
         let pairingString: string = Buffer.from(JSON.stringify(data)).toString("base64")
@@ -192,15 +195,17 @@ export class HashConnect implements IHashConnect {
     decodePairingString(pairingString: string) {
         let json_string: string = Buffer.from(pairingString,'base64').toString();
         let data: PairingData = JSON.parse(json_string);
-        data.encKey = Buffer.from(data.encKey as string, 'base64');
+        data.pubKey = Buffer.from(data.pubKey as string, 'base64');
 
         return data;
     }
 
-    private generateEncryptionKey(): Uint8Array {
-        let key = generateSymmetricKey();
-        console.log(key);
-        return key;
+    private generateEncryptionKeys(): { privKey: Uint8Array, pubKey: Uint8Array } {
+        let privKey = generatePrivateKey();
+        let pubKey = getPublicKey(privKey)
+        
+        // console.log(key);
+        return { privKey: privKey, pubKey: pubKey };
     }
 
     /**

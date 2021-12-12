@@ -22,7 +22,12 @@ export interface IHashConnect {
 
     /** Message event parser */
     messageParser: MessageHandler;
-    encryptionKeys: Record<string, Uint8Array>;
+    publicKeys: Record<string, Uint8Array>;
+
+    /**
+     * Initialize the client
+     */
+     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: Uint8Array): Promise<HashConnectTypes.InitilizationData>
 
     /**
      * Connect to a topic and produce a topic ID for a peer
@@ -32,14 +37,14 @@ export interface IHashConnect {
      * 
      * @returns ConnectionState containing with topic and metadata
      */
-    connect(topic?: string, encKey?: Uint8Array): Promise<HashConnectTypes.ConnectionState>;
+    connect(topic?: string, privKey?: Uint8Array): Promise<HashConnectTypes.ConnectionState>;
 
     /**
      * Pair with a peer
      * 
      * @param pairingStr string containing topic and meta data
      */
-    pair(pairingStr: string, message: MessageTypes.ApprovePairing, encKey: Uint8Array): Promise<void>;
+    pair(pairingStr: string, message: MessageTypes.ApprovePairing, publicKey: Uint8Array, privKey: Uint8Array): Promise<HashConnectTypes.ConnectionState>;
 
     /**
      * Send a transaction
@@ -62,13 +67,10 @@ export interface IHashConnect {
      * 
      * @param topic topic to publish to
      */
-    acknowledge(topic: string, encKey: Uint8Array, mgs_id: string): Promise<void>
+    acknowledge(topic: string, pubKey: Uint8Array, mgs_id: string): Promise<void>
 
 
-    /**
-     * Initialize the client
-     */
-    init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<void>
+    
 }
 
 export declare namespace HashConnectTypes {    
@@ -78,6 +80,7 @@ export declare namespace HashConnectTypes {
         description: string;
         url?: string; //insecure, lib needs to set this or can be spoofed
         icon: string;
+        publicKey?: string;
     }
 
     export interface WalletMetadata {
@@ -85,11 +88,15 @@ export declare namespace HashConnectTypes {
         description: string;
         url?: string; //insecure, lib needs to set this or can be spoofed
         icon: string;
+        publicKey?: string;
+    }
+
+    export interface InitilizationData {
+        privKey: Uint8Array;
     }
 
     export interface ConnectionState {
         topic: string;
         expires: number;
-        encKey: Uint8Array;
     }
 }

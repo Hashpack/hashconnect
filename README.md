@@ -98,6 +98,8 @@ let pairingString = hashconnect.generatePairingString(state.topic, state.encKey)
 
 A pairing string is a base64 encoded string containing the topic to subscribe to and the metadata about your app.
 
+When the users accepts it will fire a [PairingEvent](#pairingevent).
+
 ### Pairing to extension
 
 HashConnect has 1-click pairing with supported installed extensions. Currently the only supported wallet extension is [HashPack](https://www.hashpack.app/).
@@ -123,7 +125,7 @@ And it will pop up a modal in the extension allowing the user to pair.
 
 Events are emitted by HashConnect to let you know when a request has been fufilled.
 
-You can listen to them by calling .on() or .once() on them. All events return typed data.
+You can listen to them by calling .on() or .once() on them. All events return [typed](#types) data.
 
 #### FoundExtensionEvent
 
@@ -140,7 +142,7 @@ hashconnect.foundExtensionEvent.once((walletMetadata) => {
 The pairing event is triggered when a user accepts a pairing. It returns an array containing accountId's and a WalletMetadata.
 
 ```js
-this.hashconnect.pairingEvent.on((pairingData) => {
+this.hashconnect.pairingEvent.once((pairingData) => {
     
     //example
     pairingData.accountIds.forEach(id => {
@@ -159,7 +161,7 @@ hashconnect.transactionResponseEvent.once((transactionResponse) => {
 
 ### Types
 
-
+//todo
 
 ## Errors
 
@@ -235,3 +237,4 @@ Add polyfill somewhere:
 ```js
 global.process = require('process');
 ```
+

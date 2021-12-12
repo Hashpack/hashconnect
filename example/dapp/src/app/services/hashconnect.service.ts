@@ -17,7 +17,7 @@ export class HashconnectService {
     status: string = "Initializing";
     topic: string = "";
     pairingString: string = "";
-    encryptionKey: Uint8Array;
+    privateKey: Uint8Array;
     pairedWalletData: HashConnectTypes.WalletMetadata;
     pairedAccounts: string[] = [];
     availableExtensions: HashConnectTypes.WalletMetadata[] = []
@@ -32,14 +32,14 @@ export class HashconnectService {
 
         this.hashconnect = new HashConnect();
 
-        await this.hashconnect.init(this.appMetadata);
+        let initData = await this.hashconnect.init(this.appMetadata);
 
         const state = await this.hashconnect.connect();
         console.log("Received state", state);
         this.topic = state.topic;
-        this.encryptionKey = state.encKey;
+        this.privateKey = initData.privKey;
         
-        this.pairingString = this.hashconnect.generatePairingString(this.topic, state.encKey);
+        this.pairingString = this.hashconnect.generatePairingString(state);
 
         this.hashconnect.findLocalWallets();
 

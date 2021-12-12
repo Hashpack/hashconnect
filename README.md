@@ -8,8 +8,8 @@
     - [Initialization](#initialization)
     - [Metadata](#metadata)
     - [First Time Connecting](#first-time-connecting)
-    - [Pairing](#pairing)
-    - [Pairing to extension](#pairing-to-extension)
+      - [Pairing](#pairing)
+      - [Pairing to extension](#pairing-to-extension)
     - [Second Time Connecting](#second-time-connecting)
     - [Sending Requests](#sending-requests)
     - [Events](#events)
@@ -91,7 +91,9 @@ let topic = state.topic;
 
 This function returns a *state* object, containing a new **topicID** (if you passed nothing in). **Make sure you store** this topic for reuse on subsequent user visits.
 
-### Pairing
+Please note, it is possible to connect to more than one wallet.
+
+#### Pairing
 
 If this is the first time a user is pairing, you will need to generate a new pairing string. If it is not the first time a user is using your app you can skip this step, as both apps will already be subscribed to the topic ID. Pass in the ```state``` variable from the ```.connect()``` function.
 
@@ -103,7 +105,7 @@ A pairing string is a base64 encoded string containing the topic to subscribe to
 
 When the users accepts it will fire a [PairingEvent](#pairingevent).
 
-### Pairing to extension
+#### Pairing to extension
 
 HashConnect has 1-click pairing with supported installed extensions. Currently the only supported wallet extension is [HashPack](https://www.hashpack.app/).
 
@@ -122,6 +124,8 @@ hashconnect.connectToLocalWallet(pairingString, extensionMetadata);
 And it will pop up a modal in the extension allowing the user to pair. 
 
 ### Second Time Connecting
+
+When a user is returning for the second time you should automatically pair and begin listening for events. The functions from before all take optional parameters in order to reconnect.
 
 ### Sending Requests
 //todo

@@ -37,7 +37,7 @@ export interface IRelay {
      */
     unsubscribe(topic: string): Promise<void>;
 
-    addDecryptionKey(privKey: Uint8Array): void;
+    addDecryptionKey(privKey: string): void;
 }
 
 export class WakuRelay implements IRelay {
@@ -76,8 +76,8 @@ export class WakuRelay implements IRelay {
         this.waku.relay.addObserver(this.processMessage, [topic])
     }
 
-    addDecryptionKey(privKey: Uint8Array){
-        this.waku.addDecryptionKey(privKey)
+    addDecryptionKey(privKey: string){
+        this.waku.addDecryptionKey(Buffer.from(privKey, 'base64'))
     }
 
     async unsubscribe(topic: string): Promise<void> {

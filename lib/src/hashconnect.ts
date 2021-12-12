@@ -27,7 +27,7 @@ export class HashConnect implements IHashConnect {
     private metadata!:  HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
     
     publicKeys: Record<string, string> = {};
-    privateKey: Uint8Array;
+    private privateKey: string;
 
     constructor() {
         this.relay = new WakuRelay();
@@ -46,15 +46,15 @@ export class HashConnect implements IHashConnect {
         this.setupEvents();
     }
 
-    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: Uint8Array): Promise<HashConnectTypes.InitilizationData> {
+    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: string): Promise<HashConnectTypes.InitilizationData> {
         this.metadata = metadata;
 
         if(!privKey)
-            this.privateKey = this.generateEncryptionKeys().privKey;
+            this.privateKey = this.generateEncryptionKeys();
         else
             this.privateKey = privKey;
         
-        metadata.publicKey = Buffer.from(getPublicKey(this.privateKey)).toString('base64');
+        metadata.publicKey = Buffer.from(getPublicKey(Buffer.from(this.privateKey, 'base64'))).toString('base64');
 
         let initData: HashConnectTypes.InitilizationData = {
             privKey: this.privateKey
@@ -191,8 +191,6 @@ export class HashConnect implements IHashConnect {
      */
 
     generatePairingString(state: HashConnectTypes.ConnectionState) {
-        console.log(getPublicKey(this.privateKey));
-
         let data: PairingData = {
             metadata: this.metadata,
             topic: state.topic,
@@ -211,12 +209,12 @@ export class HashConnect implements IHashConnect {
         return data;
     }
 
-    private generateEncryptionKeys(): { privKey: Uint8Array, pubKey: Uint8Array } {
+    private generateEncryptionKeys(): string {
         let privKey = generatePrivateKey();
-        let pubKey = getPublicKey(privKey)
-        
+        // let pubKey = getPublicKey(privKey)
+        let privKeyString = Buffer.from(privKey).toString('base64')
         // console.log(key);
-        return { privKey: privKey, pubKey: pubKey };
+        return privKeyString;
     }
 
     /**

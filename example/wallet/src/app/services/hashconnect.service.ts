@@ -22,7 +22,7 @@ export class HashconnectService {
     status: string = "Initializing";
     pairingEncodedData: string = "";
     incomingMessage = "";
-    privateKey: Uint8Array;
+    privateKey: string;
     
     walletMetadata: HashConnectTypes.WalletMetadata = {
         name: "Example Wallet",

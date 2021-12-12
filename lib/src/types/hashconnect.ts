@@ -24,11 +24,11 @@ export interface IHashConnect {
     /** Message event parser */
     messageParser: MessageHandler;
     publicKeys: Record<string, string>;
-
+    
     /**
      * Initialize the client
      */
-     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: Uint8Array): Promise<HashConnectTypes.InitilizationData>
+     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: string): Promise<HashConnectTypes.InitilizationData>
 
     /**
      * Connect to a topic and produce a topic ID for a peer
@@ -93,7 +93,7 @@ export declare namespace HashConnectTypes {
     }
 
     export interface InitilizationData {
-        privKey: Uint8Array;
+        privKey: string;
     }
 
     export interface ConnectionState {

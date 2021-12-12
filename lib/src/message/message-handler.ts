@@ -22,6 +22,7 @@ export class MessageHandler implements IMessageHandler {
                 console.log("approved", message.data);
                 let approval_data: MessageTypes.ApprovePairing = JSON.parse(message.data);
                 
+                hc.publicKeys[approval_data.topic] = approval_data.metadata.publicKey as string;
                 hc.pairingEvent.emit(approval_data);
             
                 await hc.acknowledge(parsedData.topic, hc.publicKeys[approval_data.topic], approval_data.id!);

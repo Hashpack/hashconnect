@@ -26,7 +26,7 @@ export class HashConnect implements IHashConnect {
     messages: MessageUtil;
     private metadata!:  HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
     
-    publicKeys: Record<string, Uint8Array> = {};
+    publicKeys: Record<string, string> = {};
     privateKey: Uint8Array;
 
     constructor() {
@@ -71,10 +71,13 @@ export class HashConnect implements IHashConnect {
     }
 
 
-    async connect(topic?: string): Promise<HashConnectTypes.ConnectionState> {
+    async connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<HashConnectTypes.ConnectionState> {
         if(!topic) {
             topic = this.messages.createRandomTopicId();
         }
+
+        if(metadataToConnect)
+            this.publicKeys[topic] = metadataToConnect.publicKey as string;
 
         let state: HashConnectTypes.ConnectionState = {
             topic: topic,
@@ -146,10 +149,12 @@ export class HashConnect implements IHashConnect {
             topic: pairingData.topic,
             accountIds: accounts
         }
+
+        this.publicKeys[pairingData.topic] = pairingData.metadata.publicKey as string;
         
         const payload = this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, msg)
 
-        this.relay.publish(pairingData.topic, payload, pairingData.metadata.publicKey as Uint8Array)
+        this.relay.publish(pairingData.topic, payload, this.publicKeys[pairingData.topic])
 
         return state;
     }
@@ -169,7 +174,7 @@ export class HashConnect implements IHashConnect {
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
     }
 
-    async acknowledge(topic: string, pubKey: Uint8Array, msg_id: string) {
+    async acknowledge(topic: string, pubKey: string, msg_id: string) {
         const ack: MessageTypes.Acknowledge = {
             result: true,
             topic: topic,
@@ -204,7 +209,7 @@ export class HashConnect implements IHashConnect {
     decodePairingString(pairingString: string) {
         let json_string: string = Buffer.from(pairingString,'base64').toString();
         let data: PairingData = JSON.parse(json_string);
-        data.metadata.publicKey = Buffer.from(data.metadata.publicKey as string, 'base64');
+        // data.metadata.publicKey = Buffer.from(data.metadata.publicKey as string, 'base64');
 
         return data;
     }

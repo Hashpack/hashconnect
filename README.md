@@ -10,6 +10,7 @@
     - [First Time Connecting](#first-time-connecting)
     - [Pairing](#pairing)
     - [Pairing to extension](#pairing-to-extension)
+    - [Second Time Connecting](#second-time-connecting)
     - [Sending Requests](#sending-requests)
     - [Events](#events)
       - [FoundExtensionEvent](#foundextensionevent)
@@ -81,14 +82,14 @@ let initData = await hashconnect.init(appMetadata);
 let privateKey = initData.privKey; 
 ```
 
-You then need to connect to a node, if this is the first time a user is connecting to a node you don't need to pass anything in to the connect function. If it's a returning user pass in the topic ID that the user was previously connected to.
+You then need to connect to a node, if this is the first time a user is connecting to a node you don't need to pass anything in to the connect function and it will generate a new **topicID**. If it's a returning user pass in the topic ID that the user was previously connected to.
 
 ```js
 let state = await hashconnect.connect();
 let topic = state.topic;
 ```
 
-This function returns a *state* object, containing a new **topic ID** (if you passed nothing in). **Make sure you store** this topic for reuse on subsequent user visits.
+This function returns a *state* object, containing a new **topicID** (if you passed nothing in). **Make sure you store** this topic for reuse on subsequent user visits.
 
 ### Pairing
 
@@ -119,6 +120,8 @@ hashconnect.connectToLocalWallet(pairingString, extensionMetadata);
 ```
 
 And it will pop up a modal in the extension allowing the user to pair. 
+
+### Second Time Connecting
 
 ### Sending Requests
 //todo

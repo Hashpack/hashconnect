@@ -23,7 +23,7 @@ export interface IHashConnect {
 
     /** Message event parser */
     messageParser: MessageHandler;
-    publicKeys: Record<string, Uint8Array>;
+    publicKeys: Record<string, string>;
 
     /**
      * Initialize the client
@@ -38,8 +38,8 @@ export interface IHashConnect {
      * 
      * @returns ConnectionState containing with topic and metadata
      */
-    connect(topic?: string, privKey?: Uint8Array): Promise<HashConnectTypes.ConnectionState>;
-
+    connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<HashConnectTypes.ConnectionState>;
+    
     /**
      * Pair with a peer
      * 
@@ -68,7 +68,7 @@ export interface IHashConnect {
      * 
      * @param topic topic to publish to
      */
-    acknowledge(topic: string, pubKey: Uint8Array, mgs_id: string): Promise<void>
+    acknowledge(topic: string, pubKey: string, mgs_id: string): Promise<void>
 
 
     
@@ -79,15 +79,15 @@ export declare namespace HashConnectTypes {
     export interface AppMetadata {
         name: string;
         description: string;
-        url?: string; //insecure, lib needs to set this or can be spoofed
+        url?: string;
         icon: string;
-        publicKey?: string | Uint8Array;
+        publicKey?: string;
     }
 
     export interface WalletMetadata {
         name: string;
         description: string;
-        url?: string; //insecure, lib needs to set this or can be spoofed
+        url?: string;
         icon: string;
         publicKey?: string;
     }

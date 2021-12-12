@@ -21,7 +21,7 @@ export interface IRelay {
      * @param topic topic to publish to
      * @param message message to send
      */
-    publish(topic: string, message: string | any, pubKey: Uint8Array): Promise<void>;
+    publish(topic: string, message: string | any, pubKey: string): Promise<void>;
 
     /**
      * Subscribe to a topic
@@ -85,8 +85,8 @@ export class WakuRelay implements IRelay {
     }
 
     // TODO: determine appropriate types for sending messages, string should suffice for now
-    async publish(topic: string, message: any, pubKey: Uint8Array): Promise<void> {
-          const wakuMessage = await WakuMessage.fromBytes(message, topic, { encPublicKey: pubKey });
+    async publish(topic: string, message: any, pubKey: string): Promise<void> {
+          const wakuMessage = await WakuMessage.fromBytes(message, topic, { encPublicKey: Buffer.from(pubKey, 'base64') });
         
           console.log("Sending payload");
           await this.waku.relay.send(wakuMessage);

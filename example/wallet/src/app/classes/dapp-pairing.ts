@@ -4,9 +4,9 @@ export class DappPairing {
     topic: string;
     accountIds: string[];
     metadata: HashConnectTypes.AppMetadata;
-    pubKey: Uint8Array;
+    pubKey: string;
 
-    constructor(topic: string, accountIds: string[], metadata: HashConnectTypes.AppMetadata, pubKey: Uint8Array){
+    constructor(topic: string, accountIds: string[], metadata: HashConnectTypes.AppMetadata, pubKey: string){
         this.topic = topic;
         this.accountIds = accountIds;
         this.metadata = metadata;

@@ -37,7 +37,7 @@ export class HashconnectService {
 
         let initData = await this.hashconnect.init(this.walletMetadata);
         this.privateKey = initData.privKey;
-        
+
         this.hashconnect.pairingEvent.on((data) => {
             console.log("pairing event received")
             console.log(data)
@@ -91,15 +91,9 @@ export class HashconnectService {
 
     async approvePairing(topic: string, accounts: string[], dappData: PairingData) {
         this.dappPairings.push(new DappPairing(topic, accounts, dappData.metadata, dappData.pubKey as Uint8Array));
-
-        let msg: MessageTypes.ApprovePairing = {
-            metadata: this.walletMetadata,
-            topic: topic,
-            accountIds: accounts
-        }
-
+debugger
         console.log("subscribing: " + topic);
-        await this.hashconnect.pair(topic, msg, dappData.pubKey as Uint8Array);
+        await this.hashconnect.pair(dappData, accounts);
         this.status = "Paired";
     }
 

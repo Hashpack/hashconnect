@@ -74,10 +74,11 @@ The url of your app is auto-populated by HashConnect, to prevent spoofing.
 
 ### Connecting
 
-Call init on the Hashconnect variable, passing in the metadata you've defined.
+Call init on the Hashconnect variable, passing in the metadata you've defined. This function returns an object containing a PrivateKey, **you should save this** for reuse.
 
 ```js
-await hashconnect.init(appMetadata);
+let initData = await hashconnect.init(appMetadata);
+let privateKey = initData.privKey;
 ```
 
 You then need to connect to a node, if this is the first time a user is connecting to a node you don't need to pass anything in to the connect function. If it's a returning user pass in the topic ID that the user was previously connected to.

@@ -138,12 +138,18 @@ export class HashConnect implements IHashConnect {
         return msg.id;
     }
 
-    async pair(topic: string, message: MessageTypes.ApprovePairing, publicKey: Uint8Array): Promise<HashConnectTypes.ConnectionState> {
-        let state = await this.connect(topic);
+    async pair(pairingData: PairingData, accounts: string[]): Promise<HashConnectTypes.ConnectionState> {
+        let state = await this.connect(pairingData.topic);
+        
+        let msg: MessageTypes.ApprovePairing = {
+            metadata: this.metadata as HashConnectTypes.WalletMetadata,
+            topic: pairingData.topic,
+            accountIds: accounts
+        }
+        
+        const payload = this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, msg)
 
-        // create protobuf message
-        const payload = this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, message)
-        this.relay.publish(topic, payload, publicKey)
+        this.relay.publish(pairingData.topic, payload, pairingData.pubKey as Uint8Array)
 
         return state;
     }

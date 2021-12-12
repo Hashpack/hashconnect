@@ -93,7 +93,7 @@ export class HashconnectService {
         this.dappPairings.push(new DappPairing(topic, accounts, dappData.metadata, dappData.metadata.publicKey as string));
 
         console.log("subscribing: " + topic);
-        await this.hashconnect.pair(dappData, accounts);
+        await this.hashconnect.pair(dappData, accounts, "testnet");
         this.status = "Paired";
     }
 

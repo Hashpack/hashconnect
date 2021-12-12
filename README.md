@@ -127,6 +127,15 @@ And it will pop up a modal in the extension allowing the user to pair.
 
 When a user is returning for the second time you should automatically pair and begin listening for events. The functions from before all take optional parameters in order to reconnect.
 
+Connecting a second time is much simpler, following the steps in [First Time Connecting](#firsttimeconnecting) and saving the appropriate data you simply call ```init()``` and ```connect()``` with the appropriate parameters.
+
+```js
+await this.hashconnect.init(this.appMetadata, this.saveData.privateKey);
+await this.hashconnect.connect(this.saveData.topic, this.saveData.pairedWalletData!);
+```
+
+If you wanted to reconnect to multiple wallets, you could run ```.connect()``` in a loop, using a different save data structure of course. You only need to run ```init()``` once.
+
 ### Sending Requests
 //todo
 

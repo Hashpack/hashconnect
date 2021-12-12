@@ -141,13 +141,14 @@ export class HashConnect implements IHashConnect {
         return msg.id;
     }
 
-    async pair(pairingData: PairingData, accounts: string[]): Promise<HashConnectTypes.ConnectionState> {
+    async pair(pairingData: PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState> {
         let state = await this.connect(pairingData.topic);
         
         let msg: MessageTypes.ApprovePairing = {
             metadata: this.metadata as HashConnectTypes.WalletMetadata,
             topic: pairingData.topic,
-            accountIds: accounts
+            accountIds: accounts,
+            network: network
         }
 
         this.publicKeys[pairingData.topic] = pairingData.metadata.publicKey as string;
@@ -190,10 +191,11 @@ export class HashConnect implements IHashConnect {
      * Helpers
      */
 
-    generatePairingString(state: HashConnectTypes.ConnectionState) {
+    generatePairingString(state: HashConnectTypes.ConnectionState, network: string): string {
         let data: PairingData = {
             metadata: this.metadata,
             topic: state.topic,
+            network: network
         }
         
         let pairingString: string = Buffer.from(JSON.stringify(data)).toString("base64")

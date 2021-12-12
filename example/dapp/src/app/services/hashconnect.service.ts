@@ -43,7 +43,6 @@ export class HashconnectService {
         this.hashconnect = new HashConnect();
 
         if(!this.loadLocalData()){
-
             //first init, store the private key in localstorage
             let initData = await this.hashconnect.init(this.appMetadata);
             this.saveData.privateKey = initData.privKey;
@@ -54,7 +53,7 @@ export class HashconnectService {
             this.saveData.topic = state.topic;
             
             //generate a pairing string, which you can display and generate a QR code from
-            this.saveData.pairingString = this.hashconnect.generatePairingString(state);
+            this.saveData.pairingString = this.hashconnect.generatePairingString(state, "testnet");
             
             //find any supported local wallets
             this.hashconnect.findLocalWallets();
@@ -77,11 +76,6 @@ export class HashconnectService {
             this.availableExtensions.push(data);
             console.log("Found extension", data);
         })
-
-        this.hashconnect.transactionEvent.on((data) => {
-            //this will not be common to be used in a dapp
-            console.log("transaction event callback");
-        });
 
         this.hashconnect.transactionResponseEvent.on((data) => {
             console.log("transaction response", data)
@@ -108,7 +102,13 @@ export class HashconnectService {
             })
 
             this.saveDataInLocalstorage();
-        })
+        });
+
+
+        this.hashconnect.transactionEvent.on((data) => {
+            //this will not be common to be used in a dapp
+            console.log("transaction event callback");
+        });
     }
 
     async connectToExtension() {

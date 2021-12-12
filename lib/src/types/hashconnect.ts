@@ -45,7 +45,7 @@ export interface IHashConnect {
      * 
      * @param pairingStr string containing topic and meta data
      */
-    pair(pairingData: PairingData, accounts: string[]): Promise<HashConnectTypes.ConnectionState>;
+    pair(pairingData: PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState>;
 
     /**
      * Send a transaction
@@ -70,8 +70,13 @@ export interface IHashConnect {
      */
     acknowledge(topic: string, pubKey: string, mgs_id: string): Promise<void>
 
-
-    
+    /**
+     * Generate a pairing string
+     * 
+     * @param state the state object from .connect()
+     * @param network either 'testnet' or 'mainnet'
+     */
+    generatePairingString(state: HashConnectTypes.ConnectionState, network: string): string;
 }
 
 export declare namespace HashConnectTypes {    

@@ -31,8 +31,9 @@ export declare namespace MessageTypes {
     }    
 
     export interface ApprovePairing extends BaseMessage {
-        metadata: HashConnectTypes.WalletMetadata,
-        accountIds: string[]
+        metadata: HashConnectTypes.WalletMetadata;
+        accountIds: string[];
+        network: string;
     }
 
     export interface Acknowledge extends BaseMessage {

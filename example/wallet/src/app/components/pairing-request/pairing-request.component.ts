@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { HashConnect, PairingData } from 'hashconnect';
+import { HashConnect, HashConnectTypes } from 'hashconnect';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -20,7 +20,7 @@ export class PairingRequestComponent implements OnInit {
 
     subscriptions: Subscription = new Subscription();
     pairingString: string;
-    pairingData: PairingData;
+    pairingData: HashConnectTypes.PairingData;
     selectedAccounts: string[] = [];
 
     ngOnInit(): void {
@@ -38,7 +38,7 @@ export class PairingRequestComponent implements OnInit {
     }
 
     async approvePairing() {
-        await this.HashconnectService.approvePairing(this.pairingData.topic, this.selectedAccounts, this.pairingData.metadata);
+        await this.HashconnectService.approvePairing(this.pairingData.topic, this.selectedAccounts, this.pairingData);
         this.dialogBelonging.EventsController.close();
     }
 

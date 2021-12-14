@@ -22,6 +22,12 @@ export interface IHashConnect {
 
     /** Message event parser */
     messageParser: MessageHandler;
+    publicKeys: Record<string, string>;
+    
+    /**
+     * Initialize the client
+     */
+     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: string): Promise<HashConnectTypes.InitilizationData>
 
     /**
      * Connect to a topic and produce a topic ID for a peer
@@ -31,22 +37,14 @@ export interface IHashConnect {
      * 
      * @returns ConnectionState containing with topic and metadata
      */
-    connect(topic?: string, metadata?: HashConnectTypes.AppMetadata): Promise<HashConnectTypes.ConnectionState>;
-
+    connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<HashConnectTypes.ConnectionState>;
+    
     /**
      * Pair with a peer
      * 
      * @param pairingStr string containing topic and meta data
      */
-    pair(pairingStr: string, message: MessageTypes.ApprovePairing): Promise<void>;
-
-    /**
-     * Reject a request
-     * 
-     * @param topic topic to publish to
-     * @param reason optional rejection reason
-     */
-    reject(topic: string, reason: string, msg_id: string): Promise<void>;
+    pair(pairingData: HashConnectTypes.PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState>;
 
     /**
      * Send a transaction
@@ -55,25 +53,29 @@ export interface IHashConnect {
      * @param transaction transaction to send
      */
     sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<string>;
-
+    
     requestAccountInfo(topic: string, message: MessageTypes.AccountInfoRequest): Promise<string>;
-
+    
     sendAccountInfo(topic: string, message: MessageTypes.AccountInfoResponse): Promise<string>;
     
     sendTransactionResponse(topic: string, message: MessageTypes.TransactionResponse): Promise<string>;
-
+    
+    reject(topic: string, reason: string, msg_id: string): Promise<void>;
+    
     /**
      * Send an acknowledgement of receipt
      * 
      * @param topic topic to publish to
      */
-    acknowledge(topic: string, mgs_id: string): Promise<void>
-
+    acknowledge(topic: string, pubKey: string, mgs_id: string): Promise<void>
 
     /**
-     * Initialize the client
+     * Generate a pairing string
+     * 
+     * @param state the state object from .connect()
+     * @param network either 'testnet' or 'mainnet'
      */
-    init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<void>
+    generatePairingString(state: HashConnectTypes.ConnectionState, network: string): string;
 }
 
 export declare namespace HashConnectTypes {    
@@ -81,20 +83,31 @@ export declare namespace HashConnectTypes {
     export interface AppMetadata {
         name: string;
         description: string;
-        url?: string; //insecure, lib needs to set this or can be spoofed
+        url?: string;
         icon: string;
+        publicKey?: string;
     }
 
     export interface WalletMetadata {
         name: string;
         description: string;
-        url?: string; //insecure, lib needs to set this or can be spoofed
+        url?: string;
         icon: string;
+        publicKey?: string;
+    }
+
+    export interface InitilizationData {
+        privKey: string;
     }
 
     export interface ConnectionState {
         topic: string;
         expires: number;
-        extra?: any;
+    }
+
+    export interface PairingData {
+        metadata: HashConnectTypes.AppMetadata;
+        topic: string;
+        network: string;
     }
 }

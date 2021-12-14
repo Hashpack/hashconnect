@@ -150,8 +150,8 @@ When a user is returning for the second time you should automatically pair and b
 Connecting a second time is much simpler, following the steps in [First Time Connecting](#first-time-connecting) and saving the appropriate data you simply call ```init()``` and ```connect()``` with the appropriate parameters.
 
 ```js
-await this.hashconnect.init(this.appMetadata, this.saveData.privateKey);
-await this.hashconnect.connect(this.saveData.topic, this.saveData.pairedWalletData!);
+await hashconnect.init(appMetadata, saveData.privateKey);
+await hashconnect.connect(saveData.topic, saveData.pairedWalletData!);
 ```
 
 If you wanted to reconnect to multiple wallets, you could run ```.connect()``` in a loop, using a different save data structure of course. You only need to run ```init()``` once.
@@ -273,7 +273,7 @@ async sendTransaction(trans: Transaction, acctToSign: string) {
         }
     }
 
-    await this.hashconnect.sendTransaction(saveData.topic, transaction)
+    await hashconnect.sendTransaction(saveData.topic, transaction)
 
     //you should bind a return handler here, handlers are explained more in the next section
     hashconnect.transactionResponseEvent.once((data) => {
@@ -304,11 +304,11 @@ hashconnect.foundExtensionEvent.once((walletMetadata) => {
 The pairing event is triggered when a user accepts a pairing. It returns an [ApprovePairing](#messagetypesapprovepairing) object containing accountId's and a [WalletMetadata](#hashconnecttypeswalletmetadata).
 
 ```js
-this.hashconnect.pairingEvent.once((pairingData) => {
+hashconnect.pairingEvent.once((pairingData) => {
     //example
     pairingData.accountIds.forEach(id => {
-        if(this.pairedAccounts.indexOf(id) == -1)
-            this.pairedAccounts.push(id);
+        if(pairedAccounts.indexOf(id) == -1)
+            pairedAccounts.push(id);
     })
 })
 ```
@@ -447,7 +447,7 @@ export interface Transaction extends BaseMessage {
 ##### MessageTypes.TransactionMetadata
 
 ```js
-export class TransactionMetadata {
+export class TransactionMetadata extends BaseMessage {
     accountToSign: string;
     returnTransaction: boolean;
     nftPreviewUrl?: string;

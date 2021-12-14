@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HashConnect, HashConnectTypes, MessageTypes, PairingData } from 'hashconnect';
+import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
 import {
     DialogLayoutDisplay,
     DialogInitializer,
@@ -89,7 +89,7 @@ export class HashconnectService {
 
     ////////////////////////////////////SENDERS
 
-    async approvePairing(topic: string, accounts: string[], dappData: PairingData) {
+    async approvePairing(topic: string, accounts: string[], dappData: HashConnectTypes.PairingData) {
         this.dappPairings.push(new DappPairing(topic, accounts, dappData.metadata, dappData.metadata.publicKey as string));
 
         console.log("subscribing: " + topic);

@@ -1,6 +1,5 @@
 import { Event } from "ts-typed-events";
 import { IRelay, WakuRelay } from "./types/relay";
-import { PairingData } from "./types";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
 import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
 import { generatePrivateKey, getPublicKey } from 'js-waku';
@@ -141,7 +140,7 @@ export class HashConnect implements IHashConnect {
         return msg.id;
     }
 
-    async pair(pairingData: PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState> {
+    async pair(pairingData: HashConnectTypes.PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState> {
         let state = await this.connect(pairingData.topic);
         
         let msg: MessageTypes.ApprovePairing = {
@@ -192,7 +191,7 @@ export class HashConnect implements IHashConnect {
      */
 
     generatePairingString(state: HashConnectTypes.ConnectionState, network: string): string {
-        let data: PairingData = {
+        let data: HashConnectTypes.PairingData = {
             metadata: this.metadata,
             topic: state.topic,
             network: network
@@ -205,7 +204,7 @@ export class HashConnect implements IHashConnect {
 
     decodePairingString(pairingString: string) {
         let json_string: string = Buffer.from(pairingString,'base64').toString();
-        let data: PairingData = JSON.parse(json_string);
+        let data: HashConnectTypes.PairingData = JSON.parse(json_string);
         // data.metadata.publicKey = Buffer.from(data.metadata.publicKey as string, 'base64');
 
         return data;

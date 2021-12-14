@@ -2,7 +2,6 @@ import { IRelay } from "./relay";
 import { Event } from "ts-typed-events";
 import { MessageTypes, MessageUtil } from "../message";
 import { MessageHandler } from "../message/message-handler";
-import { PairingData } from ".";
 
 export interface IHashConnect {
     
@@ -45,7 +44,7 @@ export interface IHashConnect {
      * 
      * @param pairingStr string containing topic and meta data
      */
-    pair(pairingData: PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState>;
+    pair(pairingData: HashConnectTypes.PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState>;
 
     /**
      * Send a transaction
@@ -104,5 +103,11 @@ export declare namespace HashConnectTypes {
     export interface ConnectionState {
         topic: string;
         expires: number;
+    }
+
+    export interface PairingData {
+        metadata: HashConnectTypes.AppMetadata;
+        topic: string;
+        network: string;
     }
 }

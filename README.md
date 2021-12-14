@@ -1,7 +1,10 @@
 # Hashconnect
 
+Hashconnect is a library to connect Hedera apps to wallets, similar to web3 functionality found in the Ethereum ecosystem.
+
+**[View Demo](https://hashpack.github.io/hashconnect/)**
+
 - [Hashconnect](#hashconnect)
-  - [Intro](#intro)
   - [Concepts](#concepts)
   - [Usage](#usage)
     - [Installation](#installation)
@@ -11,20 +14,35 @@
       - [Pairing](#pairing)
       - [Pairing to extension](#pairing-to-extension)
     - [Second Time Connecting](#second-time-connecting)
+    - [All Together](#all-together)
     - [Sending Requests](#sending-requests)
+      - [Request Account Info](#request-account-info)
+      - [Send Transaction](#send-transaction)
     - [Events](#events)
       - [FoundExtensionEvent](#foundextensionevent)
       - [PairingEvent](#pairingevent)
       - [Transaction Response](#transaction-response)
+      - [Acknowledge Response](#acknowledge-response)
     - [Types](#types)
+      - [HashConnectTypes](#hashconnecttypes)
+        - [HashConnectTypes.AppMetadata](#hashconnecttypesappmetadata)
+        - [HashConnectTypes.WalletMetadata](#hashconnecttypeswalletmetadata)
+        - [HashConnectTypes.InitilizationData](#hashconnecttypesinitilizationdata)
+        - [HashConnectTypes.ConnectionState](#hashconnecttypesconnectionstate)
+      - [MessageTypes](#messagetypes)
+        - [MessageTypes.BaseMessage](#messagetypesbasemessage)
+        - [MessageTypes.Acknowledge](#messagetypesacknowledge)
+        - [MessageTypes.Rejected](#messagetypesrejected)
+        - [MessageTypes.ApprovePairing](#messagetypesapprovepairing)
+        - [MessageTypes.AccountInfoRequest](#messagetypesaccountinforequest)
+        - [MessageTypes.AccountInfoResponse](#messagetypesaccountinforesponse)
+        - [MessageTypes.Transaction](#messagetypestransaction)
+        - [MessageTypes.TransactionMetadata](#messagetypestransactionmetadata)
+        - [MessageTypes.TransactionResponse](#messagetypestransactionresponse)
   - [Errors](#errors)
     - [Crypto-browserify](#crypto-browserify)
     - [Stream-browserify](#stream-browserify)
     - [DUMP_SESSION_KEYS](#dump_session_keys)
-
-## Intro
-
-Hashconnect is a library to connect Hedera apps to wallets, similar to web3 functionality found in the Ethereum ecosystem.
 
 ## Concepts
 
@@ -95,10 +113,12 @@ Please note, it is possible to connect to more than one wallet.
 
 #### Pairing
 
-If this is the first time a user is pairing, you will need to generate a new pairing string. If it is not the first time a user is using your app you can skip this step, as both apps will already be subscribed to the topic ID. Pass in the ```state``` variable from the ```.connect()``` function.
+If this is the first time a user is pairing, you will need to generate a new pairing string. If it is not the first time a user is using your app you can skip this step and use the instructions in [Second Time Connecting](#second-time-connecting), as both apps will already be subscribed to the topic ID. Pass in the ```state``` variable from the ```.connect()``` function.
+
+You can also specify what network you would like to request accounts for, either "testnet" or "mainnet".
 
 ```js
-let pairingString = hashconnect.generatePairingString(state);
+let pairingString = hashconnect.generatePairingString(state, "testnet");
 ```
 
 A pairing string is a base64 encoded string containing the topic to subscribe to and the metadata about your app.
@@ -113,7 +133,7 @@ HashConnect has 1-click pairing with supported installed extensions. Currently t
 hashconnect.findLocalWallets();
 ```
 
-Calling this function will send a ping out, and supported wallets will return their metadata in a ```foundExtensionEvent```. You should take this metadata, and display buttons with the available extensions. More extensions will be supported in the future!
+Calling this function will send a ping out, and supported wallets will return their metadata in a ```foundExtensionEvent``` [(details)](#foundextensionevent). You should take this metadata, and display buttons with the available extensions. More extensions will be supported in the future!
 
 You should then call:
 
@@ -127,7 +147,7 @@ And it will pop up a modal in the extension allowing the user to pair.
 
 When a user is returning for the second time you should automatically pair and begin listening for events. The functions from before all take optional parameters in order to reconnect.
 
-Connecting a second time is much simpler, following the steps in [First Time Connecting](#firsttimeconnecting) and saving the appropriate data you simply call ```init()``` and ```connect()``` with the appropriate parameters.
+Connecting a second time is much simpler, following the steps in [First Time Connecting](#first-time-connecting) and saving the appropriate data you simply call ```init()``` and ```connect()``` with the appropriate parameters.
 
 ```js
 await this.hashconnect.init(this.appMetadata, this.saveData.privateKey);
@@ -136,8 +156,132 @@ await this.hashconnect.connect(this.saveData.topic, this.saveData.pairedWalletDa
 
 If you wanted to reconnect to multiple wallets, you could run ```.connect()``` in a loop, using a different save data structure of course. You only need to run ```init()``` once.
 
+### All Together
+
+So, once we put all this together this is what a rough initialization function would look like:
+
+You can view the example app implementation [here](https://github.com/Hashpack/hashconnect/blob/main/example/dapp/src/app/services/hashconnect.service.ts).
+
+```js
+
+let hashconnect: HashConnect;
+    
+let saveData = {
+    topic: "",
+    pairingString: "",
+    privateKey: "",
+    pairedWalletData: null,
+    pairedAccounts: []
+}
+
+let appMetadata: HashConnectTypes.AppMetadata = {
+    name: "dApp Example",
+    description: "An example hedera dApp",
+    icon: "https://www.hashpack.app/img/logo.svg"
+}
+
+async initHashconnect() {
+    //create the hashconnect instance
+    hashconnect = new HashConnect();
+
+    if(!loadLocalData()){
+        //first init and store the private for later
+        let initData = await hashconnect.init(appMetadata);
+        saveData.privateKey = initData.privKey;
+
+        //then connect, storing the new topic for later
+        const state = await hashconnect.connect();
+        saveData.topic = state.topic;
+        
+        //generate a pairing string, which you can display and generate a QR code from
+        saveData.pairingString = hashconnect.generatePairingString(state, "testnet");
+        
+        //find any supported local wallets
+        hashconnect.findLocalWallets();
+    }
+    else {
+        //use loaded data for initialization + connection
+        await hashconnect.init(appMetadata, saveData.privateKey);
+        await hashconnect.connect(saveData.topic, saveData.pairedWalletData);
+    }
+}
+
+loadLocalData(): boolean {
+    let foundData = localStorage.getItem("hashconnectData");
+
+    if(foundData){
+        saveData = JSON.parse(foundData);
+        return true;
+    }
+    else
+        return false;
+}
+
+
+```
+
+You'll need to add more to this code to get it working in your exact setup, but that's the jist of it!
+
+
 ### Sending Requests
-//todo
+
+All requests return a ID string, this can be used to track the request through acknowlege and approval/rejection events (next section).
+
+#### Request Account Info
+
+This request takes two parameters, **topicID** and [AccountInfoRequest](#messagetypesaccountinforequest
+). It is used to request additional accounts *after* the initial pairing.
+
+```js
+await hashconnect.requestAccountInfo(saveData.topic, request);
+```
+
+**Example Implementation:**
+
+```js
+async requestAccountInfo(network: string) {
+    let request:MessageTypes.AccountInfoRequest = {
+        topic: saveData.topic,
+        network: network
+    } 
+
+    await hashconnect.requestAccountInfo(saveData.topic, request);
+}
+```
+
+#### Send Transaction
+
+This request takes two parameters, **topicID** and [Transaction](#messagetypestransaction
+).
+
+```js
+await hashconnect.sendTransaction(saveData.topic, transaction);
+```
+
+**Example Implementation:**
+
+```js
+async sendTransaction(trans: Transaction, acctToSign: string) {     
+    let transactionBytes: Uint8Array = await SigningService.signAndMakeBytes(trans);
+
+    const transaction: MessageTypes.Transaction = {
+        topic: saveData.topic,
+        byteArray: transactionBytes,
+        metadata: {
+            accountToSign: acctToSign,
+            returnTransaction: false
+        }
+    }
+
+    await this.hashconnect.sendTransaction(saveData.topic, transaction)
+
+    //you should bind a return handler here, handlers are explained more in the next section
+    hashconnect.transactionResponseEvent.once((data) => {
+        console.log("transaction response", data)
+    })
+}
+```
+
 
 ### Events
 
@@ -147,7 +291,7 @@ You can listen to them by calling .on() or .once() on them. All events return [t
 
 #### FoundExtensionEvent
 
-This event returns the metadata of the found extensions.
+This event returns the metadata of the found extensions, will fire once for each extension.
 
 ```js
 hashconnect.foundExtensionEvent.once((walletMetadata) => {
@@ -157,11 +301,10 @@ hashconnect.foundExtensionEvent.once((walletMetadata) => {
 
 #### PairingEvent
 
-The pairing event is triggered when a user accepts a pairing. It returns an array containing accountId's and a WalletMetadata.
+The pairing event is triggered when a user accepts a pairing. It returns an [ApprovePairing](#messagetypesapprovepairing) object containing accountId's and a [WalletMetadata](#hashconnecttypeswalletmetadata).
 
 ```js
 this.hashconnect.pairingEvent.once((pairingData) => {
-    
     //example
     pairingData.accountIds.forEach(id => {
         if(this.pairedAccounts.indexOf(id) == -1)
@@ -177,9 +320,151 @@ hashconnect.transactionResponseEvent.once((transactionResponse) => {
 })
 ```
 
+#### Acknowledge Response
+
+This event returns an [Acknowledge](#messagetypesacknowledge) object. This happens after the wallet has recieved the request, generally you should consider a wallet disconnected if a request doesn't fire an acknowledgement after a few seconds and update the UI accordingly.
+
+The object contains the ID of the message.
+
+```js
+hashconnect.acknowledge.once((acknowledgeData) => {
+    //do something with acknowledge response data
+})
+```
+
 ### Types
 
-//todo
+#### HashConnectTypes
+
+##### HashConnectTypes.AppMetadata
+```js 
+export interface AppMetadata {
+    name: string;
+    description: string;
+    url?: string;
+    icon: string;
+    publicKey?: string;
+}
+```
+
+##### HashConnectTypes.WalletMetadata
+
+```js 
+export interface WalletMetadata {
+    name: string;
+    description: string;
+    url?: string;
+    icon: string;
+    publicKey?: string;
+}
+```
+
+##### HashConnectTypes.InitilizationData
+
+```js 
+export interface InitilizationData {
+    privKey: string;
+}
+```
+
+##### HashConnectTypes.ConnectionState
+
+```js 
+export interface ConnectionState {
+    topic: string;
+    expires: number;
+}
+```
+
+#### MessageTypes
+
+All messages types inherit topicID and ID from ```BaseMessage```
+
+##### MessageTypes.BaseMessage
+
+```js
+export interface BaseMessage {
+    topic: string;
+    id: string;
+}   
+```
+
+##### MessageTypes.Acknowledge
+
+```js
+export interface Acknowledge extends BaseMessage {
+    result: boolean;
+    msg_id: string;
+}
+```
+
+##### MessageTypes.Rejected
+
+```js
+export interface Rejected extends BaseMessage {
+    reason?: string;
+    msg_id: string;
+}
+```
+
+##### MessageTypes.ApprovePairing
+
+```js 
+
+export interface ApprovePairing extends BaseMessage {
+    metadata: HashConnectTypes.WalletMetadata;
+    accountIds: string[];
+    network: string;
+}
+```
+
+##### MessageTypes.AccountInfoRequest
+
+```js
+export interface AccountInfoRequest extends BaseMessage {
+    network: string;
+}
+```
+
+##### MessageTypes.AccountInfoResponse
+
+```js
+export interface AccountInfoResponse extends BaseMessage {
+    accountIds: string[];
+    network: string;
+}
+```
+
+##### MessageTypes.Transaction
+
+```js
+export interface Transaction extends BaseMessage {
+    byteArray: Uint8Array | string;
+    metadata: TransactionMetadata;
+}
+```
+
+##### MessageTypes.TransactionMetadata
+
+```js
+export class TransactionMetadata {
+    accountToSign: string;
+    returnTransaction: boolean;
+    nftPreviewUrl?: string;
+}
+```
+
+##### MessageTypes.TransactionResponse
+
+```js
+
+export interface TransactionResponse extends BaseMessage {
+    success: boolean;
+    signedTransaction?: Uint8Array | string;
+    error?: string;
+}
+```
+
 
 ## Errors
 

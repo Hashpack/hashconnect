@@ -14,8 +14,8 @@ export interface IHashConnect {
     transactionEvent: Event<MessageTypes.Transaction>;
     transactionResponseEvent: Event<MessageTypes.TransactionResponse>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
-    accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
-    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
+    additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
+    additionalAccountResponseEvent: Event<MessageTypes.AdditionalAccountResponse>;
 
     /** Messages util for protobufs */
     messages: MessageUtil;
@@ -54,9 +54,9 @@ export interface IHashConnect {
      */
     sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<string>;
     
-    requestAccountInfo(topic: string, message: MessageTypes.AccountInfoRequest): Promise<string>;
+    requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<string>;
     
-    sendAccountInfo(topic: string, message: MessageTypes.AccountInfoResponse): Promise<string>;
+    sendAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountResponse): Promise<string>;
     
     sendTransactionResponse(topic: string, message: MessageTypes.TransactionResponse): Promise<string>;
     

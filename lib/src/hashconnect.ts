@@ -17,8 +17,8 @@ export class HashConnect implements IHashConnect {
     transactionEvent: Event<MessageTypes.Transaction>;
     transactionResponseEvent: Event<MessageTypes.TransactionResponse>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
-    accountInfoRequestEvent: Event<MessageTypes.AccountInfoRequest>;
-    accountInfoResponseEvent: Event<MessageTypes.AccountInfoResponse>;
+    additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
+    additionalAccountResponseEvent: Event<MessageTypes.AdditionalAccountResponse>;
 
     // messages util
     messageParser: MessageHandler;
@@ -36,8 +36,8 @@ export class HashConnect implements IHashConnect {
         this.transactionEvent = new Event<MessageTypes.Transaction>();
         this.transactionResponseEvent = new Event<MessageTypes.TransactionResponse>();
         this.acknowledgeMessageEvent = new Event<MessageTypes.Acknowledge>();
-        this.accountInfoRequestEvent = new Event<MessageTypes.AccountInfoRequest>();
-        this.accountInfoResponseEvent = new Event<MessageTypes.AccountInfoResponse>();
+        this.additionalAccountRequestEvent = new Event<MessageTypes.AdditionalAccountRequest>();
+        this.additionalAccountResponseEvent = new Event<MessageTypes.AdditionalAccountResponse>();
         
         this.messages = new MessageUtil();
         this.messageParser = new MessageHandler();
@@ -115,18 +115,18 @@ export class HashConnect implements IHashConnect {
         return msg.id;
     }
 
-    async requestAccountInfo(topic: string, message: MessageTypes.AccountInfoRequest): Promise<string> {
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AccountInfoRequest, message);
+    async requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<string> {
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountRequest, message);
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
         return msg.id;
     }
 
-    async sendAccountInfo(topic: string, message: MessageTypes.AccountInfoResponse): Promise<string> {
+    async sendAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountResponse): Promise<string> {
         message.accountIds = message.accountIds.map(id => {return id});
         
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AccountInfoResponse, message);
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountResponse, message);
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 

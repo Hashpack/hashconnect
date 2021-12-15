@@ -56,21 +56,21 @@ export class MessageHandler implements IMessageHandler {
 
                 await hc.acknowledge(parsedData.topic, hc.publicKeys[transaction_response_data.topic], transaction_response_data.id!);
             break;
-            case RelayMessageType.AccountInfoRequest:
+            case RelayMessageType.AdditionalAccountRequest:
                 console.log("Got account info request", message);
 
-                let request_data: MessageTypes.AccountInfoRequest = JSON.parse(message.data);
+                let request_data: MessageTypes.AdditionalAccountRequest = JSON.parse(message.data);
 
-                hc.accountInfoRequestEvent.emit(request_data);
+                hc.additionalAccountRequestEvent.emit(request_data);
 
                 await hc.acknowledge(parsedData.topic, hc.publicKeys[request_data.topic], request_data.id!);
             break;
-            case RelayMessageType.AccountInfoResponse:
+            case RelayMessageType.AdditionalAccountResponse:
                 console.log("Got account info response", message);
 
-                let response_data: MessageTypes.AccountInfoResponse = JSON.parse(message.data);
+                let response_data: MessageTypes.AdditionalAccountResponse = JSON.parse(message.data);
 
-                hc.accountInfoResponseEvent.emit(response_data);
+                hc.additionalAccountResponseEvent.emit(response_data);
 
                 await hc.acknowledge(parsedData.topic, hc.publicKeys[response_data.topic], response_data.id!);
             break;

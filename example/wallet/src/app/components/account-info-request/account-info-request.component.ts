@@ -20,7 +20,7 @@ export class AccountInfoRequestComponent implements OnInit {
     ) { }
 
     subscriptions: Subscription = new Subscription();
-    request: MessageTypes.AccountInfoRequest;
+    request: MessageTypes.AdditionalAccountRequest;
     sentBy: DappPairing;
     selectedAccounts: string[] = [];
     
@@ -31,7 +31,7 @@ export class AccountInfoRequestComponent implements OnInit {
         this.subscriptions.add(
             this.dialogBelonging.EventsController.onButtonClick$.subscribe((_Button) => {
                 if (_Button.ID === 'approve') {
-                    this.HashConnectService.approveAccountInfoRequest(this.request.topic, this.SigningService.accounts[0].id);
+                    this.HashConnectService.approveAccountInfoRequest(this.request.topic, this.selectedAccounts);
                     this.dialogBelonging.EventsController.close();
                 }
                 else if (_Button.ID === 'reject') {

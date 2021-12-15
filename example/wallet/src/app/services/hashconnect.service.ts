@@ -57,7 +57,7 @@ export class HashconnectService {
         });
 
         this.hashconnect.transactionEvent.on(this.recievedTransactionRequest)
-        this.hashconnect.accountInfoRequestEvent.on(this.accountInfoRequest);
+        this.hashconnect.additionalAccountRequestEvent.on(this.accountInfoRequest);
         
         this.status = "Connected";
 
@@ -84,7 +84,7 @@ export class HashconnectService {
         dialogPopup.openDialog$().subscribe(resp => {});
     }
 
-    accountInfoRequest(request: MessageTypes.AccountInfoRequest) {
+    accountInfoRequest(request: MessageTypes.AdditionalAccountRequest) {
         const dialogPopup = new DialogInitializer(AccountInfoRequestComponent);
 
         dialogPopup.setCustomData({ request: request }); // optional
@@ -118,14 +118,14 @@ export class HashconnectService {
         await this.hashconnect.reject(topic, "because I don't want to pair with you", msg_id);
     }
 
-    async approveAccountInfoRequest(topic: string, accountId: string) {
-        let msg: MessageTypes.AccountInfoResponse = {
-            accountIds: [accountId],
+    async approveAccountInfoRequest(topic: string, accountIds: string[]) {
+        let msg: MessageTypes.AdditionalAccountResponse = {
+            accountIds: accountIds,
             network: "mainnet",
             topic: topic
         }
 
-        await this.hashconnect.sendAccountInfo(topic, msg);
+        await this.hashconnect.sendAdditionalAccounts(topic, msg);
 
         this.saveLocalData();
     }

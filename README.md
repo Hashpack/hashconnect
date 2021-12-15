@@ -2,6 +2,8 @@
 
 Hashconnect is a library to connect Hedera apps to wallets, similar to web3 functionality found in the Ethereum ecosystem.
 
+The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pairing and signing functionality. It also contains a demo wallet (testnet only) which can be used to test functionality during the alpha phase. 
+
 **[View Demo](https://hashpack.github.io/hashconnect/)**
 
 - [Hashconnect](#hashconnect)

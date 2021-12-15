@@ -1,0 +1,16 @@
+<div>
+    <h1>{{title}}</h1>
+    <h2>Status: {{HashConnectService.status}}</h2>
+
+    <h3>Connected accounts: {{ HashConnectService.saveData.pairedAccounts | json}}</h3>
+
+    <div class="buttons">
+        <button class="primary" (click)="pair()" [disabled]="HashConnectService.status != 'Connected'">Pair</button>
+        <button class="primary" (click)="sendTransaction()" [disabled]="HashConnectService.status != 'Paired'">Create basic transaction</button>
+        <button class="primary" (click)="HashConnectService.requestAccountInfo()" [disabled]="HashConnectService.status != 'Paired'">Request Account Info</button>
+    </div>
+</div>
+<!-- <div>
+    <textarea class="testTextArea">{{incomingMessage}}</textarea>
+</div> -->
+<router-outlet></router-outlet>

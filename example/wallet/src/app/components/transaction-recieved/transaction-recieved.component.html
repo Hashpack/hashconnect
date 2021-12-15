@@ -1,0 +1,29 @@
+<p>Transaction Received!</p>
+
+<div class="top">
+    <img [src]="sentBy.metadata.icon" alt="">
+    <p>{{ sentBy.metadata.url }}</p>
+</div>
+
+<p>{{sentBy.metadata.name}} would like you to sign a transaction.</p>
+
+<div *ngIf="display.hbarTransfers.length > 0">
+    <p>HBAR Transfers</p>
+    <div class="hbarTransfer" *ngFor="let transfer of display.hbarTransfers">
+        {{ transfer.account }}: {{ transfer.value }}
+    </div>
+</div>
+
+<div *ngIf="display.tokenTransfers.length > 0">
+    <p>Token Transfers</p>
+    <div class="hbarTransfer" *ngFor="let token of display.tokenTransfers">
+        <p>{{ token.tokenId }}</p>
+
+        <div class="hbarTransfer" *ngFor="let transfer of token.transfers">
+            {{ transfer.accountId }}: {{ transfer.amount }}
+        </div>
+    </div>
+</div>
+
+<p>Memo: {{ parsedTransaction.transactionMemo }}</p>
+

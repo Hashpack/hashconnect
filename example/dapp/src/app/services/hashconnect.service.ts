@@ -158,4 +158,11 @@ export class HashconnectService {
         else
             return false;
     }
+
+    clearPairings() {
+        this.saveData.pairedAccounts = [];
+        this.saveData.pairedWalletData = undefined;
+        this.status = "Connected";
+        localStorage.removeItem("hashconnectData");
+    }
 }

@@ -451,7 +451,7 @@ export interface Transaction extends BaseMessage {
 ```js
 export class TransactionMetadata extends BaseMessage {
     accountToSign: string;
-    returnTransaction: boolean;
+    returnTransaction: boolean; //set to true if you want the wallet to return a signed transaction instead of executing it
     nftPreviewUrl?: string;
 }
 ```

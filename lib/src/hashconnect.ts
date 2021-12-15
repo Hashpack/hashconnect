@@ -94,7 +94,6 @@ export class HashConnect implements IHashConnect {
      private setupEvents() {
         // This will listen for a payload emission from the relay
         this.relay.payload.on(async (payload) => {
-            console.log("hashconnect: payload received");
             if (!payload) return;
 
             const message: RelayMessage = this.messages.decode(payload);
@@ -125,6 +124,8 @@ export class HashConnect implements IHashConnect {
     }
 
     async sendAccountInfo(topic: string, message: MessageTypes.AccountInfoResponse): Promise<string> {
+        message.accountIds = message.accountIds.map(id => {return id});
+        
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.AccountInfoResponse, message);
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
@@ -150,6 +151,12 @@ export class HashConnect implements IHashConnect {
             network: network
         }
 
+        msg.metadata.description = this.sanitizeString(msg.metadata.description);
+        msg.metadata.name = this.sanitizeString(msg.metadata.name);
+        msg.network = this.sanitizeString(msg.network);
+        msg.metadata.url = this.sanitizeString(msg.metadata.url!);
+        msg.accountIds = msg.accountIds.map(id => {return id});
+
         this.publicKeys[pairingData.topic] = pairingData.metadata.publicKey as string;
         
         const payload = this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, msg)
@@ -165,10 +172,11 @@ export class HashConnect implements IHashConnect {
             topic: topic,
             msg_id: msg_id
         }
+
+        reject.reason = this.sanitizeString(reject.reason!);
         
         // create protobuf message
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.RejectPairing, reject)
-        console.log("topic: "+topic);
         
         // Publish the rejection
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
@@ -180,7 +188,7 @@ export class HashConnect implements IHashConnect {
             topic: topic,
             msg_id: msg_id
         }
-        console.log("send acknowledge", ack)
+        
         const ackPayload = this.messages.prepareSimpleMessage(RelayMessageType.Acknowledge, ack);
         await this.relay.publish(topic, ackPayload, pubKey)
     }  
@@ -196,6 +204,11 @@ export class HashConnect implements IHashConnect {
             topic: state.topic,
             network: network
         }
+
+        data.metadata.description = this.sanitizeString(data.metadata.description);
+        data.metadata.name = this.sanitizeString(data.metadata.name);
+        data.network = this.sanitizeString(data.network);
+        data.metadata.url = this.sanitizeString(data.metadata.url!);
         
         let pairingString: string = Buffer.from(JSON.stringify(data)).toString("base64")
 
@@ -216,6 +229,13 @@ export class HashConnect implements IHashConnect {
         let privKeyString = Buffer.from(privKey).toString('base64')
         // console.log(key);
         return privKeyString;
+    }
+
+    private sanitizeString(str: string){
+        return str.replace(/[^\w. ]/gi, function (c) {
+            if(c == ".") return ".";
+            return '&#' + c.charCodeAt(0) + ';';
+        });
     }
 
     /**

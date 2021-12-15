@@ -16,13 +16,14 @@ export class AccountInfoRequestComponent implements OnInit {
     constructor(
         @Inject('dialogBelonging') private dialogBelonging: DialogBelonging,
         private HashConnectService: HashconnectService,
-        private SigningService: SigningService
+        public SigningService: SigningService
     ) { }
 
     subscriptions: Subscription = new Subscription();
     request: MessageTypes.AccountInfoRequest;
     sentBy: DappPairing;
-        //todo: make this handle multiple accounts
+    selectedAccounts: string[] = [];
+    
     ngOnInit(): void {
         this.request = this.dialogBelonging.CustomData.request;
         this.sentBy = this.HashConnectService.getDataByTopic(this.request.topic);
@@ -40,4 +41,14 @@ export class AccountInfoRequestComponent implements OnInit {
         );
     }
 
+    checkbox(event: any, accId: string) {
+        if(event.target.checked)
+            this.selectedAccounts.push(accId);
+        else {
+            this.selectedAccounts = this.selectedAccounts.filter(id => id != accId);
+        }
+
+        console.log(this.selectedAccounts);
+
+    }
 }

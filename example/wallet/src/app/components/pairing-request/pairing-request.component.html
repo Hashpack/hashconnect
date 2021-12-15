@@ -1,13 +1,14 @@
 <input *ngIf="!pairingData" type="text" [(ngModel)]="pairingString" (ngModelChange)="parsePairingString()" placeholder="Pairing string"/>
+<meta charset="utf-8">
 
 <div *ngIf="pairingData">
 
     <div class="top">
         <img [src]="pairingData.metadata.icon" alt="">
-        <p>{{ pairingData.metadata.url }}</p>
+        <p [innerHTML]="pairingData.metadata.url "></p>
     </div>
 
-    <p>{{pairingData.metadata.name}} would like to connect to your {{pairingData.network}} account.</p>
+    <p><span [innerHTML]="pairingData.metadata.name"></span> would like to connect to your {{pairingData.network}} account.</p>
 
     <p>Please select what accounts you wish to connect with.</p>
 

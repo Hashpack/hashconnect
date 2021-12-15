@@ -2,7 +2,20 @@
 
 <div class="top">
     <img [src]="sentBy.metadata.icon" alt="">
-    <p>{{ sentBy.metadata.url }}</p>
+    <p [innerHTML]="sentBy.metadata.url "></p>
 </div>
 
-<p>{{sentBy.metadata.name}} would like to connect to your {{ request.network }} wallet.</p>
+<p><span [innerHTML]="sentBy.metadata.name"></span> would like to connect additional {{request.network}} accounts.
+</p>
+
+<p>Please select what accounts you wish to connect with.</p>
+
+<div class="accountSelect">
+    <div class="account" *ngFor="let account of SigningService.accounts">
+        <input type="checkbox" (change)="checkbox($event, account.id)">
+        <div>
+            <p>{{account.name}}</p>
+            <p>{{account.id}}</p>
+        </div>
+    </div>
+</div>

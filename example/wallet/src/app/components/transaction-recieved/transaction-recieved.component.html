@@ -2,10 +2,10 @@
 
 <div class="top">
     <img [src]="sentBy.metadata.icon" alt="">
-    <p>{{ sentBy.metadata.url }}</p>
+    <p [innerHTML]="sentBy.metadata.url "></p>
 </div>
 
-<p>{{sentBy.metadata.name}} would like you to sign a transaction.</p>
+<p><span [innerHTML]="sentBy.metadata.name"></span> would like you to sign a transaction.</p>
 
 <div *ngIf="display.hbarTransfers.length > 0">
     <p>HBAR Transfers</p>

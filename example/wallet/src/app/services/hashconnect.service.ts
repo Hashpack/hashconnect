@@ -44,11 +44,15 @@ export class HashconnectService {
         if(!this.loadLocalData()){
             let initData = await this.hashconnect.init(this.walletMetadata);
             this.saveData.privateKey = initData.privKey;
+
+            this.status = "Connected";
         } else {
             await this.hashconnect.init(this.walletMetadata, this.saveData.privateKey);
             this.saveData.dappPairings.forEach(async (pairing) => {
                 await this.hashconnect.connect(pairing.topic, pairing.metadata);
             })
+
+            this.status = "Paired";
         }
 
         this.hashconnect.pairingEvent.on((data) => {
@@ -59,7 +63,6 @@ export class HashconnectService {
         this.hashconnect.transactionEvent.on(this.recievedTransactionRequest)
         this.hashconnect.additionalAccountRequestEvent.on(this.accountInfoRequest);
         
-        this.status = "Connected";
 
         this.saveLocalData();
     }
@@ -173,5 +176,6 @@ export class HashconnectService {
     clearPairings() {
         localStorage.removeItem("hashconnectWalletData");
         this.saveData.dappPairings = [];
+        this.status = "Connected";
     }
 }

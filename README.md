@@ -401,7 +401,7 @@ export interface BaseMessage {
 ```js
 export interface Acknowledge extends BaseMessage {
     result: boolean;
-    msg_id: string;
+    msg_id: string; //id of the message being acknowledged
 }
 ```
 

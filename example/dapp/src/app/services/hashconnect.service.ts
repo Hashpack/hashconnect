@@ -81,7 +81,7 @@ export class HashconnectService {
             console.log("transaction response", data)
         })
 
-        this.hashconnect.accountInfoResponseEvent.on((data) => {
+        this.hashconnect.additionalAccountResponseEvent.on((data) => {
             console.log("Received account info", data);
             
             data.accountIds.forEach(id => {
@@ -133,12 +133,12 @@ export class HashconnectService {
     }
 
     async requestAccountInfo() {
-        let request:MessageTypes.AccountInfoRequest = {
+        let request:MessageTypes.AdditionalAccountRequest = {
             topic: this.saveData.topic,
             network: "mainnet"
         } 
 
-        await this.hashconnect.requestAccountInfo(this.saveData.topic, request);
+        await this.hashconnect.requestAdditionalAccounts(this.saveData.topic, request);
     }
 
     saveDataInLocalstorage() {
@@ -157,5 +157,12 @@ export class HashconnectService {
         }
         else
             return false;
+    }
+
+    clearPairings() {
+        this.saveData.pairedAccounts = [];
+        this.saveData.pairedWalletData = undefined;
+        this.status = "Connected";
+        localStorage.removeItem("hashconnectData");
     }
 }

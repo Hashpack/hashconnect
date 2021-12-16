@@ -2,16 +2,59 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&display=swap">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>HashConnect Demo</title>
+
+    <style type="text/css">
+        body {
+            background: #1F1D2B;
+            color: white;
+            color: white;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 14px;
+            line-height: 24px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+
+            overflow: hidden;
+        }
+
+
+        p {
+            margin-bottom: 8px;
+            margin-top: 0;
+        }
+
+        a, .links {
+            color: white !important;
+            font-size: 20px;
+        }
+
+        hr {
+            width: 400px;
+            max-width: 100%;
+        }
+    </style>
 </head>
 <body>
+    <h1>HashConnect Demo</h1>
     <p>Open both these links in seperate tabs, and you will be able to connect them and send transactions back and forth.</p>
 
     <p>You can also use the wallet to test your own dapp against, testnet only!</p>
 
-    <a href="dapp" target="_blank">Dapp</a>
-    <a href="wallet" target="_blank">Wallet</a>
+    <p class="links"><a href="dapp" target="_blank">Dapp</a> | <a href="wallet" target="_blank">Wallet</a></p>
+
+
+    <hr>
+
+    <p class="links"><a href="https://github.com/Hashpack/hashconnect" target="_blank">Source</a> | <a href="https://www.npmjs.com/package/hashconnect" target="_blank">NPM</a></p>
+    
+
 </body>
 </html>

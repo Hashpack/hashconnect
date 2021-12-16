@@ -2,14 +2,15 @@
     <h1>{{title}}</h1>
     <h2>Status: {{HashconnectService.status}}</h2>
 </div>
-<div>
+
+<div class="buttons">
     <button class="primary" (click)="connectToDapp()" [disabled]="HashconnectService.status == 'Initializing'">Connect to dApp</button>
+    <button class="primary" (click)="HashconnectService.clearPairings()" [disabled]="HashconnectService.saveData.dappPairings.length == 0">Clear Pairings</button>
 </div>
-<div *ngIf="HashconnectService.dappPairings.length > 0">
+
+<div *ngIf="HashconnectService.saveData.dappPairings.length > 0">
     <p>Connected to:</p>
-    <p *ngFor="let pairing of HashconnectService.dappPairings">{{ pairing.metadata.name }}</p>
+    <p *ngFor="let pairing of HashconnectService.saveData.dappPairings">{{ pairing.metadata.name }}</p>
 </div>
-<!-- <div>
-    <textarea class="testTextArea">{{HashconnectService.incomingMessage}}</textarea>
-</div> -->
+
 <router-outlet></router-outlet>

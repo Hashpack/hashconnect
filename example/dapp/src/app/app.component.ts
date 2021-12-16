@@ -17,8 +17,7 @@ export class AppComponent {
     constructor(
         public HashConnectService: HashconnectService,
         private SigningService: SigningService
-    ) {
-    }
+    ) {}
 
     ngOnInit() {
         console.log("initializing hashgroid client");
@@ -38,7 +37,7 @@ export class AppComponent {
             new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
         ]);
 
-        dialogPopup.openDialog$().subscribe(resp => {});
+        dialogPopup.openDialog$().subscribe(resp => { });
     }
 
     sendTransaction() {
@@ -53,6 +52,6 @@ export class AppComponent {
             new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
         ]);
 
-        dialogPopup.openDialog$().subscribe(resp => {});
+        dialogPopup.openDialog$().subscribe(resp => { });
     }
 }

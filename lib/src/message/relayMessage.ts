@@ -19,8 +19,8 @@ export enum RelayMessageType {
     ApprovePairing="ApprovePairing",
     RejectPairing="RejectPairing",
     Acknowledge="Acknowledge",
-    AccountInfoRequest="AccountInfoRequest",
-    AccountInfoResponse="AccountInfoResponse"
+    AdditionalAccountRequest="AdditionalAccountRequest",
+    AdditionalAccountResponse="AdditionalAccountResponse"
 }
 
 export declare namespace MessageTypes {
@@ -46,11 +46,11 @@ export declare namespace MessageTypes {
         msg_id: string;
     }
 
-    export interface AccountInfoRequest extends BaseMessage {
+    export interface AdditionalAccountRequest extends BaseMessage {
         network: string;
     }
 
-    export interface AccountInfoResponse extends BaseMessage {
+    export interface AdditionalAccountResponse extends BaseMessage {
         accountIds: string[];
         network: string;
     }

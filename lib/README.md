@@ -2,6 +2,8 @@
 
 Hashconnect is a library to connect Hedera apps to wallets, similar to web3 functionality found in the Ethereum ecosystem.
 
+The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pairing and signing functionality. It also contains a demo wallet (testnet only) which can be used to test functionality during the alpha phase. 
+
 **[View Demo](https://hashpack.github.io/hashconnect/)**
 
 - [Hashconnect](#hashconnect)
@@ -16,7 +18,7 @@ Hashconnect is a library to connect Hedera apps to wallets, similar to web3 func
     - [Second Time Connecting](#second-time-connecting)
     - [All Together](#all-together)
     - [Sending Requests](#sending-requests)
-      - [Request Account Info](#request-account-info)
+      - [Request Additional Accounts](#request-additional-accounts)
       - [Send Transaction](#send-transaction)
     - [Events](#events)
       - [FoundExtensionEvent](#foundextensionevent)
@@ -34,8 +36,8 @@ Hashconnect is a library to connect Hedera apps to wallets, similar to web3 func
         - [MessageTypes.Acknowledge](#messagetypesacknowledge)
         - [MessageTypes.Rejected](#messagetypesrejected)
         - [MessageTypes.ApprovePairing](#messagetypesapprovepairing)
-        - [MessageTypes.AccountInfoRequest](#messagetypesaccountinforequest)
-        - [MessageTypes.AccountInfoResponse](#messagetypesaccountinforesponse)
+        - [MessageTypes.AdditionalAccountRequest](#messagetypesadditionalaccountrequest)
+        - [MessageTypes.AdditionalAccountResponse](#messagetypesadditionalaccountresponse)
         - [MessageTypes.Transaction](#messagetypestransaction)
         - [MessageTypes.TransactionMetadata](#messagetypestransactionmetadata)
         - [MessageTypes.TransactionResponse](#messagetypestransactionresponse)
@@ -227,25 +229,30 @@ You'll need to add more to this code to get it working in your exact setup, but 
 
 All requests return a ID string, this can be used to track the request through acknowlege and approval/rejection events (next section).
 
-#### Request Account Info
+#### Request Additional Accounts
 
-This request takes two parameters, **topicID** and [AccountInfoRequest](#messagetypesaccountinforequest
+This request takes two parameters, **topicID** and [AdditionalAccountRequest](#messagetypesadditionalaccountrequest
 ). It is used to request additional accounts *after* the initial pairing.
 
 ```js
-await hashconnect.requestAccountInfo(saveData.topic, request);
+await hashconnect.requestAdditionalAccounts(saveData.topic, request);
 ```
 
 **Example Implementation:**
 
 ```js
-async requestAccountInfo(network: string) {
-    let request:MessageTypes.AccountInfoRequest = {
+async requestAdditionalAccounts(network: string) {
+    let request:MessageTypes.AdditionalAccountRequest = {
         topic: saveData.topic,
         network: network
     } 
 
-    await hashconnect.requestAccountInfo(saveData.topic, request);
+    await hashconnect.requestAdditionalAccounts(saveData.topic, request);
+
+    //you should bind a return handler here, handlers are explained more in the next section
+    hashconnect.additionalAccountResponseEvent.once((data) => {
+        console.log("transaction response", data)
+    })
 }
 ```
 
@@ -394,7 +401,7 @@ export interface BaseMessage {
 ```js
 export interface Acknowledge extends BaseMessage {
     result: boolean;
-    msg_id: string;
+    msg_id: string; //id of the message being acknowledged
 }
 ```
 
@@ -418,18 +425,18 @@ export interface ApprovePairing extends BaseMessage {
 }
 ```
 
-##### MessageTypes.AccountInfoRequest
+##### MessageTypes.AdditionalAccountRequest
 
 ```js
-export interface AccountInfoRequest extends BaseMessage {
+export interface AdditionalAccountRequest extends BaseMessage {
     network: string;
 }
 ```
 
-##### MessageTypes.AccountInfoResponse
+##### MessageTypes.AdditionalAccountResponse
 
 ```js
-export interface AccountInfoResponse extends BaseMessage {
+export interface AdditionalAccountResponse extends BaseMessage {
     accountIds: string[];
     network: string;
 }
@@ -449,7 +456,7 @@ export interface Transaction extends BaseMessage {
 ```js
 export class TransactionMetadata extends BaseMessage {
     accountToSign: string;
-    returnTransaction: boolean;
+    returnTransaction: boolean; //set to true if you want the wallet to return a signed transaction instead of executing it
     nftPreviewUrl?: string;
 }
 ```

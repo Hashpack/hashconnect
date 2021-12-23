@@ -96,8 +96,8 @@ export class TransactionRecievedComponent implements OnInit {
             break;
         }
     }
-
 }
+
 enum DisplayTypes {
     Transfer="Transfer",
     TokenAssociate="TokenAssociate",

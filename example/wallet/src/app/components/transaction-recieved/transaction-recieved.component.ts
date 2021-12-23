@@ -3,7 +3,7 @@ import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
 import { Subscription } from 'rxjs';
 import { HashConnectTypes, MessageTypes } from 'hashconnect';
 import { SigningService } from 'src/app/services/signing.service';
-import { Hbar, Transaction, TransferTransaction } from '@hashgraph/sdk';
+import { Hbar, TokenAssociateTransaction, TokenDissociateTransaction, Transaction, TransferTransaction } from '@hashgraph/sdk';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { DappPairing } from 'src/app/classes/dapp-pairing';
 import TokenTransferAccountMap from '@hashgraph/sdk/lib/account/TokenTransferAccountMap';
@@ -25,10 +25,15 @@ export class TransactionRecievedComponent implements OnInit {
     transaction: MessageTypes.Transaction;
     parsedTransaction: Transaction;
     sentBy: DappPairing;
+
+    type: DisplayTypes;
+    
     display: any = {
         hbarTransfers: [],
         nftTransfers: [],
-        tokenTransfers: []
+        tokenTransfers: [],
+        tokenAssociateIds: [],
+        tokenDisassociateIds: []
     }
 
     ngOnInit(): void {
@@ -52,6 +57,8 @@ export class TransactionRecievedComponent implements OnInit {
 
         switch(true) {
             case this.parsedTransaction instanceof TransferTransaction:
+                this.type = DisplayTypes.Transfer;
+
                 let trans: TransferTransaction =  this.parsedTransaction as TransferTransaction;
 
                 trans.hbarTransfers._map.forEach((value: Hbar, key: string, map: Map<string, Hbar>) => {
@@ -69,7 +76,31 @@ export class TransactionRecievedComponent implements OnInit {
                 })
 
             break;
+            case this.parsedTransaction instanceof TokenAssociateTransaction:
+                this.type = DisplayTypes.TokenAssociate;
+
+                let assTrans: TokenAssociateTransaction = this.parsedTransaction as TokenAssociateTransaction;
+                
+                assTrans.tokenIds?.forEach(token => {
+                    this.display.tokenAssociateIds.push(token.toString());
+                })
+            break;
+            case this.parsedTransaction instanceof TokenDissociateTransaction:
+                this.type = DisplayTypes.TokenDisassociate;
+
+                let disassTrans: TokenDissociateTransaction = this.parsedTransaction as TokenDissociateTransaction;
+                
+                disassTrans.tokenIds?.forEach(token => {
+                    this.display.tokenDisassociateIds.push(token.toString());
+                })
+            break;
         }
     }
+}
 
+enum DisplayTypes {
+    Transfer="Transfer",
+    TokenAssociate="TokenAssociate",
+    TokenDisassociate="TokenDisassociate",
+    TokenCreate="TokenCreate"
 }

@@ -23,7 +23,6 @@ export class SendTransactionComponent implements OnInit {
     memo: string = "";
     signingAcct: string = "";
 
-    state: TransactionType = TransactionType.Transfer;
 
     data = {
         transfer: {
@@ -61,6 +60,10 @@ export class SendTransactionComponent implements OnInit {
                 if (_Button.ID === 'cancel') {
                     this.dialogBelonging.EventsController.close();
                 }
+
+                if (_Button.ID === 'send') {
+                    this.buildTransaction();
+                }
             })
         );
 
@@ -89,15 +92,6 @@ export class SendTransactionComponent implements OnInit {
         this.HashconnectService.sendTransaction(trans, this.signingAcct);
     }
 
-    buildTokenAssociate() {
-        let trans = new TokenAssociateTransaction()
-            .setTokenIds(["0.0.13285356"])
-            .setAccountId(this.signingAcct)
-            .setTransactionMemo(this.memo)
-
-        this.HashconnectService.sendTransaction(trans, this.signingAcct);
-    }
-
     addTokenTransfer() {
         this.data.transfer.tokenTransfers.push({
             tokenId: "0.0.3084461",
@@ -106,9 +100,4 @@ export class SendTransactionComponent implements OnInit {
         })
     }
 
-}
-
-enum TransactionType {
-    Transfer = "Transfer",
-    TokenAssociate = "TokenAssociate"
 }

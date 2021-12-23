@@ -7,13 +7,17 @@ import { DialogConfigModule, NgxAwesomePopupModule } from '@costlydeveloper/ngx-
 import { PairingComponent } from './components/pairing/pairing.component';
 import { AccountInfoComponent } from './components/account-info/account-info.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';
+import { AssociateTokenComponent } from './components/associate-token/associate-token.component';
+import { DisassociateTokenComponent } from './components/disassociate-token/disassociate-token.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     PairingComponent,
     AccountInfoComponent,
-    SendTransactionComponent
+    SendTransactionComponent,
+    AssociateTokenComponent,
+    DisassociateTokenComponent
   ],
   imports: [
     BrowserModule,

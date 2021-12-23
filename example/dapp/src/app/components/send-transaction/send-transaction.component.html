@@ -1,11 +1,6 @@
-<h3>Send transaction</h3>
+<h2>Send transaction</h2>
 
-<select name="" id="" [(ngModel)]="state">
-    <option value="Transfer">Transfer</option>
-    <option value="TokenAssociate">TokenAssociate</option>
-</select>
-
-<div *ngIf="state == 'Transfer'">
+<div>
 
     <p>To: {{ data.transfer.toAcc }}</p>
 
@@ -56,24 +51,4 @@
     <hr>
 
     <p>Memo: <input type="text" [(ngModel)]="memo"></p>
-
-    <button class="primary" (click)="buildTransaction()">Send</button>
-</div>
-
-<div *ngIf="state == 'TokenAssociate'">
-    <p>
-        Token to associate:
-        <a href="https://testnet.dragonglass.me/hedera/tokens/0.0.13285356" target="_blank">0.0.13285356</a>
-    </p>
-
-    <p>To:
-        <select [(ngModel)]="signingAcct">
-            <option *ngFor="let acc of HashconnectService.saveData.pairedAccounts" [value]="acc" [selected]="signingAcct == acc">
-                {{acc}}</option>
-        </select>
-    </p>
-
-    <p>Memo: <input type="text" [(ngModel)]="memo"></p>
-
-    <button class="primary" (click)="buildTokenAssociate()">Send</button>
 </div>

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ButtonLayoutDisplay, ButtonMaker, DialogInitializer, DialogLayoutDisplay } from '@costlydeveloper/ngx-awesome-popup';
+import { AssociateTokenComponent } from './components/associate-token/associate-token.component';
 import { PairingComponent } from './components/pairing/pairing.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';
 
@@ -49,6 +50,22 @@ export class AppComponent {
         });
 
         dialogPopup.setButtons([
+            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
+        ]);
+
+        dialogPopup.openDialog$().subscribe(resp => { });
+    }
+
+    associateToken() {
+        const dialogPopup = new DialogInitializer(AssociateTokenComponent);
+
+        dialogPopup.setConfig({
+            Width: '500px',
+            LayoutType: DialogLayoutDisplay.NONE
+        });
+
+        dialogPopup.setButtons([
+            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.PRIMARY),
             new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
         ]);
 

@@ -8,6 +8,7 @@ import { PairingComponent } from './components/pairing/pairing.component';
 import { AccountInfoComponent } from './components/account-info/account-info.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';
 import { AssociateTokenComponent } from './components/associate-token/associate-token.component';
+import { DisassociateTokenComponent } from './components/disassociate-token/disassociate-token.component';
 
 @NgModule({
   declarations: [
@@ -15,7 +16,8 @@ import { AssociateTokenComponent } from './components/associate-token/associate-
     PairingComponent,
     AccountInfoComponent,
     SendTransactionComponent,
-    AssociateTokenComponent
+    AssociateTokenComponent,
+    DisassociateTokenComponent
   ],
   imports: [
     BrowserModule,

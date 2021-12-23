@@ -48,6 +48,7 @@ export class AssociateTokenComponent implements OnInit {
         })
 
         trans.setTokenIds(tokenIds);
+        trans.setAccountId(this.signingAcct);
 
         this.HashconnectService.sendTransaction(trans, this.signingAcct);
     }

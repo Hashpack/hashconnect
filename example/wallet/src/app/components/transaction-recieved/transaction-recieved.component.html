@@ -1,29 +1,47 @@
-<p>Transaction Received!</p>
+<section *ngIf="type == 'Transfer'">
+    <h2>Transaction Received!</h2>
 
-<div class="top">
-    <img [src]="sentBy.metadata.icon" alt="">
-    <p [innerHTML]="sentBy.metadata.url "></p>
-</div>
-
-<p><span [innerHTML]="sentBy.metadata.name"></span> would like you to sign a transaction.</p>
-
-<div *ngIf="display.hbarTransfers.length > 0">
-    <p>HBAR Transfers</p>
-    <div class="hbarTransfer" *ngFor="let transfer of display.hbarTransfers">
-        {{ transfer.account }}: {{ transfer.value }}
+    <div class="top">
+        <img [src]="sentBy.metadata.icon" alt="">
+        <p [innerHTML]="sentBy.metadata.url "></p>
     </div>
-</div>
 
-<div *ngIf="display.tokenTransfers.length > 0">
-    <p>Token Transfers</p>
-    <div class="hbarTransfer" *ngFor="let token of display.tokenTransfers">
-        <p>{{ token.tokenId }}</p>
+    <p><span [innerHTML]="sentBy.metadata.name"></span> would like you to sign a transaction.</p>
 
-        <div class="hbarTransfer" *ngFor="let transfer of token.transfers">
-            {{ transfer.accountId }}: {{ transfer.amount }}
+    <div *ngIf="display.hbarTransfers.length > 0">
+        <p>HBAR Transfers</p>
+        <div class="hbarTransfer" *ngFor="let transfer of display.hbarTransfers">
+            {{ transfer.account }}: {{ transfer.value }}
         </div>
     </div>
-</div>
 
-<p>Memo: {{ parsedTransaction.transactionMemo }}</p>
+    <div *ngIf="display.tokenTransfers.length > 0">
+        <p>Token Transfers</p>
+        <div class="hbarTransfer" *ngFor="let token of display.tokenTransfers">
+            <p>{{ token.tokenId }}</p>
 
+            <div class="hbarTransfer" *ngFor="let transfer of token.transfers">
+                {{ transfer.accountId }}: {{ transfer.amount }}
+            </div>
+        </div>
+    </div>
+
+    <p>Memo: {{ parsedTransaction.transactionMemo }}</p>
+</section>
+
+<section *ngIf="type == 'TokenAssociate'">
+    <h2>Token Associate Request</h2>
+
+    <div class="top">
+        <img [src]="sentBy.metadata.icon" alt="">
+        <p [innerHTML]="sentBy.metadata.url "></p>
+    </div>
+
+    <p><span [innerHTML]="sentBy.metadata.name"></span> would like you to approve a token association.</p>
+
+
+    <h3>Tokens to associate:</h3>
+
+    <p *ngFor="let tokenId of display.tokenAssociateIds">{{tokenId}}</p>
+
+</section>

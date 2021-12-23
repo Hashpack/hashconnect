@@ -65,7 +65,7 @@ export class AppComponent {
         });
 
         dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.PRIMARY),
+            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
             new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
         ]);
 

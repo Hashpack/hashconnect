@@ -7,7 +7,9 @@ import {
     AccountId,
     Transaction,
     Hbar,
-    Status
+    Status,
+    TransactionReceipt,
+    ReceiptStatusError
 } from "@hashgraph/sdk"
 import { HashconnectService } from './hashconnect.service';
 
@@ -16,7 +18,7 @@ import { HashconnectService } from './hashconnect.service';
 })
 export class SigningService {
 
-    accounts: Array<{id: string, privKey: string, name: string}> = [
+    accounts: Array<{ id: string, privKey: string, name: string }> = [
         {
             name: "Test account 1",
             id: "0.0.15655453",
@@ -36,31 +38,40 @@ export class SigningService {
     ) { }
 
     init() {
-        
+
     }
 
-    async approveTransaction(transaction: Uint8Array, accountToSign: string, topic: string) {
-        let account: {id: string, privKey: string, name: string} = this.accounts.find(account => account.id == accountToSign )!
-        
-        this.client = Client.forTestnet();
-        this.client.setOperator(account.id, account.privKey);
+    async approveTransaction(transaction: Uint8Array, accountToSign: string, topic: string): Promise<TransactionReceipt | ReceiptStatusError> {
+            let account: { id: string, privKey: string, name: string } = this.accounts.find(account => account.id == accountToSign)!
 
-        console.log("Received transaction message:");
-        const privKey = PrivateKey.fromString(account.privKey);
-        const pubKey = privKey.publicKey;
+            this.client = Client.forTestnet();
+            this.client.setOperator(account.id, account.privKey);
 
-        const sig = privKey.signTransaction(Transaction.fromBytes(transaction) as any);
+            console.log("Received transaction message:");
+            const privKey = PrivateKey.fromString(account.privKey);
+            const pubKey = privKey.publicKey;
 
-        let trans = Transaction.fromBytes(transaction)
-        trans = await trans.addSignature(pubKey, sig);
-        const val = await trans.execute(this.client);
-        const rec = await val.getReceipt(this.client);
-        console.log(rec.status.toString());
+            const sig = privKey.signTransaction(Transaction.fromBytes(transaction) as any);
 
-        if(rec.status == Status.Success) {
-            this.HashconnectService.transactionResponse(topic, true);
-        } else {
-            this.HashconnectService.transactionResponse(topic, false, rec.status.toString());
-        }
+            console.log("signing transaction");
+            let trans = Transaction.fromBytes(transaction)
+            trans = await trans.addSignature(pubKey, sig);
+
+            console.log("executing transaction...");
+            const val = await trans.execute(this.client);
+
+
+            console.log("getting receipt...")
+            let rec: TransactionReceipt | ReceiptStatusError = await val.getReceipt(this.client).catch((err:ReceiptStatusError) => {
+                return err;
+            });
+
+            console.log(rec.status.toString());
+            if (rec.status == Status.Success) 
+                this.HashconnectService.transactionResponse(topic, true);
+            else 
+                this.HashconnectService.transactionResponse(topic, false, rec.status.toString());
+
+            return rec;
     }
 }

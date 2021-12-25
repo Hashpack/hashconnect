@@ -3,6 +3,7 @@ import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
 import { TokenDissociateTransaction } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
+import { SigningService } from 'src/app/services/signing.service';
 
 @Component({
   selector: 'app-disassociate-token',
@@ -13,6 +14,7 @@ export class DisassociateTokenComponent implements OnInit {
     constructor(
         @Inject('dialogBelonging') private dialogBelonging: DialogBelonging,
         public HashconnectService: HashconnectService,
+        private SigningService: SigningService
     ) { }
 
     subscriptions: Subscription = new Subscription();
@@ -49,6 +51,8 @@ export class DisassociateTokenComponent implements OnInit {
         trans.setTokenIds(tokenIds);
         trans.setAccountId(this.signingAcct);
 
-        this.HashconnectService.sendTransaction(trans, this.signingAcct);
+        let transBytes:Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
+
+        this.HashconnectService.sendTransaction(transBytes, this.signingAcct);
     }
 }

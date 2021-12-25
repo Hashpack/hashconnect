@@ -6,7 +6,8 @@ import {
     TransferTransaction,
     Transaction,
     AccountId,
-    Hbar
+    Hbar,
+    TransactionId
 } from "@hashgraph/sdk"
 
 @Injectable({
@@ -33,15 +34,18 @@ export class SigningService {
         this.client.setOperator(this.acc, this.pk);
     }
 
-    async signAndMakeBytes(trans: Transaction) {
+    async signAndMakeBytes(trans: Transaction, signingAcctId: string) {
         
         const privKey = PrivateKey.fromString(this.pk);
         const pubKey = privKey.publicKey;
 
-        let nodeId = [];
-        nodeId.push(new AccountId(3))
-
-        trans = await trans.freezeWith(this.client);
+        let nodeId = [new AccountId(3)];
+        let transId = TransactionId.generate(signingAcctId)
+        
+        trans.setNodeAccountIds(nodeId);
+        trans.setTransactionId(transId);
+        
+        trans = await trans.freeze();
 
         let transBytes = trans.toBytes();
 
@@ -54,6 +58,18 @@ export class SigningService {
         console.log("Transaction bytes", outBytes);
 
         return outBytes;
+    }
 
+    async makeBytes(trans: Transaction, signingAcctId: string) {
+        
+        let transId = TransactionId.generate(signingAcctId)
+        trans.setTransactionId(transId);
+        trans.setNodeAccountIds([new AccountId(3)]);
+
+        await trans.freeze();
+        
+        let transBytes = trans.toBytes();
+
+        return transBytes;
     }
 }

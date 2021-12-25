@@ -70,7 +70,7 @@ export class SendTransactionComponent implements OnInit {
         this.signingAcct = this.SigningService.acc;
     }
 
-    buildTransaction() {
+    async buildTransaction() {
         let trans = new TransferTransaction()
             .setTransactionMemo(this.memo);
 
@@ -89,7 +89,9 @@ export class SendTransactionComponent implements OnInit {
 
         }
 
-        this.HashconnectService.sendTransaction(trans, this.signingAcct);
+        let transactionBytes: Uint8Array = await this.SigningService.signAndMakeBytes(trans, this.signingAcct);
+
+        this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct);
     }
 
     addTokenTransfer() {

@@ -116,13 +116,12 @@ export class HashconnectService {
     }
 
 
-    async sendTransaction(trans: Transaction, acctToSign: string) {
+    async sendTransaction(trans: Uint8Array, acctToSign: string) {
         
-        let transactionBytes: Uint8Array = await this.SigningService.signAndMakeBytes(trans);
 
         const transaction: MessageTypes.Transaction = {
             topic: this.saveData.topic,
-            byteArray: transactionBytes,
+            byteArray: trans,
             metadata: {
                 accountToSign: acctToSign,
                 returnTransaction: false

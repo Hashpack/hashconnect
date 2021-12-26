@@ -41,10 +41,10 @@ export class SendTransactionComponent implements OnInit {
             include_nft: false,
             nftTransfers: [
                 {
-                    tokenId: "",
+                    tokenId: "0.0.14658561",
                     serialNumber: 0,
-                    treasuryId: "",
-                    toId: ""
+                    sender: "",
+                    receiver: ""
                 }
             ]
         },
@@ -86,7 +86,10 @@ export class SendTransactionComponent implements OnInit {
         }
 
         if (this.data.transfer.include_nft) {
-
+            // trans.addNftTransfer()
+            this.data.transfer.nftTransfers.forEach(nftTrans => {
+                trans.addNftTransfer(nftTrans.tokenId, nftTrans.serialNumber, nftTrans.sender, nftTrans.receiver);
+            })
         }
 
         let transactionBytes: Uint8Array = await this.SigningService.signAndMakeBytes(trans, this.signingAcct);
@@ -99,6 +102,15 @@ export class SendTransactionComponent implements OnInit {
             tokenId: "0.0.3084461",
             accountId: "",
             amount: 1
+        })
+    }
+
+    addNFTTransfer() {
+        this.data.transfer.nftTransfers.push({
+            tokenId: "0.0.14658561",
+            serialNumber: 0,
+            sender: "",
+            receiver: ""
         })
     }
 

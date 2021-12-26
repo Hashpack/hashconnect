@@ -26,6 +26,17 @@
         </div>
     </div>
 
+    <div *ngIf="display.nftTransfers.length > 0">
+        <p>NFT Transfers</p>
+        <div class="hbarTransfer" *ngFor="let nft of display.nftTransfers">
+            <p>{{ nft.tokenId }}</p>
+
+            <div class="hbarTransfer" *ngFor="let transfer of nft.transfers">
+                <p>serial: {{ transfer.serial }}, from: {{ transfer.sender }}, to: {{ transfer.recipient }}</p>
+            </div>
+        </div>
+    </div>
+
     <p>Memo: {{ parsedTransaction.transactionMemo }}</p>
 </section>
 

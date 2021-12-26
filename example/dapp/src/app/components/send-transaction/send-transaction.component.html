@@ -32,7 +32,7 @@
         <div *ngFor="let tokenTrans of data.transfer.tokenTransfers">
             <p>Token ID: <input type="text" name="" id="" [(ngModel)]="tokenTrans.tokenId"></p>
             <p>Token Amount: <input type="number" name="" id="" [(ngModel)]="tokenTrans.amount" max="5" min="-5"></p>
-            <p>Account ID: <input type="text" name="" id="" [(ngModel)]="tokenTrans.accountId"></p>
+            <p>Sender ID: <input type="text" name="" id="" [(ngModel)]="tokenTrans.accountId"></p>
         </div>
 
         <button class="outline" (click)="addTokenTransfer()">Add Token Transaction</button>
@@ -45,7 +45,14 @@
     </p>
 
     <div *ngIf="data.transfer.include_nft">
-        <p>todo</p>
+        <div *ngFor="let nftTrans of data.transfer.nftTransfers">
+            <p>Token ID: <input type="text" name="" id="" [(ngModel)]="nftTrans.tokenId"></p>
+            <p>Serial Number: <input type="number" name="" id="" [(ngModel)]="nftTrans.serialNumber" max="9999999" min="0"></p>
+            <p>Sender ID: <input type="text" name="" id="" [(ngModel)]="nftTrans.sender"></p>
+            <p>Receiver ID: <input type="text" name="" id="" [(ngModel)]="nftTrans.receiver"></p>
+        </div>
+
+        <button class="outline" (click)="addNFTTransfer()">Add NFT Transfer</button>
     </div>
     
     <hr>

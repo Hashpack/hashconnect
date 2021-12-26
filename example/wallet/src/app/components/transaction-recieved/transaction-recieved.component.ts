@@ -7,6 +7,7 @@ import { Hbar, TokenAssociateTransaction, TokenDissociateTransaction, Transactio
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { DappPairing } from 'src/app/classes/dapp-pairing';
 import TokenTransferAccountMap from '@hashgraph/sdk/lib/account/TokenTransferAccountMap';
+import { NftTransfer } from '@hashgraph/sdk/lib/account/TokenNftTransferMap';
 
 @Component({
     selector: 'app-transaction-recieved',
@@ -73,6 +74,16 @@ export class TransactionRecievedComponent implements OnInit {
                     })
 
                     this.display.tokenTransfers.push(tokenTransferData);
+                })
+
+                trans.nftTransfers._map.forEach((transfers: NftTransfer[], tokenId: string) => {
+                    let nftTransferData: any = { tokenId: tokenId, transfers: []};
+
+                    transfers.forEach((value: NftTransfer, index: number, array: NftTransfer[]) => {
+                        nftTransferData.transfers.push({ sender: value.sender.toString(), recipient: value.recipient.toString(), serial: value.serial.toString() });
+                    })
+
+                    this.display.nftTransfers.push(nftTransferData);
                 })
 
             break;

@@ -9,17 +9,17 @@ export interface IMessageHandler {
 export class MessageHandler implements IMessageHandler {
     
     async onPayload(message: RelayMessage, hc: IHashConnect): Promise<void> {
-        console.log(`Message Received of type ${message.type}, sent at ${message.timestamp.toString()}`, message.data);
-            
-        // Should always have a topic
         const parsedData = JSON.parse(message.data);
+        if(hc.debug) console.log(`hashconnect - Message Received of type ${message.type}, sent at ${message.timestamp.toString()}`, parsedData);
+        
+        // Should always have a topic
         if(!parsedData.topic) {
-            console.error("no topic in message");
+            console.error("hashconnect - no topic in message");
         }
 
         switch (message.type) {
             case RelayMessageType.ApprovePairing:
-                console.log("approved", message.data);
+                if(hc.debug) console.log("hashconnect - approved", message.data);
                 let approval_data: MessageTypes.ApprovePairing = JSON.parse(message.data);
                 
                 hc.publicKeys[approval_data.topic] = approval_data.metadata.publicKey as string;
@@ -30,12 +30,12 @@ export class MessageHandler implements IMessageHandler {
             case RelayMessageType.Acknowledge:
                 let ack_data: MessageTypes.Acknowledge = JSON.parse(message.data);
                 
-                console.log("acknowledged - id: " + ack_data.msg_id);
+                if(hc.debug) console.log("hashconnect - acknowledged - id: " + ack_data.msg_id);
 
                 hc.acknowledgeMessageEvent.emit(ack_data)
             break;
             case RelayMessageType.Transaction:
-                console.log("Got transaction", message)
+                if(hc.debug) console.log("hashconnect - Got transaction", message)
                 
                 let transaction_data: MessageTypes.Transaction = JSON.parse(message.data);
                 transaction_data.byteArray = new Uint8Array(Buffer.from(transaction_data.byteArray as string,'base64'));
@@ -45,7 +45,7 @@ export class MessageHandler implements IMessageHandler {
                 await hc.acknowledge(parsedData.topic, hc.publicKeys[transaction_data.topic], transaction_data.id!);
             break;
             case RelayMessageType.TransactionResponse:
-                console.log("Got transaction", message)
+                if(hc.debug) console.log("hashconnect - Got transaction response", message)
                 
                 let transaction_response_data: MessageTypes.TransactionResponse = JSON.parse(message.data);
     
@@ -57,7 +57,7 @@ export class MessageHandler implements IMessageHandler {
                 await hc.acknowledge(parsedData.topic, hc.publicKeys[transaction_response_data.topic], transaction_response_data.id!);
             break;
             case RelayMessageType.AdditionalAccountRequest:
-                console.log("Got account info request", message);
+                if(hc.debug) console.log("hashconnect - Got account info request", message);
 
                 let request_data: MessageTypes.AdditionalAccountRequest = JSON.parse(message.data);
 
@@ -66,7 +66,7 @@ export class MessageHandler implements IMessageHandler {
                 await hc.acknowledge(parsedData.topic, hc.publicKeys[request_data.topic], request_data.id!);
             break;
             case RelayMessageType.AdditionalAccountResponse:
-                console.log("Got account info response", message);
+                if(hc.debug) console.log("hashconnect - Got account info response", message);
 
                 let response_data: MessageTypes.AdditionalAccountResponse = JSON.parse(message.data);
 

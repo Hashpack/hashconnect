@@ -39,7 +39,7 @@ export class HashconnectService {
     }
 
     async initHashconnect() {
-        this.hashconnect = new HashConnect();
+        this.hashconnect = new HashConnect(true);
 
         if(!this.loadLocalData()){
             let initData = await this.hashconnect.init(this.walletMetadata);

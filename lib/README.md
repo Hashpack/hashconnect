@@ -74,10 +74,10 @@ Import the library like you would any npm package
 import { HashConnect } from 'hashconnect';
 ```
 
-Create a variable to hold an instance of Hashconnect
+Create a variable to hold an instance of Hashconnect, pass ```true``` in to enable debug messages - very very useful for development.
 
 ```js
-let hashconnect = new HashConnect();
+let hashconnect = new HashConnect(true);
 ```
 
 ### Metadata

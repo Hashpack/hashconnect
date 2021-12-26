@@ -61,13 +61,13 @@ export class WakuRelay implements IRelay {
 
     async init(): Promise<void> {
         // TODO error flow
-        this.waku = await Waku.create({ bootstrap: true });
+        this.waku = await Waku.create({ bootstrap: true, relayKeepAlive: 59, pingKeepAlive: 59 });
 
         const nodes = await getBootstrapNodes();
         await Promise.all(nodes.map((addr) => this.waku.dial(addr)));
     
         console.log("Waiting for peer...");
-        await this.waku.waitForConnectedPeer()
+        await this.waku.waitForConnectedPeer();
 
         console.log("connected");
     }

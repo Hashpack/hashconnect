@@ -74,10 +74,10 @@ Import the library like you would any npm package
 import { HashConnect } from 'hashconnect';
 ```
 
-Create a variable to hold an instance of Hashconnect, pass ```true``` in to enable debug messages - very very useful for development.
+Create a variable to hold an instance of Hashconnect
 
 ```js
-let hashconnect = new HashConnect(true);
+let hashconnect = new HashConnect();
 ```
 
 ### Metadata
@@ -119,8 +119,10 @@ If this is the first time a user is pairing, you will need to generate a new pai
 
 You can also specify what network you would like to request accounts for, either "testnet" or "mainnet".
 
+The final argument is a boolean if you wish to have multiple accounts able to be selected or not, generally you'll want this to be false unless you want to use multiple account ID's in your app.
+
 ```js
-let pairingString = hashconnect.generatePairingString(state, "testnet");
+let pairingString = hashconnect.generatePairingString(state, "testnet", false);
 ```
 
 A pairing string is a base64 encoded string containing the topic to subscribe to and the metadata about your app.
@@ -196,7 +198,7 @@ async initHashconnect() {
         saveData.topic = state.topic;
         
         //generate a pairing string, which you can display and generate a QR code from
-        saveData.pairingString = hashconnect.generatePairingString(state, "testnet");
+        saveData.pairingString = hashconnect.generatePairingString(state, "testnet", true);
         
         //find any supported local wallets
         hashconnect.findLocalWallets();
@@ -430,6 +432,7 @@ export interface ApprovePairing extends BaseMessage {
 ```js
 export interface AdditionalAccountRequest extends BaseMessage {
     network: string;
+    multiAccount: boolean;
 }
 ```
 

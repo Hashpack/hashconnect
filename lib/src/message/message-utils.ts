@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
+import { HashConnect } from '../main';
 import { RelayMessage, RelayMessageType } from './';
 import { MessageTypes } from './relayMessage';
 
@@ -20,11 +21,11 @@ export class MessageUtil {
      * @param type type of message
      * @returns protobuf message
      */
-     public prepareSimpleMessage(type: RelayMessageType, data: MessageTypes.BaseMessage) {
+     public prepareSimpleMessage(type: RelayMessageType, data: MessageTypes.BaseMessage, hc: HashConnect) {
 
         data.id = uuidv4();
 
-        console.log("Sending message - id: " + data.id);
+        if(hc.debug) console.log("hashconnect - Sending message - id: " + data.id);
         
         return this.proto.SimpleMessage.encode(new RelayMessage(
             Date.now(),
@@ -33,7 +34,8 @@ export class MessageUtil {
         ));
     }
 
-    public decode(payload: any): RelayMessage {
+    public decode(payload: any, hc: HashConnect): RelayMessage {
+        if(hc.debug) console.log("hashconnect - decoding message payload")
         return this.proto.SimpleMessage.decode(payload)
     }
     

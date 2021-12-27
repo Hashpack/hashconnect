@@ -28,8 +28,10 @@ export class HashConnect implements IHashConnect {
     publicKeys: Record<string, string> = {};
     private privateKey: string;
 
-    constructor() {
-        this.relay = new WakuRelay();
+    debug: boolean = false;
+
+    constructor(debug?: boolean) {
+        this.relay = new WakuRelay(this);
         
         this.foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
         this.pairingEvent = new Event<MessageTypes.ApprovePairing>();
@@ -42,11 +44,15 @@ export class HashConnect implements IHashConnect {
         this.messages = new MessageUtil();
         this.messageParser = new MessageHandler();
 
+        if(debug) this.debug = debug;
+
         this.setupEvents();
     }
 
     async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: string): Promise<HashConnectTypes.InitilizationData> {
         this.metadata = metadata;
+
+        if(this.debug) console.log("hashconnect - Initializing")
 
         if(!privKey)
             this.privateKey = this.generateEncryptionKeys();
@@ -65,18 +71,20 @@ export class HashConnect implements IHashConnect {
         await this.relay.init();
 
         this.relay.addDecryptionKey(this.privateKey);
-
+        
         return initData;
     }
 
 
     async connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<HashConnectTypes.ConnectionState> {
         if(!topic) {
+            if(this.debug) console.log("hashconnect - Creating new topic id");
             topic = this.messages.createRandomTopicId();
         }
 
         if(metadataToConnect)
             this.publicKeys[topic] = metadataToConnect.publicKey as string;
+
 
         let state: HashConnectTypes.ConnectionState = {
             topic: topic,
@@ -93,10 +101,11 @@ export class HashConnect implements IHashConnect {
      */
      private setupEvents() {
         // This will listen for a payload emission from the relay
+        if(this.debug) console.log("hashconnect - Setting up events");
         this.relay.payload.on(async (payload) => {
             if (!payload) return;
 
-            const message: RelayMessage = this.messages.decode(payload);
+            const message: RelayMessage = this.messages.decode(payload, this);
 
             await this.messageParser.onPayload(message, this);
         })
@@ -109,14 +118,14 @@ export class HashConnect implements IHashConnect {
     async sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<string> {
         transaction.byteArray = Buffer.from(transaction.byteArray).toString("base64");
         
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction);
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction, this);
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
         return msg.id;
     }
 
     async requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<string> {
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountRequest, message);
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountRequest, message, this);
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
@@ -126,7 +135,7 @@ export class HashConnect implements IHashConnect {
     async sendAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountResponse): Promise<string> {
         message.accountIds = message.accountIds.map(id => {return id});
         
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountResponse, message);
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountResponse, message, this);
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
@@ -134,7 +143,7 @@ export class HashConnect implements IHashConnect {
     }
 
     async sendTransactionResponse(topic: string, message: MessageTypes.TransactionResponse): Promise<string> {
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.TransactionResponse, message);
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.TransactionResponse, message, this);
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
@@ -142,6 +151,7 @@ export class HashConnect implements IHashConnect {
     }
 
     async pair(pairingData: HashConnectTypes.PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState> {
+        if(this.debug) console.log("hashconnect - Pairing to " + pairingData.metadata.name);
         let state = await this.connect(pairingData.topic);
         
         let msg: MessageTypes.ApprovePairing = {
@@ -159,7 +169,7 @@ export class HashConnect implements IHashConnect {
 
         this.publicKeys[pairingData.topic] = pairingData.metadata.publicKey as string;
         
-        const payload = this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, msg)
+        const payload = this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, msg, this)
 
         this.relay.publish(pairingData.topic, payload, this.publicKeys[pairingData.topic])
 
@@ -176,7 +186,7 @@ export class HashConnect implements IHashConnect {
         reject.reason = this.sanitizeString(reject.reason!);
         
         // create protobuf message
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.RejectPairing, reject)
+        const msg = this.messages.prepareSimpleMessage(RelayMessageType.RejectPairing, reject, this)
         
         // Publish the rejection
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
@@ -189,7 +199,7 @@ export class HashConnect implements IHashConnect {
             msg_id: msg_id
         }
         
-        const ackPayload = this.messages.prepareSimpleMessage(RelayMessageType.Acknowledge, ack);
+        const ackPayload = this.messages.prepareSimpleMessage(RelayMessageType.Acknowledge, ack, this);
         await this.relay.publish(topic, ackPayload, pubKey)
     }  
     
@@ -198,11 +208,14 @@ export class HashConnect implements IHashConnect {
      * Helpers
      */
 
-    generatePairingString(state: HashConnectTypes.ConnectionState, network: string): string {
+    generatePairingString(state: HashConnectTypes.ConnectionState, network: string, multiAccount: boolean): string {
+        if(this.debug) console.log("hashconnect - Generating pairing string");
+
         let data: HashConnectTypes.PairingData = {
             metadata: this.metadata,
             topic: state.topic,
-            network: network
+            network: network,
+            multiAccount: multiAccount
         }
 
         data.metadata.description = this.sanitizeString(data.metadata.description);
@@ -224,10 +237,11 @@ export class HashConnect implements IHashConnect {
     }
 
     private generateEncryptionKeys(): string {
+        if(this.debug) console.log("hashconnect - Generating new encryption key");
         let privKey = generatePrivateKey();
         // let pubKey = getPublicKey(privKey)
         let privKeyString = Buffer.from(privKey).toString('base64')
-        // console.log(key);
+        // if(this.debug) console.log(key);
         return privKeyString;
     }
 
@@ -243,10 +257,10 @@ export class HashConnect implements IHashConnect {
      */
 
     findLocalWallets() {
-        console.log("Finding local wallets");
+        if(this.debug) console.log("hashconnect - Finding local wallets");
         window.addEventListener("message", (event) => {
             if (event.data.type && (event.data.type == "hashconnect-query-extension-response")) {
-                console.log("Local wallet metadata recieved", event.data);
+                if(this.debug) console.log("hashconnect - Local wallet metadata recieved", event.data);
                 if(event.data.metadata)
                     this.foundExtensionEvent.emit(event.data.metadata);
             }
@@ -258,7 +272,7 @@ export class HashConnect implements IHashConnect {
     }
 
     connectToLocalWallet(pairingString: string) {
-        console.log("Connecting to local wallet")
+        if(this.debug) console.log("hashconnect - Connecting to local wallet")
         //todo: add extension metadata support
         window.postMessage({ type:"hashconnect-connect-extension", pairingString: pairingString }, "*")
     }

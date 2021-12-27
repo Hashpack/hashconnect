@@ -22,7 +22,6 @@ export class AppComponent {
     ) {}
 
     ngOnInit() {
-        console.log("initializing hashgroid client");
         this.SigningService.init();
         this.HashConnectService.initHashconnect();
     }

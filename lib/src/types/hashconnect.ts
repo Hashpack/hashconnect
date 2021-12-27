@@ -23,6 +23,8 @@ export interface IHashConnect {
     /** Message event parser */
     messageParser: MessageHandler;
     publicKeys: Record<string, string>;
+
+    debug: boolean;
     
     /**
      * Initialize the client
@@ -75,7 +77,7 @@ export interface IHashConnect {
      * @param state the state object from .connect()
      * @param network either 'testnet' or 'mainnet'
      */
-    generatePairingString(state: HashConnectTypes.ConnectionState, network: string): string;
+    generatePairingString(state: HashConnectTypes.ConnectionState, network: string, multiAccount: boolean): string;
 }
 
 export declare namespace HashConnectTypes {    
@@ -109,5 +111,6 @@ export declare namespace HashConnectTypes {
         metadata: HashConnectTypes.AppMetadata;
         topic: string;
         network: string;
+        multiAccount: boolean;
     }
 }

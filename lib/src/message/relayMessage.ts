@@ -48,6 +48,7 @@ export declare namespace MessageTypes {
 
     export interface AdditionalAccountRequest extends BaseMessage {
         network: string;
+        multiAccount: boolean;
     }
 
     export interface AdditionalAccountResponse extends BaseMessage {

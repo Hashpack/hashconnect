@@ -40,7 +40,7 @@ export class HashconnectService {
 
     async initHashconnect() {
         //create the hashconnect instance
-        this.hashconnect = new HashConnect();
+        this.hashconnect = new HashConnect(true);
 
         if(!this.loadLocalData()){
             //first init, store the private key in localstorage
@@ -53,7 +53,7 @@ export class HashconnectService {
             this.saveData.topic = state.topic;
             
             //generate a pairing string, which you can display and generate a QR code from
-            this.saveData.pairingString = this.hashconnect.generatePairingString(state, "testnet");
+            this.saveData.pairingString = this.hashconnect.generatePairingString(state, "testnet", true);
             
             //find any supported local wallets
             this.hashconnect.findLocalWallets();
@@ -78,7 +78,7 @@ export class HashconnectService {
         })
 
         this.hashconnect.transactionResponseEvent.on((data) => {
-            console.log("transaction response", data)
+            // console.log("transaction response", data)
         })
 
         this.hashconnect.additionalAccountResponseEvent.on((data) => {
@@ -134,7 +134,8 @@ export class HashconnectService {
     async requestAccountInfo() {
         let request:MessageTypes.AdditionalAccountRequest = {
             topic: this.saveData.topic,
-            network: "mainnet"
+            network: "mainnet",
+            multiAccount: true
         } 
 
         await this.hashconnect.requestAdditionalAccounts(this.saveData.topic, request);

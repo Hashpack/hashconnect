@@ -1,5 +1,6 @@
 import { Waku, WakuMessage, getBootstrapNodes } from "js-waku";
 import { Event } from "ts-typed-events"
+import { HashConnect } from "../main";
 
 /**
  * Relay interface
@@ -43,20 +44,22 @@ export interface IRelay {
 export class WakuRelay implements IRelay {
 
     private waku!: Waku;
-    
+
     // Events
     connected: Event<any>;
     payload: Event<any>;
+    hc: HashConnect;
 
     // TODO: is there a better way to do this?
     private processMessage = async (wakuMessage: { payloadAsUtf8: any; payload: any; }) => {
-        console.log("emitting payload");
+        if (this.hc.debug) console.log("hashconnect - emitting payload");
         this.payload.emit(wakuMessage.payload)
     }
-    
-    constructor() {
+
+    constructor(hc: HashConnect) {
         this.connected = new Event<any>();
         this.payload = new Event<any>();
+        this.hc = hc;
     }
 
     async init(): Promise<void> {
@@ -64,31 +67,37 @@ export class WakuRelay implements IRelay {
         this.waku = await Waku.create({ bootstrap: true, relayKeepAlive: 59, pingKeepAlive: 59 });
 
         const nodes = await getBootstrapNodes();
-        await Promise.all(nodes.map((addr) => this.waku.dial(addr)));
-    
-        console.log("Waiting for peer...");
+        await Promise.all(nodes.map((addr) => {
+            this.waku.dial(addr)
+        }));
+
+        if (this.hc.debug) console.log("hashconnect - bootstrapped nodes", nodes);
+        if (this.hc.debug) console.log("hashconnect - Waiting for peer...");
         await this.waku.waitForConnectedPeer();
 
-        console.log("connected");
+        if (this.hc.debug) console.log("hashconnect - connected");
     }
 
     async subscribe(topic: string): Promise<void> {
+        if (this.hc.debug) console.log("hashconnect - Subscribing to " + topic);
         this.waku.relay.addObserver(this.processMessage, [topic])
     }
 
-    addDecryptionKey(privKey: string){
+    addDecryptionKey(privKey: string) {
+        if (this.hc.debug) console.log("hashconnect - Adding decryption key " + privKey);
         this.waku.addDecryptionKey(Buffer.from(privKey, 'base64'))
     }
 
     async unsubscribe(topic: string): Promise<void> {
+        if (this.hc.debug) console.log("hashconnect - Unsubscribing to " + topic)
         this.waku.relay.unsubscribe(topic);
     }
 
     // TODO: determine appropriate types for sending messages, string should suffice for now
     async publish(topic: string, message: any, pubKey: string): Promise<void> {
-          const wakuMessage = await WakuMessage.fromBytes(message, topic, { encPublicKey: Buffer.from(pubKey, 'base64') });
-        
-          console.log("Sending payload");
-          await this.waku.relay.send(wakuMessage);
+        const wakuMessage = await WakuMessage.fromBytes(message, topic, { encPublicKey: Buffer.from(pubKey, 'base64') });
+
+        if (this.hc.debug) console.log("hashconnect - Sending payload to " + topic);
+        await this.waku.relay.send(wakuMessage);
     }
 }

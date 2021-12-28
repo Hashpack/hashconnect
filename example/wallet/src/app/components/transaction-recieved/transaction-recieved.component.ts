@@ -48,7 +48,7 @@ export class TransactionRecievedComponent implements OnInit {
                 }
                 else if (_Button.ID === 'reject') {
                     this.dialogBelonging.EventsController.close();
-                    this.HashConnectService.transactionResponse(this.transaction.topic, false, "User rejected")
+                    this.HashConnectService.transactionResponse(this.transaction.topic, null, "USER_REJECTED")
                 }
             })
         );

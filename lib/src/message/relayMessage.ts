@@ -70,6 +70,7 @@ export declare namespace MessageTypes {
 
     export interface TransactionResponse extends BaseMessage {
         success: boolean;
+        receipt?: Uint8Array | string; 
         signedTransaction?: Uint8Array | string;
         error?: string;
     }

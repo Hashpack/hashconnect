@@ -9,6 +9,7 @@ import {
 import { TransactionRecievedComponent } from '../components/transaction-recieved/transaction-recieved.component';
 import { AccountInfoRequestComponent } from '../components/account-info-request/account-info-request.component';
 import { DappPairing } from '../classes/dapp-pairing';
+import { ReceiptStatusError, Status, TransactionReceipt } from '@hashgraph/sdk';
 
 @Injectable({
     providedIn: 'root'
@@ -133,14 +134,18 @@ export class HashconnectService {
         this.saveLocalData();
     }
 
-    async transactionResponse(topic: string, success: boolean, error?: string) {
+    async transactionResponse(topic: string, receipt: TransactionReceipt | ReceiptStatusError | null, forceError?: string) {
         let msg: MessageTypes.TransactionResponse = {
             topic: topic,
-            success: success
+            success: receipt != null && receipt.status == Status.Success,
         }
 
-        if(!success && error)
-            msg.error = error;
+        if(receipt && receipt.status == Status.Success)
+            msg.receipt = (receipt as TransactionReceipt).toBytes();
+        else if(receipt)
+            msg.error = receipt.status.toString();
+
+        if(forceError) msg.error = forceError;
 
         await this.hashconnect.sendTransactionResponse(topic, msg);
     }

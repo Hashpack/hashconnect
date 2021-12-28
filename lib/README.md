@@ -470,8 +470,9 @@ export class TransactionMetadata extends BaseMessage {
 
 export interface TransactionResponse extends BaseMessage {
     success: boolean;
-    signedTransaction?: Uint8Array | string;
-    error?: string;
+    receipt?: Uint8Array | string; //returns receipt on success
+    signedTransaction?: Uint8Array | string; //will return signed transaction rather than executing if returnTransaction in request is true
+    error?: string; //error code on response
 }
 ```
 

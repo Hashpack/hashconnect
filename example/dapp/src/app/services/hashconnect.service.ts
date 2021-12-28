@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Transaction } from '@hashgraph/sdk';
+import { Transaction, TransactionReceipt } from '@hashgraph/sdk';
 import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
 import { SigningService } from './signing.service';
 
@@ -79,6 +79,8 @@ export class HashconnectService {
 
         this.hashconnect.transactionResponseEvent.on((data) => {
             // console.log("transaction response", data)
+            if(data.success)
+                console.log(TransactionReceipt.fromBytes(data.receipt as Uint8Array));
         })
 
         this.hashconnect.additionalAccountResponseEvent.on((data) => {

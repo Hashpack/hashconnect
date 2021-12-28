@@ -143,6 +143,10 @@ export class HashConnect implements IHashConnect {
     }
 
     async sendTransactionResponse(topic: string, message: MessageTypes.TransactionResponse): Promise<string> {
+        if(message.receipt) message.receipt = Buffer.from(message.receipt).toString("base64");
+        if(message.signedTransaction) message.signedTransaction = Buffer.from(message.signedTransaction).toString("base64");
+
+        
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.TransactionResponse, message, this);
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);

@@ -68,9 +68,9 @@ export class SigningService {
 
             console.log(rec.status.toString());
             if (rec.status == Status.Success) 
-                this.HashconnectService.transactionResponse(topic, true);
+                this.HashconnectService.transactionResponse(topic, rec);
             else 
-                this.HashconnectService.transactionResponse(topic, false, rec.status.toString());
+                this.HashconnectService.transactionResponse(topic, rec);
 
             return rec;
     }

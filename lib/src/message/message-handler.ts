@@ -51,6 +51,9 @@ export class MessageHandler implements IMessageHandler {
     
                 if(transaction_response_data.signedTransaction)
                     transaction_response_data.signedTransaction = new Uint8Array(Buffer.from(transaction_response_data.signedTransaction as string,'base64'));
+
+                if(transaction_response_data.receipt)
+                    transaction_response_data.receipt = new Uint8Array(Buffer.from(transaction_response_data.receipt as string,'base64'));
                 
                 hc.transactionResponseEvent.emit(transaction_response_data);
 

@@ -4,6 +4,7 @@ import { AssociateTokenComponent } from './components/associate-token/associate-
 import { CreateTokenComponent } from './components/create-token/create-token.component';
 import { DeleteTokenComponent } from './components/delete-token/delete-token.component';
 import { DisassociateTokenComponent } from './components/disassociate-token/disassociate-token.component';
+import { MintTokenComponent } from './components/mint-token/mint-token.component';
 import { PairingComponent } from './components/pairing/pairing.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';
 
@@ -77,6 +78,22 @@ export class AppComponent {
     
     deleteToken() {
         const dialogPopup = new DialogInitializer(DeleteTokenComponent);
+
+        dialogPopup.setConfig({
+            Width: '500px',
+            LayoutType: DialogLayoutDisplay.NONE
+        });
+
+        dialogPopup.setButtons([
+            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
+            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
+        ]);
+
+        dialogPopup.openDialog$().subscribe(resp => { });
+    }
+
+    mintToken() {
+        const dialogPopup = new DialogInitializer(MintTokenComponent);
 
         dialogPopup.setConfig({
             Width: '500px',

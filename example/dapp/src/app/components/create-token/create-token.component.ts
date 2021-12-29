@@ -84,6 +84,8 @@ export class CreateTokenComponent implements OnInit {
             .setInitialSupply(this.tokenData.initialSupply)
             .setTreasuryAccountId(this.signingAcct)
             .setAdminKey(key)
+            .setSupplyKey(key)
+            .setWipeKey(key)
             .setAutoRenewAccountId(this.signingAcct)
             
         if(this.tokenData.supplyType != TokenSupplyType.Infinite)

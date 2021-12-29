@@ -9,8 +9,9 @@
 <h3>Token ID</h3>
 <input type="text" [(ngModel)]="data.tokenId">
 
+
 <h3>Amount</h3>
-<input type="number" [(ngModel)]="data.amount">
+<input type="number" min="1" [(ngModel)]="data.amount">
 
 <h3>
     <input type="checkbox" [(ngModel)]="data.isNft">

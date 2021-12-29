@@ -23,7 +23,7 @@ export class MintTokenComponent implements OnInit {
 
     data = {
         tokenId: "",
-        amount: 0,
+        amount: 1,
         isNft: false,
         metadata: ""
     }
@@ -43,7 +43,19 @@ export class MintTokenComponent implements OnInit {
     }
 
     async send() {
-        let trans = await new TokenMintTransaction();
+        let trans = await new TokenMintTransaction()
+            .setTokenId(this.data.tokenId);
+
+        if(!this.data.isNft)
+            trans.setAmount(this.data.amount);
+        else if(this.data.isNft){
+            let n = 0;
+            while (n < this.data.amount) {
+                trans.addMetadata(new Uint8Array(Buffer.from(this.data.metadata, "utf8")));
+                n++;
+            }
+        }
+
 
         let transBytes:Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
 

@@ -10,6 +10,7 @@ import { SendTransactionComponent } from './components/send-transaction/send-tra
 import { AssociateTokenComponent } from './components/associate-token/associate-token.component';
 import { DisassociateTokenComponent } from './components/disassociate-token/disassociate-token.component';
 import { CreateTokenComponent } from './components/create-token/create-token.component';
+import { DeleteTokenComponent } from './components/delete-token/delete-token.component';
 
 @NgModule({
   declarations: [
@@ -19,7 +20,8 @@ import { CreateTokenComponent } from './components/create-token/create-token.com
     SendTransactionComponent,
     AssociateTokenComponent,
     DisassociateTokenComponent,
-    CreateTokenComponent
+    CreateTokenComponent,
+    DeleteTokenComponent
   ],
   imports: [
     BrowserModule,

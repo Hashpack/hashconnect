@@ -12,6 +12,7 @@ import { DisassociateTokenComponent } from './components/disassociate-token/disa
 import { CreateTokenComponent } from './components/create-token/create-token.component';
 import { DeleteTokenComponent } from './components/delete-token/delete-token.component';
 import { MintTokenComponent } from './components/mint-token/mint-token.component';
+import { BurnTokenComponent } from './components/burn-token/burn-token.component';
 
 @NgModule({
   declarations: [
@@ -23,7 +24,8 @@ import { MintTokenComponent } from './components/mint-token/mint-token.component
     DisassociateTokenComponent,
     CreateTokenComponent,
     DeleteTokenComponent,
-    MintTokenComponent
+    MintTokenComponent,
+    BurnTokenComponent
   ],
   imports: [
     BrowserModule,

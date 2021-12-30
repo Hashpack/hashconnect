@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ButtonLayoutDisplay, ButtonMaker, DialogInitializer, DialogLayoutDisplay } from '@costlydeveloper/ngx-awesome-popup';
 import { AssociateTokenComponent } from './components/associate-token/associate-token.component';
+import { BurnTokenComponent } from './components/burn-token/burn-token.component';
 import { CreateTokenComponent } from './components/create-token/create-token.component';
 import { DeleteTokenComponent } from './components/delete-token/delete-token.component';
 import { DisassociateTokenComponent } from './components/disassociate-token/disassociate-token.component';
@@ -94,6 +95,22 @@ export class AppComponent {
 
     mintToken() {
         const dialogPopup = new DialogInitializer(MintTokenComponent);
+
+        dialogPopup.setConfig({
+            Width: '500px',
+            LayoutType: DialogLayoutDisplay.NONE
+        });
+
+        dialogPopup.setButtons([
+            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
+            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
+        ]);
+
+        dialogPopup.openDialog$().subscribe(resp => { });
+    }
+    
+    burnToken() {
+        const dialogPopup = new DialogInitializer(BurnTokenComponent);
 
         dialogPopup.setConfig({
             Width: '500px',

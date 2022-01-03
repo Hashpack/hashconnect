@@ -51,7 +51,7 @@ export class MintTokenComponent implements OnInit {
         else if(this.data.isNft){
             let n = 0;
             while (n < this.data.amount) {
-                trans.addMetadata(new Uint8Array(Buffer.from(this.data.metadata, "utf8")));
+                trans.addMetadata(new Uint8Array(Buffer.from(this.data.metadata)));
                 n++;
             }
         }

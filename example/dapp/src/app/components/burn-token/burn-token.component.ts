@@ -47,7 +47,6 @@ export class BurnTokenComponent implements OnInit {
     
 
     async send() {
-        debugger
         let trans = new TokenBurnTransaction()
         .setTokenId(this.data.tokenId);
 

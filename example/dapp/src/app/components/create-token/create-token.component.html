@@ -38,7 +38,28 @@
 </h3>
 
 <div *ngIf="tokenData.includeRoyalty">
-
     <h3>Royalty Percentage</h3>
     <input type="number" [(ngModel)]="tokenData.royaltyPercent" min="1" max="100">
+    <h3>Royalty Fallback (receiver pays if fungible exchanged is 0)</h3>
+    <input type="number" [(ngModel)]="tokenData.fallbackFee" min="1" max="100">
 </div>
+
+<h3>
+    <input type="checkbox" [(ngModel)]="tokenData.includeFixedFee">
+    Include Fixed Fee
+</h3>
+
+<div *ngIf="tokenData.includeFixedFee">
+    <h3>Fixed Fee</h3>
+    <input type="number" [(ngModel)]="tokenData.fixedFee" min="1" max="100">
+</div>
+
+<!-- <h3>
+    <input type="checkbox" [(ngModel)]="tokenData.includeFractionalFee">
+    Include Fractional Fee
+</h3>
+
+<div *ngIf="tokenData.includeFractionalFee">
+    <h3>Fractional Fee</h3>
+    <input type="number" [(ngModel)]="tokenData.fractionalFee" min="1" max="100">
+</div> -->

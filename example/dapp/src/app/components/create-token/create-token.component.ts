@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { CustomRoyaltyFee, PublicKey, TokenCreateTransaction, TokenSupplyType, TokenType } from '@hashgraph/sdk';
+import { CustomFee, CustomFixedFee, CustomRoyaltyFee, Hbar, HbarUnit, PublicKey, TokenCreateTransaction, TokenSupplyType, TokenType } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -33,7 +33,12 @@ export class CreateTokenComponent implements OnInit {
         initialSupply: 0,
         maxSupply: 0,
         includeRoyalty: false,
+        includeFixedFee: false,
+        includeFractionalFee: false,
         royaltyPercent: 1,
+        fixedFee: 0,
+        fractionalFee: 0,
+        fallbackFee: 0
     }
     
 
@@ -72,6 +77,7 @@ export class CreateTokenComponent implements OnInit {
     async send() {
         let accountInfo:any = await window.fetch("https://testnet.mirrornode.hedera.com/api/v1/accounts/" + this.signingAcct, { method: "GET" });
         accountInfo = await accountInfo.json();
+        let customFees: CustomFee[] = [];
 
         let key = await PublicKey.fromString(accountInfo.key.key)
 
@@ -92,13 +98,31 @@ export class CreateTokenComponent implements OnInit {
             trans.setMaxSupply(this.tokenData.maxSupply);
             
         if(this.tokenData.includeRoyalty){
+            let fallback = await new CustomFixedFee()
+            .setFeeCollectorAccountId(this.signingAcct)
+            .setHbarAmount(Hbar.from(this.tokenData.fallbackFee, HbarUnit.Hbar));
+
             let royaltyInfo = await new CustomRoyaltyFee()
                 .setNumerator(this.tokenData.royaltyPercent)
                 .setDenominator(100)
-                .setFeeCollectorAccountId(this.signingAcct);
+                .setFeeCollectorAccountId(this.signingAcct)
+                .setFallbackFee(fallback);
             
-            trans.setCustomFees([royaltyInfo])
+            customFees.push(royaltyInfo);
         }
+
+        if(this.tokenData.includeFixedFee) {
+            let fixedFee = await new CustomFixedFee()
+            .setHbarAmount(Hbar.from(this.tokenData.fixedFee, HbarUnit.Hbar))
+            .setFeeCollectorAccountId(this.signingAcct);
+
+            customFees.push(fixedFee);
+        }
+        
+        trans.setCustomFees(customFees);
+
+        debugger
+
         let transBytes:Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
 
         this.HashconnectService.sendTransaction(transBytes, this.signingAcct);

@@ -47,7 +47,7 @@
   },
   "dependencies": {
     "crypto-js": "^4.1.1",
-    "js-waku": "0.14.2",
+    "js-waku": "0.16.0",
     "process": "^0.11.10",
     "protons": "^2.0.3",
     "ts-typed-events": "3.0.0",

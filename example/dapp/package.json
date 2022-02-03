@@ -20,6 +20,7 @@
     "@angular/router": "~12.1.0-",
     "@costlydeveloper/ngx-awesome-popup": "^2.1.2",
     "@hashgraph/sdk": "2.6.0",
+    "assert-browserify": "^2.0.0",
     "awesome-qr": "^2.1.5-rc.0",
     "crypto-browserify": "3.12.0",
     "hashconnect": "^0.0.12",

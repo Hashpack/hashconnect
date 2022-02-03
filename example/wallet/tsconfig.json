@@ -29,6 +29,9 @@
       ],
       "stream": [
         "node_modules/stream-browserify"
+      ],
+      "assert": [
+        "node_modules/assert-browserify"
       ]
     },
     "types": ["node"],

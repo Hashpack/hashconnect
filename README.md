@@ -44,6 +44,7 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
   - [Errors](#errors)
     - [Crypto-browserify](#crypto-browserify)
     - [Stream-browserify](#stream-browserify)
+    - [Assert-browserify](#assert-browserify)
     - [DUMP_SESSION_KEYS](#dump_session_keys)
 
 ## Concepts
@@ -529,8 +530,38 @@ Then add to your tsconfig.json:
 ```js
 "compilerOptions": {
     "paths": {
-        "crypto": [
+        "stream": [
             "node_modules/stream-browserify"
+        ]
+    }
+}
+```
+
+### Assert-browserify
+
+```
+BREAKING CHANGE: webpack < 5 used to include polyfills for node.js core modules by default.
+This is no longer the case. Verify if you need this module and configure a polyfill for it.
+
+If you want to include a polyfill, you need to:
+        - add a fallback 'resolve.fallback: { "assert": require.resolve("assert-browserify") }'
+        - install 'assert-browserify'
+If you don't want to include a polyfill, you can use an empty module like this:
+        resolve.fallback: { "assert": false }
+```
+
+**Fix**
+
+```npm i assert-browserify --save```
+
+
+Then add to your tsconfig.json:
+
+```js
+"compilerOptions": {
+    "paths": {
+        "assert": [
+            "node_modules/assert-browserify"
         ]
     }
 }

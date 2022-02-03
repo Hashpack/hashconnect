@@ -1,4 +1,4 @@
-import { Waku, WakuMessage, getBootstrapNodes } from "js-waku";
+import { Waku, WakuMessage } from "js-waku";
 import { Event } from "ts-typed-events"
 import { HashConnect } from "../main";
 
@@ -64,16 +64,17 @@ export class WakuRelay implements IRelay {
 
     async init(): Promise<void> {
         // TODO error flow
-        this.waku = await Waku.create({ bootstrap: true, relayKeepAlive: 59, pingKeepAlive: 59 });
+        this.waku = await Waku.create({ bootstrap: { default: true } });
 
-        const nodes = await getBootstrapNodes();
-        await Promise.all(nodes.map((addr) => {
-            this.waku.dial(addr)
-        }));
+        // const nodes = await getBootstrapNodes();
+        // await Promise.all(nodes.map((addr) => {
+        //     this.waku.dial(addr)
+        // }));
 
-        if (this.hc.debug) console.log("hashconnect - bootstrapped nodes", nodes);
+        // if (this.hc.debug) console.log("hashconnect - bootstrapped nodes", nodes);
         if (this.hc.debug) console.log("hashconnect - Waiting for peer...");
-        await this.waku.waitForConnectedPeer();
+        await this.waku.waitForRemotePeer();
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         if (this.hc.debug) console.log("hashconnect - connected");
     }

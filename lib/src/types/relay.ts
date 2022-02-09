@@ -1,4 +1,4 @@
-import { Waku, WakuMessage } from "js-waku";
+import { getPublicKey, Waku, WakuMessage } from "js-waku";
 import { Event } from "ts-typed-events"
 import { HashConnect } from "../main";
 
@@ -85,8 +85,8 @@ export class WakuRelay implements IRelay {
     }
 
     addDecryptionKey(privKey: string) {
-        if (this.hc.debug) console.log("hashconnect - Adding decryption key " + privKey);
-        this.waku.addDecryptionKey(Buffer.from(privKey, 'base64'))
+        if (this.hc.debug) console.log("hashconnect - Adding decryption key \n PrivKey: " + privKey + "\n pubKey: " + Buffer.from(getPublicKey(Buffer.from(privKey, 'base64'))).toString('base64'));
+        // this.waku.addDecryptionKey(Buffer.from(privKey, 'base64'))
     }
 
     async unsubscribe(topic: string): Promise<void> {
@@ -96,9 +96,9 @@ export class WakuRelay implements IRelay {
 
     // TODO: determine appropriate types for sending messages, string should suffice for now
     async publish(topic: string, message: any, pubKey: string): Promise<void> {
-        const wakuMessage = await WakuMessage.fromBytes(message, topic, { encPublicKey: Buffer.from(pubKey, 'base64') });
+        const wakuMessage = await WakuMessage.fromBytes(message, topic);
 
-        if (this.hc.debug) console.log("hashconnect - Sending payload to " + topic);
+        if (this.hc.debug) console.log("hashconnect - Sending payload to " + topic, "\n encrypted with " + pubKey);
         await this.waku.relay.send(wakuMessage);
     }
 }

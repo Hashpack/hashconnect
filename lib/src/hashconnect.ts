@@ -70,7 +70,7 @@ export class HashConnect implements IHashConnect {
 
         await this.relay.init();
 
-        this.relay.addDecryptionKey(this.privateKey);
+        // this.relay.addDecryptionKey(this.privateKey);
         
         return initData;
     }

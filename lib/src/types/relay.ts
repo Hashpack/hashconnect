@@ -40,7 +40,7 @@ export interface IRelay {
     addDecryptionKey(privKey: string): void;
 }
 
-export class WakuRelay implements IRelay {
+export class WebSocketRelay implements IRelay {
 
     private socket: WebSocket;
 

@@ -1,5 +1,5 @@
 import { Event } from "ts-typed-events";
-import { IRelay, WakuRelay } from "./types/relay";
+import { IRelay, WebSocketRelay } from "./types/relay";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
 import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
 
@@ -30,7 +30,7 @@ export class HashConnect implements IHashConnect {
     debug: boolean = false;
 
     constructor(debug?: boolean) {
-        this.relay = new WakuRelay(this);
+        this.relay = new WebSocketRelay(this);
 
         this.foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
         this.pairingEvent = new Event<MessageTypes.ApprovePairing>();

@@ -33,6 +33,7 @@
   "devDependencies": {
     "@types/jest": "^26.0.21",
     "@types/node": "^15.0.1",
+    "@types/secp256k1": "^4.0.3",
     "@types/uuid": "^8.3.1",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
@@ -51,6 +52,7 @@
     "i": "^0.3.7",
     "npm": "^8.4.1",
     "protons": "^2.0.3",
+    "secp256k1": "^4.0.3",
     "ts-typed-events": "3.0.0",
     "uuid": "^8.3.2",
     "ws": "^8.5.0"

@@ -2,6 +2,7 @@ import { Event } from "ts-typed-events";
 import { IRelay, WebSocketRelay } from "./types/relay";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
 import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
+import * as secp256k1 from "secp256k1";
 
 /**
  * Main interface with hashpack
@@ -47,32 +48,34 @@ export class HashConnect implements IHashConnect {
 
         this.setupEvents();
     }
+    secp256k1 = require('secp256k1')
 
     async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: string): Promise<HashConnectTypes.InitilizationData> {
-        
+
         return new Promise(async (resolve) => {
-        this.metadata = metadata;
+            this.metadata = metadata;
 
-        if (this.debug) console.log("hashconnect - Initializing")
+            if (this.debug) console.log("hashconnect - Initializing")
 
-        if (!privKey)
-            this.privateKey = await this.generateEncryptionKeys();
-        else
-            this.privateKey = privKey;
+            if (!privKey)
+                this.privateKey = await this.generateEncryptionKeys();
+            else
+                this.privateKey = privKey;
 
-        metadata.publicKey = Buffer.from((Buffer.from(this.privateKey, 'base64'))).toString('base64');
+            let pubkey = secp256k1.publicKeyCreate(Buffer.from(this.privateKey, 'base64'));
+            metadata.publicKey = Buffer.from(pubkey).toString('base64');
 
-        let initData: HashConnectTypes.InitilizationData = {
-            privKey: this.privateKey
-        }
+            let initData: HashConnectTypes.InitilizationData = {
+                privKey: this.privateKey
+            }
 
-        if (window)
-            this.metadata.url = window.location.origin;
+            if (window)
+                this.metadata.url = window.location.origin;
 
-        await this.relay.init();
+            await this.relay.init();
 
-        // this.relay.addDecryptionKey(this.privateKey);
-        if (this.debug) console.log("hashconnect - Initialized")
+            // this.relay.addDecryptionKey(this.privateKey);
+            if (this.debug) console.log("hashconnect - Initialized")
             resolve(initData);
         });
     }
@@ -106,10 +109,10 @@ export class HashConnect implements IHashConnect {
         if (this.debug) console.log("hashconnect - Setting up events");
         this.relay.payload.on(async (payload) => {
             if (!payload) return;
-            
+
             //this is redundant until protobuffs are re-implemented
             const message: RelayMessage = this.messages.decode(payload, this);
-            
+
             await this.messageParser.onPayload(message, this);
         })
     }
@@ -243,26 +246,14 @@ export class HashConnect implements IHashConnect {
         return data;
     }
 
-    private async generateEncryptionKeys(): Promise<string> {
+    private async generateEncryptionKeys(): Promise<string> { //https://github.com/diafygi/webcrypto-examples/#rsa-oaep---encrypt
         if (this.debug) console.log("hashconnect - Generating new encryption key");
 
-        // let key = window.crypto.subtle.generateKey(
-        //     {
-        //       name: "AES-GCM",
-        //       length: 256
-        //     },
-        //     true,
-        //     ["encrypt", "decrypt"]
-        // );
-        // const exported = await window.crypto.subtle.exportKey(
-        //     "pkcs8",
-        //     keyPair.privateKey
-        //   );
-        //   const exportedKeyBuffer = new Uint8Array(exported);
+        const array = new Uint8Array(32);
+        window.crypto.getRandomValues(array);
+        let keyString = Buffer.from(array).toString('base64');
 
-        // let keyString = Buffer.from(exported, 'base64').toString();
-            
-        return "";
+        return keyString;
     }
 
     private sanitizeString(str: string) {

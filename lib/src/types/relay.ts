@@ -1,4 +1,3 @@
-import { getPublicKey, Waku, WakuMessage } from "js-waku";
 import { Event } from "ts-typed-events"
 import { HashConnect } from "../main";
 
@@ -43,7 +42,7 @@ export interface IRelay {
 
 export class WakuRelay implements IRelay {
 
-    private waku!: Waku;
+    private socket: WebSocket;
 
     // Events
     connected: Event<any>;
@@ -51,9 +50,9 @@ export class WakuRelay implements IRelay {
     hc: HashConnect;
 
     // TODO: is there a better way to do this?
-    private processMessage = async (wakuMessage: { payloadAsUtf8: any; payload: any; }) => {
+    private processMessage(e: MessageEvent<{payload:any}>) {
         if (this.hc.debug) console.log("hashconnect - emitting payload");
-        this.payload.emit(wakuMessage.payload)
+        this.payload.emit(e.data.payload)
     }
 
     constructor(hc: HashConnect) {
@@ -64,41 +63,47 @@ export class WakuRelay implements IRelay {
 
     async init(): Promise<void> {
         // TODO error flow
-        this.waku = await Waku.create({ bootstrap: { default: true } });
+        this.socket = new WebSocket('ws://159.223.102.226:9001');
 
-        // const nodes = await getBootstrapNodes();
-        // await Promise.all(nodes.map((addr) => {
-        //     this.waku.dial(addr)
-        // }));
+        this.socket.onopen = () => {
+            
+            if (this.hc.debug) console.log("hashconnect - connected");
+        };
 
-        // if (this.hc.debug) console.log("hashconnect - bootstrapped nodes", nodes);
-        if (this.hc.debug) console.log("hashconnect - Waiting for peer...");
-        await this.waku.waitForRemotePeer();
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        if (this.hc.debug) console.log("hashconnect - connected");
     }
 
     async subscribe(topic: string): Promise<void> {
         if (this.hc.debug) console.log("hashconnect - Subscribing to " + topic);
-        this.waku.relay.addObserver(this.processMessage, [topic])
+        this.socket.send(JSON.stringify({action: 'sub', topic: topic}));
+
+        this.socket.onmessage = (e) => {
+            this.processMessage(e);
+        };
     }
 
     addDecryptionKey(privKey: string) {
-        if (this.hc.debug) console.log("hashconnect - Adding decryption key \n PrivKey: " + privKey + "\n pubKey: " + Buffer.from(getPublicKey(Buffer.from(privKey, 'base64'))).toString('base64'));
+        console.log("hashconnect - Adding decryption key \n PrivKey: " + privKey);
+        // if (this.hc.debug) console.log("hashconnect - Adding decryption key \n PrivKey: " + privKey + "\n pubKey: " + Buffer.from(getPublicKey(Buffer.from(privKey, 'base64'))).toString('base64'));
         // this.waku.addDecryptionKey(Buffer.from(privKey, 'base64'))
     }
 
     async unsubscribe(topic: string): Promise<void> {
-        if (this.hc.debug) console.log("hashconnect - Unsubscribing to " + topic)
-        this.waku.relay.unsubscribe(topic);
+        if (this.hc.debug) console.log("hashconnect - Unsubscribing to " + topic);
+        
+        this.socket.send(JSON.stringify({ action: "unsub", topic: topic }))
+        // this.waku.relay.unsubscribe(topic);
     }
 
     // TODO: determine appropriate types for sending messages, string should suffice for now
     async publish(topic: string, message: any, pubKey: string): Promise<void> {
-        const wakuMessage = await WakuMessage.fromBytes(message, topic);
+        // const wakuMessage = await WakuMessage.fromBytes(message, topic);
+        const msg = {
+            action: "pub",
+            payload: message,
+            topic: topic
+        }
 
         if (this.hc.debug) console.log("hashconnect - Sending payload to " + topic, "\n encrypted with " + pubKey);
-        await this.waku.relay.send(wakuMessage);
+        await this.socket.send(JSON.stringify(msg));
     }
 }

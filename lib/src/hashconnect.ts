@@ -49,6 +49,8 @@ export class HashConnect implements IHashConnect {
     }
 
     async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: string): Promise<HashConnectTypes.InitilizationData> {
+        
+        return new Promise(async (resolve) => {
         this.metadata = metadata;
 
         if (this.debug) console.log("hashconnect - Initializing")
@@ -70,8 +72,9 @@ export class HashConnect implements IHashConnect {
         await this.relay.init();
 
         // this.relay.addDecryptionKey(this.privateKey);
-
-        return initData;
+        if (this.debug) console.log("hashconnect - Initialized")
+            resolve(initData);
+        });
     }
 
 
@@ -103,9 +106,10 @@ export class HashConnect implements IHashConnect {
         if (this.debug) console.log("hashconnect - Setting up events");
         this.relay.payload.on(async (payload) => {
             if (!payload) return;
-
+            
+            //this is redundant until protobuffs are re-implemented
             const message: RelayMessage = this.messages.decode(payload, this);
-
+            
             await this.messageParser.onPayload(message, this);
         })
     }
@@ -120,7 +124,7 @@ export class HashConnect implements IHashConnect {
         const msg = this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction, this);
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
-        return msg.id;
+        return transaction.id!;
     }
 
     async requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<string> {
@@ -128,7 +132,7 @@ export class HashConnect implements IHashConnect {
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
-        return msg.id;
+        return message.id!;
     }
 
     async sendAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountResponse): Promise<string> {
@@ -138,7 +142,7 @@ export class HashConnect implements IHashConnect {
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
-        return msg.id;
+        return message.id!;
     }
 
     async sendTransactionResponse(topic: string, message: MessageTypes.TransactionResponse): Promise<string> {
@@ -150,7 +154,7 @@ export class HashConnect implements IHashConnect {
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
-        return msg.id;
+        return message.id!;
     }
 
     async pair(pairingData: HashConnectTypes.PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState> {

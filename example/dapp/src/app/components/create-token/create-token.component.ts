@@ -121,8 +121,6 @@ export class CreateTokenComponent implements OnInit {
         
         trans.setCustomFees(customFees);
 
-        debugger
-
         let transBytes:Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
 
         this.HashconnectService.sendTransaction(transBytes, this.signingAcct);

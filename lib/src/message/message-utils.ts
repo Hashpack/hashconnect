@@ -3,16 +3,16 @@ import { HashConnect } from '../main';
 import { RelayMessage, RelayMessageType } from './';
 import { MessageTypes } from './relayMessage';
 
-const protons = require('protons');
+// const protons = require('protons');
 
 export class MessageUtil {
 
-    private proto = protons(`
-    message SimpleMessage {
-        uint64 timestamp = 1;
-        string type = 2;
-        string data = 3;
-    }`);
+    // private proto = protons(`
+    // message SimpleMessage {
+    //     uint64 timestamp = 1;
+    //     string type = 2;
+    //     string data = 3;
+    // }`);
 
     /**
      * Compiles the simple protobuf with the specified paramaters 
@@ -27,16 +27,20 @@ export class MessageUtil {
 
         if(hc.debug) console.log("hashconnect - Sending message - id: " + data.id);
         
-        return this.proto.SimpleMessage.encode(new RelayMessage(
+        //uncomment this to encode as protobuff
+        return new RelayMessage(
             Date.now(),
             type,
             JSON.stringify(data),
-        ));
+        );
     }
 
     public decode(payload: any, hc: HashConnect): RelayMessage {
         if(hc.debug) console.log("hashconnect - decoding message payload")
-        return this.proto.SimpleMessage.decode(payload)
+        //uncomment this to decode protobuf
+        // return this.proto.SimpleMessage.decode(payload)
+
+        return payload
     }
     
     /**

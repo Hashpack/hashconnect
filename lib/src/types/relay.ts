@@ -13,7 +13,7 @@ export interface IRelay {
     /**
      * Initialize the relay
      */
-    init(): void;
+    init(): Promise<void>;
 
     /**
      * Publish a message
@@ -50,9 +50,9 @@ export class WakuRelay implements IRelay {
     hc: HashConnect;
 
     // TODO: is there a better way to do this?
-    private processMessage(e: MessageEvent<{payload:any}>) {
+    private processMessage(e: MessageEvent<any>) {
         if (this.hc.debug) console.log("hashconnect - emitting payload");
-        this.payload.emit(e.data.payload)
+        this.payload.emit(JSON.parse(e.data))
     }
 
     constructor(hc: HashConnect) {
@@ -63,18 +63,21 @@ export class WakuRelay implements IRelay {
 
     async init(): Promise<void> {
         // TODO error flow
-        this.socket = new WebSocket('ws://159.223.102.226:9001');
+        return new Promise((resolve) => {
+            this.socket = new WebSocket('ws://localhost:9001');
+            // this.socket = new WebSocket('ws://159.223.102.226:9001');
 
-        this.socket.onopen = () => {
-            
-            if (this.hc.debug) console.log("hashconnect - connected");
-        };
+            this.socket.onopen = () => {
+                if (this.hc.debug) console.log("hashconnect - connected");
+                resolve();
+            };
+        });
 
     }
 
     async subscribe(topic: string): Promise<void> {
         if (this.hc.debug) console.log("hashconnect - Subscribing to " + topic);
-        this.socket.send(JSON.stringify({action: 'sub', topic: topic}));
+        this.socket.send(JSON.stringify({ action: 'sub', topic: topic }));
 
         this.socket.onmessage = (e) => {
             this.processMessage(e);
@@ -89,7 +92,7 @@ export class WakuRelay implements IRelay {
 
     async unsubscribe(topic: string): Promise<void> {
         if (this.hc.debug) console.log("hashconnect - Unsubscribing to " + topic);
-        
+
         this.socket.send(JSON.stringify({ action: "unsub", topic: topic }))
         // this.waku.relay.unsubscribe(topic);
     }
@@ -99,7 +102,7 @@ export class WakuRelay implements IRelay {
         // const wakuMessage = await WakuMessage.fromBytes(message, topic);
         const msg = {
             action: "pub",
-            payload: message,
+            payload: JSON.stringify(message),
             topic: topic
         }
 

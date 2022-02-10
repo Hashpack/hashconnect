@@ -64,8 +64,8 @@ export class WakuRelay implements IRelay {
     async init(): Promise<void> {
         // TODO error flow
         return new Promise((resolve) => {
-            this.socket = new WebSocket('ws://localhost:9001');
-            // this.socket = new WebSocket('ws://159.223.102.226:9001');
+            // this.socket = new WebSocket('ws://localhost:9001');
+            this.socket = new WebSocket('ws://159.223.102.226:9001');
 
             this.socket.onopen = () => {
                 if (this.hc.debug) console.log("hashconnect - connected");

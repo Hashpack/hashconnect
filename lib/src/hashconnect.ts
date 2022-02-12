@@ -2,7 +2,6 @@ import { Event } from "ts-typed-events";
 import { IRelay, WebSocketRelay } from "./types/relay";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
 import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
-import * as secp256k1 from "secp256k1";
 
 /**
  * Main interface with hashpack
@@ -48,7 +47,7 @@ export class HashConnect implements IHashConnect {
 
         this.setupEvents();
     }
-    secp256k1 = require('secp256k1')
+
 
     async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: string): Promise<HashConnectTypes.InitilizationData> {
 
@@ -62,8 +61,7 @@ export class HashConnect implements IHashConnect {
             else
                 this.privateKey = privKey;
 
-            let pubkey = secp256k1.publicKeyCreate(Buffer.from(this.privateKey, 'base64'));
-            metadata.publicKey = Buffer.from(pubkey).toString('base64');
+            metadata.publicKey = this.privateKey;
 
             let initData: HashConnectTypes.InitilizationData = {
                 privKey: this.privateKey
@@ -74,8 +72,8 @@ export class HashConnect implements IHashConnect {
 
             await this.relay.init();
 
-            // this.relay.addDecryptionKey(this.privateKey);
             if (this.debug) console.log("hashconnect - Initialized")
+
             resolve(initData);
         });
     }
@@ -83,13 +81,13 @@ export class HashConnect implements IHashConnect {
 
     async connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<HashConnectTypes.ConnectionState> {
         if (!topic) {
-            if (this.debug) console.log("hashconnect - Creating new topic id");
             topic = this.messages.createRandomTopicId();
+            this.publicKeys[topic] = this.privateKey;
+            if (this.debug) console.log("hashconnect - Created new topic id - " + topic);
         }
 
         if (metadataToConnect)
             this.publicKeys[topic] = metadataToConnect.publicKey as string;
-
 
         let state: HashConnectTypes.ConnectionState = {
             topic: topic,
@@ -111,7 +109,7 @@ export class HashConnect implements IHashConnect {
             if (!payload) return;
 
             //this is redundant until protobuffs are re-implemented
-            const message: RelayMessage = this.messages.decode(payload, this);
+            const message: RelayMessage = await this.messages.decode(payload, this);
 
             await this.messageParser.onPayload(message, this);
         })
@@ -124,14 +122,14 @@ export class HashConnect implements IHashConnect {
     async sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<string> {
         transaction.byteArray = Buffer.from(transaction.byteArray).toString("base64");
 
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction, this);
+        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction, topic, this);
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
         return transaction.id!;
     }
 
     async requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<string> {
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountRequest, message, this);
+        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountRequest, message, topic, this);
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
@@ -141,7 +139,7 @@ export class HashConnect implements IHashConnect {
     async sendAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountResponse): Promise<string> {
         message.accountIds = message.accountIds.map(id => { return id });
 
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountResponse, message, this);
+        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountResponse, message, topic, this);
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
@@ -153,7 +151,7 @@ export class HashConnect implements IHashConnect {
         if (message.signedTransaction) message.signedTransaction = Buffer.from(message.signedTransaction).toString("base64");
 
 
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.TransactionResponse, message, this);
+        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.TransactionResponse, message, topic, this);
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
 
@@ -164,6 +162,8 @@ export class HashConnect implements IHashConnect {
         if (this.debug) console.log("hashconnect - Pairing to " + pairingData.metadata.name);
         let state = await this.connect(pairingData.topic);
 
+        
+
         let msg: MessageTypes.ApprovePairing = {
             metadata: this.metadata as HashConnectTypes.WalletMetadata,
             topic: pairingData.topic,
@@ -173,13 +173,14 @@ export class HashConnect implements IHashConnect {
 
         msg.metadata.description = this.sanitizeString(msg.metadata.description);
         msg.metadata.name = this.sanitizeString(msg.metadata.name);
+        msg.metadata.publicKey = pairingData.metadata.publicKey;
         msg.network = this.sanitizeString(msg.network);
         msg.metadata.url = this.sanitizeString(msg.metadata.url!);
         msg.accountIds = msg.accountIds.map(id => { return id });
 
         this.publicKeys[pairingData.topic] = pairingData.metadata.publicKey as string;
 
-        const payload = this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, msg, this)
+        const payload = await this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, msg, msg.topic, this)
 
         this.relay.publish(pairingData.topic, payload, this.publicKeys[pairingData.topic])
 
@@ -196,7 +197,7 @@ export class HashConnect implements IHashConnect {
         reject.reason = this.sanitizeString(reject.reason!);
 
         // create protobuf message
-        const msg = this.messages.prepareSimpleMessage(RelayMessageType.RejectPairing, reject, this)
+        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.RejectPairing, reject, topic, this)
 
         // Publish the rejection
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
@@ -209,7 +210,7 @@ export class HashConnect implements IHashConnect {
             msg_id: msg_id
         }
 
-        const ackPayload = this.messages.prepareSimpleMessage(RelayMessageType.Acknowledge, ack, this);
+        const ackPayload = await this.messages.prepareSimpleMessage(RelayMessageType.Acknowledge, ack, topic, this);
         await this.relay.publish(topic, ackPayload, pubKey)
     }
 
@@ -242,18 +243,16 @@ export class HashConnect implements IHashConnect {
         let json_string: string = Buffer.from(pairingString, 'base64').toString();
         let data: HashConnectTypes.PairingData = JSON.parse(json_string);
         // data.metadata.publicKey = Buffer.from(data.metadata.publicKey as string, 'base64');
-
+        
         return data;
     }
 
     private async generateEncryptionKeys(): Promise<string> { //https://github.com/diafygi/webcrypto-examples/#rsa-oaep---encrypt
-        if (this.debug) console.log("hashconnect - Generating new encryption key");
-
-        const array = new Uint8Array(32);
-        window.crypto.getRandomValues(array);
-        let keyString = Buffer.from(array).toString('base64');
-
-        return keyString;
+        let key = this.messages.createRandomTopicId()
+        
+        if (this.debug) console.log("hashconnect - Generated new encryption key - " + key);
+        
+        return key;
     }
 
     private sanitizeString(str: string) {
@@ -287,5 +286,5 @@ export class HashConnect implements IHashConnect {
         //todo: add extension metadata support
         window.postMessage({ type: "hashconnect-connect-extension", pairingString: pairingString }, "*")
     }
-
+    
 }

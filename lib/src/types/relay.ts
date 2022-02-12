@@ -37,7 +37,7 @@ export interface IRelay {
      */
     unsubscribe(topic: string): Promise<void>;
 
-    addDecryptionKey(privKey: string): void;
+    addDecryptionKey(privKey: string, topic: string): void;
 }
 
 export class WebSocketRelay implements IRelay {
@@ -64,8 +64,8 @@ export class WebSocketRelay implements IRelay {
     async init(): Promise<void> {
         // TODO error flow
         return new Promise((resolve) => {
-            // this.socket = new WebSocket('ws://localhost:9001');
-            this.socket = new WebSocket('ws://159.223.102.226:9001');
+            this.socket = new WebSocket('ws://localhost:9001');
+            // this.socket = new WebSocket('ws://159.223.102.226:9001');
 
             this.socket.onopen = () => {
                 if (this.hc.debug) console.log("hashconnect - connected");
@@ -76,7 +76,7 @@ export class WebSocketRelay implements IRelay {
     }
 
     async subscribe(topic: string): Promise<void> {
-        if (this.hc.debug) console.log("hashconnect - Subscribing to " + topic);
+        if (this.hc.debug) console.log("hashconnect - Subscribing to topic id " + topic);
         this.socket.send(JSON.stringify({ action: 'sub', topic: topic }));
 
         this.socket.onmessage = (e) => {
@@ -84,10 +84,10 @@ export class WebSocketRelay implements IRelay {
         };
     }
 
-    addDecryptionKey(privKey: string) {
+    addDecryptionKey(privKey: string, topic: string) {
         console.log("hashconnect - Adding decryption key \n PrivKey: " + privKey);
-        // if (this.hc.debug) console.log("hashconnect - Adding decryption key \n PrivKey: " + privKey + "\n pubKey: " + Buffer.from(getPublicKey(Buffer.from(privKey, 'base64'))).toString('base64'));
-        // this.waku.addDecryptionKey(Buffer.from(privKey, 'base64'))
+        if (this.hc.debug) console.log("hashconnect - Adding decryption key \n PrivKey: " + privKey);
+        this.hc.publicKeys[topic] = privKey;
     }
 
     async unsubscribe(topic: string): Promise<void> {

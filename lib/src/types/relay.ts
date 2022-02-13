@@ -65,7 +65,6 @@ export class WebSocketRelay implements IRelay {
         // TODO error flow
         return new Promise((resolve) => {
             // this.socket = new WebSocket('ws://localhost:9001');
-            // this.socket = new WebSocket('wss://159.223.102.226:9001');
             this.socket = new WebSocket('wss://hashconnect.hashpack.app');
 
             this.socket.onopen = () => {

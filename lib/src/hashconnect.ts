@@ -2,6 +2,7 @@ import { Event } from "ts-typed-events";
 import { IRelay, WebSocketRelay } from "./types/relay";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
 import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
+global.Buffer = global.Buffer || require('buffer').Buffer;
 
 /**
  * Main interface with hashpack
@@ -240,6 +241,7 @@ export class HashConnect implements IHashConnect {
     }
 
     decodePairingString(pairingString: string) {
+        debugger
         let json_string: string = Buffer.from(pairingString, 'base64').toString();
         let data: HashConnectTypes.PairingData = JSON.parse(json_string);
         // data.metadata.publicKey = Buffer.from(data.metadata.publicKey as string, 'base64');

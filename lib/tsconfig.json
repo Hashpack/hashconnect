@@ -27,7 +27,7 @@
     "lib": [
       "ES6",
       "DOM"
-    ]
+    ],
   },
   "include": [
     "src/**/*.ts"

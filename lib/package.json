@@ -1,6 +1,6 @@
 {
   "name": "hashconnect",
-  "version": "0.0.12",
+  "version": "0.1.0",
   "description": "hashconnect interoperability library",
   "author": "Tyler Coté <tyler@hashpack.app>, Nick Hanna <nick@hashpack.app>",
   "repository": "https://github.com/Hashpack/hashconnect",
@@ -33,6 +33,7 @@
   "devDependencies": {
     "@types/jest": "^26.0.21",
     "@types/node": "^15.0.1",
+    "@types/secp256k1": "^4.0.3",
     "@types/uuid": "^8.3.1",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
@@ -46,11 +47,13 @@
     "yarn": "^1.22.17"
   },
   "dependencies": {
+    "crypto-es": "^1.2.7",
     "crypto-js": "^4.1.1",
-    "js-waku": "0.14.2",
-    "process": "^0.11.10",
+    "i": "^0.3.7",
     "protons": "^2.0.3",
+    "simple-crypto-js": "^3.0.1",
     "ts-typed-events": "3.0.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "ws": "^8.5.0"
   }
 }

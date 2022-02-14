@@ -42,9 +42,6 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
         - [MessageTypes.TransactionMetadata](#messagetypestransactionmetadata)
         - [MessageTypes.TransactionResponse](#messagetypestransactionresponse)
   - [Errors](#errors)
-    - [Crypto-browserify](#crypto-browserify)
-    - [Stream-browserify](#stream-browserify)
-    - [DUMP_SESSION_KEYS](#dump_session_keys)
 
 ## Concepts
 
@@ -479,76 +476,4 @@ export interface TransactionResponse extends BaseMessage {
 
 ## Errors
 
-### Crypto-browserify
-```
-BREAKING CHANGE: webpack < 5 used to include polyfills for node.js core modules by default.
-This is no longer the case. Verify if you need this module and configure a polyfill for it.
-
-If you want to include a polyfill, you need to:
-        - add a fallback 'resolve.fallback: { "crypto": require.resolve("crypto-browserify") }'
-        - install 'crypto-browserify'
-If you don't want to include a polyfill, you can use an empty module like this:
-        resolve.fallback: { "crypto": false }
-```
-**Fix**
-
-```npm i crypto-browserify --save```
-
-Then add to your tsconfig.json:
-
-```js
-"compilerOptions": {
-    "paths": {
-        "crypto": [
-            "node_modules/crypto-browserify"
-        ]
-    }
-}
-```
-
-### Stream-browserify
-
-```
-BREAKING CHANGE: webpack < 5 used to include polyfills for node.js core modules by default.
-This is no longer the case. Verify if you need this module and configure a polyfill for it.
-
-If you want to include a polyfill, you need to:
-        - add a fallback 'resolve.fallback: { "stream": require.resolve("stream-browserify") }'
-        - install 'stream-browserify'
-If you don't want to include a polyfill, you can use an empty module like this:
-        resolve.fallback: { "stream": false }
-```
-
-**Fix**
-
-```npm i stream-browserify --save```
-
-
-Then add to your tsconfig.json:
-
-```js
-"compilerOptions": {
-    "paths": {
-        "crypto": [
-            "node_modules/stream-browserify"
-        ]
-    }
-}
-```
-
-### DUMP_SESSION_KEYS
-
-```
-constants.js:6 Uncaught TypeError: Cannot read properties of undefined (reading 'DUMP_SESSION_KEYS')
-```
-
-**Fix**
-
-```npm i process --save```
-
-Add polyfill somewhere:
-
-```js
-global.process = require('process');
-```
-
+TO-DO

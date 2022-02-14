@@ -5,11 +5,13 @@ export class RelayMessage {
     timestamp: number;
     type: RelayMessageType;
     data: any;
+    topic: string;
 
-    constructor(timestamp: number, type: RelayMessageType, data: any) {
+    constructor(timestamp: number, type: RelayMessageType, data: any, topic: string) {
         this.timestamp = timestamp;
         this.type = type;
         this.data = data;
+        this.topic = topic;
     }
 }
 

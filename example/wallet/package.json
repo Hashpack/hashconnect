@@ -20,11 +20,7 @@
     "@angular/router": "~13.0.0",
     "@costlydeveloper/ngx-awesome-popup": "^2.0.4",
     "@hashgraph/sdk": "2.6.0",
-<<<<<<< HEAD
     "hashconnect": "^0.1.1",
-=======
-    "hashconnect": "^0.1.0",
->>>>>>> 87293e2a0409ab572005fc981099e76c7ac3c675
     "process": "^0.11.10",
     "rxjs": "~7.4.0",
     "tslib": "^2.3.0",

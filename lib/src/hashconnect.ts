@@ -2,10 +2,7 @@ import { Event } from "ts-typed-events";
 import { IRelay, WebSocketRelay } from "./types/relay";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
 import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
-<<<<<<< HEAD
 global.Buffer = global.Buffer || require('buffer').Buffer;
-=======
->>>>>>> 87293e2a0409ab572005fc981099e76c7ac3c675
 
 /**
  * Main interface with hashpack

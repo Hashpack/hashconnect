@@ -1,10 +1,6 @@
 {
   "name": "hashconnect",
-<<<<<<< HEAD
   "version": "0.1.1",
-=======
-  "version": "0.1.0",
->>>>>>> 87293e2a0409ab572005fc981099e76c7ac3c675
   "description": "hashconnect interoperability library",
   "author": "Tyler Coté <tyler@hashpack.app>, Nick Hanna <nick@hashpack.app>",
   "repository": "https://github.com/Hashpack/hashconnect",
@@ -51,10 +47,7 @@
     "yarn": "^1.22.17"
   },
   "dependencies": {
-<<<<<<< HEAD
     "buffer": "^6.0.3",
-=======
->>>>>>> 87293e2a0409ab572005fc981099e76c7ac3c675
     "crypto-es": "^1.2.7",
     "crypto-js": "^4.1.1",
     "i": "^0.3.7",

@@ -79,8 +79,10 @@ export class HashconnectService {
 
         this.hashconnect.transactionResponseEvent.on((data) => {
             // console.log("transaction response", data)
-            if(data.success)
+            if(data.success && !data.signedTransaction)
                 console.log(TransactionReceipt.fromBytes(data.receipt as Uint8Array));
+            else if(data.success && data.signedTransaction)
+                console.log(Transaction.fromBytes(data.signedTransaction as Uint8Array));
         })
 
         this.hashconnect.additionalAccountResponseEvent.on((data) => {
@@ -118,15 +120,16 @@ export class HashconnectService {
     }
 
 
-    async sendTransaction(trans: Uint8Array, acctToSign: string) {
+    async sendTransaction(trans: Uint8Array, acctToSign: string, return_trans: boolean = false) {
         
 
         const transaction: MessageTypes.Transaction = {
             topic: this.saveData.topic,
             byteArray: trans,
+            
             metadata: {
                 accountToSign: acctToSign,
-                returnTransaction: false
+                returnTransaction: return_trans
             }
         }
 

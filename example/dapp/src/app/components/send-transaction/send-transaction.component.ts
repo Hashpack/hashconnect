@@ -31,6 +31,7 @@ export class SendTransactionComponent implements OnInit {
             from_hbar_amount: -1,
             toAcc: "0.0.467126",
             include_token: false,
+            return_transaction: false,
             tokenTransfers: [
                 {
                     tokenId: "0.0.3084461",
@@ -94,7 +95,7 @@ export class SendTransactionComponent implements OnInit {
 
         let transactionBytes: Uint8Array = await this.SigningService.signAndMakeBytes(trans, this.signingAcct);
 
-        this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct);
+        this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, this.data.transfer.return_transaction);
     }
 
     addTokenTransfer() {

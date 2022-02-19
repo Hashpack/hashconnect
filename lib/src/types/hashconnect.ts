@@ -1,6 +1,6 @@
 import { IRelay } from "./relay";
 import { Event } from "ts-typed-events";
-import { MessageTypes, MessageUtil } from "../message";
+import { MessageTypes, MessageUtil, RelayMessage } from "../message";
 import { MessageHandler } from "../message/message-handler";
 
 export interface IHashConnect {
@@ -63,6 +63,8 @@ export interface IHashConnect {
     sendTransactionResponse(topic: string, message: MessageTypes.TransactionResponse): Promise<string>;
     
     reject(topic: string, reason: string, msg_id: string): Promise<void>;
+
+    decodeLocalTransaction(message: string): Promise<RelayMessage>;
     
     /**
      * Send an acknowledgement of receipt

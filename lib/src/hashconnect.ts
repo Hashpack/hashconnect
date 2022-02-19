@@ -125,6 +125,7 @@ export class HashConnect implements IHashConnect {
 
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction, topic, this);
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
+        this.sendEncryptedLocalTransaction(msg);
 
         return transaction.id!;
     }
@@ -286,6 +287,17 @@ export class HashConnect implements IHashConnect {
         if (this.debug) console.log("hashconnect - Connecting to local wallet")
         //todo: add extension metadata support
         window.postMessage({ type: "hashconnect-connect-extension", pairingString: pairingString }, "*")
+    }
+
+    sendEncryptedLocalTransaction(message: string) {
+        if (this.debug) console.log("hashconnect - sending local transaction", message);        
+        window.postMessage({ type: "hashconnect-send-local-transaction", message: message }, "*")
+    }
+
+    async decodeLocalTransaction(message: string){
+        const local_message: RelayMessage = await this.messages.decode(message, this);
+
+        return local_message;
     }
     
 }

@@ -32,6 +32,11 @@
     <input type="number" [(ngModel)]="tokenData.maxSupply" min="0">
 </div>
 
+<div *ngIf="type == 'Fungible'">
+    <h3>Decimals</h3>
+    <input type="number" [(ngModel)]="tokenData.decimals" min="0">
+</div>
+
 <h3>
     <input type="checkbox" [(ngModel)]="tokenData.includeRoyalty">
     Include Royalty

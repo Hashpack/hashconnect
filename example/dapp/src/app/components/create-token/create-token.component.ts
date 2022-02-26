@@ -38,7 +38,8 @@ export class CreateTokenComponent implements OnInit {
         royaltyPercent: 1,
         fixedFee: 0,
         fractionalFee: 0,
-        fallbackFee: 0
+        fallbackFee: 0,
+        decimals: 0
     }
     
 
@@ -94,8 +95,13 @@ export class CreateTokenComponent implements OnInit {
             .setWipeKey(key)
             .setAutoRenewAccountId(this.signingAcct)
             
-        if(this.tokenData.supplyType != TokenSupplyType.Infinite)
+        if(this.tokenData.supplyType != TokenSupplyType.Infinite){
             trans.setMaxSupply(this.tokenData.maxSupply);
+        }
+
+        if(this.tokenData.type == TokenType.FungibleCommon){
+            trans.setDecimals(this.tokenData.decimals);
+        }
             
         if(this.tokenData.includeRoyalty){
             let fallback = await new CustomFixedFee()

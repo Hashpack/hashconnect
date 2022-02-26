@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { CustomFee, CustomFixedFee, CustomRoyaltyFee, Hbar, HbarUnit, PublicKey, TokenCreateTransaction, TokenSupplyType, TokenType } from '@hashgraph/sdk';
+import { CustomFee, CustomFixedFee, CustomFractionalFee, CustomRoyaltyFee, Hbar, HbarUnit, PublicKey, TokenCreateTransaction, TokenSupplyType, TokenType } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -37,7 +37,11 @@ export class CreateTokenComponent implements OnInit {
         includeFractionalFee: false,
         royaltyPercent: 1,
         fixedFee: 0,
-        fractionalFee: 0,
+        fractionalFee: {
+            percent: 0,
+            max: 0,
+            min: 0
+        },
         fallbackFee: 0,
         decimals: 0
     }
@@ -115,6 +119,17 @@ export class CreateTokenComponent implements OnInit {
                 .setFallbackFee(fallback);
             
             customFees.push(royaltyInfo);
+        }
+
+        if(this.tokenData.includeFractionalFee){
+            let fractional = await new CustomFractionalFee()
+            .setFeeCollectorAccountId(this.signingAcct)
+            .setNumerator(this.tokenData.fractionalFee.percent)
+            .setDenominator(100)
+            .setMax(this.tokenData.fractionalFee.max)
+            .setMin(this.tokenData.fractionalFee.min)
+            
+            customFees.push(fractional);
         }
 
         if(this.tokenData.includeFixedFee) {

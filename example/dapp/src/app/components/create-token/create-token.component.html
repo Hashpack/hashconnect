@@ -59,6 +59,22 @@
     <input type="number" [(ngModel)]="tokenData.fixedFee" min="1" max="100">
 </div>
 
+<h3>
+    <input type="checkbox" [(ngModel)]="tokenData.includeFractionalFee">
+    Include Fractional Fee
+</h3>
+
+<div *ngIf="tokenData.includeFractionalFee">
+    <h3>Fractional Fee Percent</h3>
+    <input type="number" [(ngModel)]="tokenData.fractionalFee.percent" min="1" max="100">
+    
+    <h3>Fractional Fee Max</h3>
+    <input type="number" [(ngModel)]="tokenData.fractionalFee.max" min="0" max="100">
+    
+    <h3>Fractional Fee Min</h3>
+    <input type="number" [(ngModel)]="tokenData.fractionalFee.min" min="0" max="100">
+</div>
+
 <!-- <h3>
     <input type="checkbox" [(ngModel)]="tokenData.includeFractionalFee">
     Include Fractional Fee

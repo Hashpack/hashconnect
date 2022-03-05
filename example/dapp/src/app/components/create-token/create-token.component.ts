@@ -37,6 +37,7 @@ export class CreateTokenComponent implements OnInit {
         includeFractionalFee: false,
         royaltyPercent: 1,
         fixedFee: 0,
+        fixedTokenId: "",
         fractionalFee: {
             percent: 0,
             max: 0,
@@ -134,8 +135,14 @@ export class CreateTokenComponent implements OnInit {
 
         if(this.tokenData.includeFixedFee) {
             let fixedFee = await new CustomFixedFee()
-            .setHbarAmount(Hbar.from(this.tokenData.fixedFee, HbarUnit.Hbar))
             .setFeeCollectorAccountId(this.signingAcct);
+
+            if(this.tokenData.fixedTokenId && this.tokenData.fixedTokenId != ""){
+                fixedFee.setDenominatingTokenId(this.tokenData.fixedTokenId);
+                fixedFee.setAmount(this.tokenData.fixedFee);
+            }
+            else
+                fixedFee.setHbarAmount(Hbar.from(this.tokenData.fixedFee, HbarUnit.Hbar))
 
             customFees.push(fixedFee);
         }

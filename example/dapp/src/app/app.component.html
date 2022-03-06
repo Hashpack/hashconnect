@@ -20,6 +20,7 @@
 
         
         <button class="primary" (click)="smartcontractCreate()" [disabled]="HashConnectService.status != 'Paired'">Smart Contract Create</button>
+        <button class="primary" (click)="smartcontractExecute()" [disabled]="HashConnectService.status != 'Paired'">Smart Contract Execute</button>
 
     </div>
 </div>

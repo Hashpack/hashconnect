@@ -10,6 +10,7 @@ import { MintTokenComponent } from './components/mint-token/mint-token.component
 import { PairingComponent } from './components/pairing/pairing.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';
 import { SmartcontractCreateComponent } from './components/smartcontract-create/smartcontract-create.component';
+import { SmartcontractExecuteComponent } from './components/smartcontract-execute/smartcontract-execute.component';
 
 import { HashconnectService } from './services/hashconnect.service';
 import { SigningService } from './services/signing.service';
@@ -161,6 +162,22 @@ export class AppComponent {
 
     smartcontractCreate() {
         const dialogPopup = new DialogInitializer(SmartcontractCreateComponent);
+
+        dialogPopup.setConfig({
+            Width: '500px',
+            LayoutType: DialogLayoutDisplay.NONE
+        });
+
+        dialogPopup.setButtons([
+            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
+            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
+        ]);
+
+        dialogPopup.openDialog$().subscribe(resp => { });
+    }
+
+    smartcontractExecute() {
+        const dialogPopup = new DialogInitializer(SmartcontractExecuteComponent);
 
         dialogPopup.setConfig({
             Width: '500px',

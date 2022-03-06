@@ -1,16 +1,16 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { ContractCreateTransaction, ContractFunctionParameters } from '@hashgraph/sdk';
+import { ContractExecuteTransaction, ContractFunctionParameters, Hbar } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
 
 @Component({
-    selector: 'app-smartcontract-create',
-    templateUrl: './smartcontract-create.component.html',
-    styleUrls: ['./smartcontract-create.component.scss']
+    selector: 'app-smartcontract-execute',
+    templateUrl: './smartcontract-execute.component.html',
+    styleUrls: ['./smartcontract-execute.component.scss']
 })
-export class SmartcontractCreateComponent implements OnInit {
+export class SmartcontractExecuteComponent implements OnInit {
 
     constructor(
         @Inject('dialogBelonging') private dialogBelonging: DialogBelonging,
@@ -21,7 +21,7 @@ export class SmartcontractCreateComponent implements OnInit {
     subscriptions: Subscription = new Subscription();
     memo: string = "";
     signingAcct: string = "";
-    bytecodeFileId: string = "0.0.30861882"
+    contractId: string = "0.0.30863001";
 
     ngOnInit(): void {
         this.subscriptions.add(
@@ -41,10 +41,11 @@ export class SmartcontractCreateComponent implements OnInit {
 
     async buildTransaction() {
         //this is the example contract from https://hedera.com/blog/how-to-deploy-smart-contracts-on-hedera-part-1-a-simple-getter-and-setter-contract
-        let trans = new ContractCreateTransaction()
-        .setBytecodeFileId(this.bytecodeFileId)
+        let trans = new ContractExecuteTransaction()
+        .setContractId(this.contractId)
         .setGas(100000)
-        .setConstructorParameters(new ContractFunctionParameters().addString("Alice").addUint256(111111));
+        .setFunction("setMobileNumber", new ContractFunctionParameters().addString("Bob").addUint256(222222))
+        .setMaxTransactionFee(new Hbar(0.75));
 
         let transactionBytes: Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
 

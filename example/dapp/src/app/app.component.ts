@@ -5,9 +5,11 @@ import { BurnTokenComponent } from './components/burn-token/burn-token.component
 import { CreateTokenComponent } from './components/create-token/create-token.component';
 import { DeleteTokenComponent } from './components/delete-token/delete-token.component';
 import { DisassociateTokenComponent } from './components/disassociate-token/disassociate-token.component';
+import { FileCreateComponent } from './components/file-create/file-create.component';
 import { MintTokenComponent } from './components/mint-token/mint-token.component';
 import { PairingComponent } from './components/pairing/pairing.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';
+import { SmartcontractCreateComponent } from './components/smartcontract-create/smartcontract-create.component';
 
 import { HashconnectService } from './services/hashconnect.service';
 import { SigningService } from './services/signing.service';
@@ -143,6 +145,38 @@ export class AppComponent {
 
     disassociateToken() {
         const dialogPopup = new DialogInitializer(DisassociateTokenComponent);
+
+        dialogPopup.setConfig({
+            Width: '500px',
+            LayoutType: DialogLayoutDisplay.NONE
+        });
+
+        dialogPopup.setButtons([
+            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
+            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
+        ]);
+
+        dialogPopup.openDialog$().subscribe(resp => { });
+    }
+
+    smartcontractCreate() {
+        const dialogPopup = new DialogInitializer(SmartcontractCreateComponent);
+
+        dialogPopup.setConfig({
+            Width: '500px',
+            LayoutType: DialogLayoutDisplay.NONE
+        });
+
+        dialogPopup.setButtons([
+            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
+            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
+        ]);
+
+        dialogPopup.openDialog$().subscribe(resp => { });
+    }
+
+    fileCreate() {
+        const dialogPopup = new DialogInitializer(FileCreateComponent);
 
         dialogPopup.setConfig({
             Width: '500px',

@@ -15,6 +15,12 @@
         <button class="primary" (click)="burnToken()" [disabled]="HashConnectService.status != 'Paired'">Burn Token</button>
         <button class="primary" (click)="associateToken()" [disabled]="HashConnectService.status != 'Paired'">Associate Token</button>
         <button class="primary" (click)="disassociateToken()" [disabled]="HashConnectService.status != 'Paired'">Disassociate Token</button>
+        
+        <button class="primary" (click)="fileCreate()" [disabled]="HashConnectService.status != 'Paired'">File Create</button>
+
+        
+        <button class="primary" (click)="smartcontractCreate()" [disabled]="HashConnectService.status != 'Paired'">Smart Contract Create</button>
+
     </div>
 </div>
 

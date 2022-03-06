@@ -13,6 +13,8 @@ import { CreateTokenComponent } from './components/create-token/create-token.com
 import { DeleteTokenComponent } from './components/delete-token/delete-token.component';
 import { MintTokenComponent } from './components/mint-token/mint-token.component';
 import { BurnTokenComponent } from './components/burn-token/burn-token.component';
+import { SmartcontractCreateComponent } from './components/smartcontract-create/smartcontract-create.component';
+import { FileCreateComponent } from './components/file-create/file-create.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +27,9 @@ import { BurnTokenComponent } from './components/burn-token/burn-token.component
     CreateTokenComponent,
     DeleteTokenComponent,
     MintTokenComponent,
-    BurnTokenComponent
+    BurnTokenComponent,
+    SmartcontractCreateComponent,
+    FileCreateComponent
   ],
   imports: [
     BrowserModule,

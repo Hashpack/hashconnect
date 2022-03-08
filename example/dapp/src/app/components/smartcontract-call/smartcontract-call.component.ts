@@ -21,7 +21,7 @@ export class SmartcontractCallComponent implements OnInit {
     subscriptions: Subscription = new Subscription();
     memo: string = "";
     signingAcct: string = "";
-    contractId: string = "";
+    contractId: string = "0.0.30863001";
 
     ngOnInit(): void {
         this.subscriptions.add(

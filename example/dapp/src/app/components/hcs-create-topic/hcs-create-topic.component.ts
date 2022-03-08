@@ -1,17 +1,17 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { ContractExecuteTransaction, ContractFunctionParameters, Hbar } from '@hashgraph/sdk';
+import { TopicCreateTransaction } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
 
 @Component({
-    selector: 'app-smartcontract-execute',
-    templateUrl: './smartcontract-execute.component.html',
-    styleUrls: ['./smartcontract-execute.component.scss']
+  selector: 'app-hcs-create-topic',
+  templateUrl: './hcs-create-topic.component.html',
+  styleUrls: ['./hcs-create-topic.component.scss']
 })
-export class SmartcontractExecuteComponent implements OnInit {
-
+export class HcsCreateTopicComponent implements OnInit {
+    
     constructor(
         @Inject('dialogBelonging') private dialogBelonging: DialogBelonging,
         public HashconnectService: HashconnectService,
@@ -19,9 +19,9 @@ export class SmartcontractExecuteComponent implements OnInit {
     ) { }
 
     subscriptions: Subscription = new Subscription();
-    memo: string = "";
+    topicMemo: string = "Test topic";
+    memo: string = "test memo";
     signingAcct: string = "";
-    contractId: string = "0.0.30863001";
 
     ngOnInit(): void {
         this.subscriptions.add(
@@ -40,17 +40,12 @@ export class SmartcontractExecuteComponent implements OnInit {
     }
 
     async buildTransaction() {
-        //this is the example contract from https://hedera.com/blog/how-to-deploy-smart-contracts-on-hedera-part-1-a-simple-getter-and-setter-contract
-        let trans = new ContractExecuteTransaction()
-        .setContractId(this.contractId)
-        .setGas(100000)
-        .setPayableAmount(new Hbar(10))
-        .setFunction("setMobileNumber", new ContractFunctionParameters().addString("Bob").addUint256(222222))
-        .setMaxTransactionFee(new Hbar(0.75));
+        let trans = new TopicCreateTransaction()
+        .setTopicMemo(this.topicMemo)
+        .setTransactionMemo(this.memo);
 
         let transactionBytes: Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
 
         this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, false);
     }
-
 }

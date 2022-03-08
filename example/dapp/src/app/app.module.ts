@@ -17,6 +17,7 @@ import { SmartcontractCreateComponent } from './components/smartcontract-create/
 import { FileCreateComponent } from './components/file-create/file-create.component';
 import { SmartcontractCallComponent } from './components/smartcontract-call/smartcontract-call.component';
 import { SmartcontractExecuteComponent } from './components/smartcontract-execute/smartcontract-execute.component';
+import { HcsCreateTopicComponent } from './components/hcs-create-topic/hcs-create-topic.component';
 
 @NgModule({
   declarations: [
@@ -33,7 +34,8 @@ import { SmartcontractExecuteComponent } from './components/smartcontract-execut
     SmartcontractCreateComponent,
     FileCreateComponent,
     SmartcontractCallComponent,
-    SmartcontractExecuteComponent
+    SmartcontractExecuteComponent,
+    HcsCreateTopicComponent
   ],
   imports: [
     BrowserModule,

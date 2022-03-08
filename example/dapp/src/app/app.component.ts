@@ -6,6 +6,7 @@ import { CreateTokenComponent } from './components/create-token/create-token.com
 import { DeleteTokenComponent } from './components/delete-token/delete-token.component';
 import { DisassociateTokenComponent } from './components/disassociate-token/disassociate-token.component';
 import { FileCreateComponent } from './components/file-create/file-create.component';
+import { HcsCreateTopicComponent } from './components/hcs-create-topic/hcs-create-topic.component';
 import { MintTokenComponent } from './components/mint-token/mint-token.component';
 import { PairingComponent } from './components/pairing/pairing.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';
@@ -211,6 +212,23 @@ export class AppComponent {
 
     fileCreate() {
         const dialogPopup = new DialogInitializer(FileCreateComponent);
+
+        dialogPopup.setConfig({
+            Width: '500px',
+            LayoutType: DialogLayoutDisplay.NONE
+        });
+
+        dialogPopup.setButtons([
+            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
+            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
+        ]);
+
+        dialogPopup.openDialog$().subscribe(resp => { });
+    }
+
+
+    hcsCreateTopic() {
+        const dialogPopup = new DialogInitializer(HcsCreateTopicComponent);
 
         dialogPopup.setConfig({
             Width: '500px',

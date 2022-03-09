@@ -29,6 +29,7 @@
         <h3>Consensus Service</h3>
         <button class="primary" (click)="hcsCreateTopic()" [disabled]="HashConnectService.status != 'Paired'">Create Topic</button>
         <button class="primary" (click)="hcsDeleteTopic()" [disabled]="HashConnectService.status != 'Paired'">Delete Topic</button>
+        <button class="primary" (click)="hcsUpdateTopic()" [disabled]="HashConnectService.status != 'Paired'">Update Topic</button>
         <button class="primary" (click)="hcsSubmitMessage()" [disabled]="HashConnectService.status != 'Paired'">Submit Message</button>
     </div>
 </div>

@@ -23,6 +23,7 @@
 
         <h3>Smart Contracts</h3>
         <button class="primary" (click)="smartcontractCreate()" [disabled]="HashConnectService.status != 'Paired'">Smart Contract Create</button>
+        <button class="primary" (click)="smartcontractDelete()" [disabled]="HashConnectService.status != 'Paired'">Smart Contract Delete</button>
         <button class="primary" (click)="smartcontractCall()" [disabled]="HashConnectService.status != 'Paired'">Smart Contract Call</button>
         <button class="primary" (click)="smartcontractExecute()" [disabled]="HashConnectService.status != 'Paired'">Smart Contract Execute</button>
 

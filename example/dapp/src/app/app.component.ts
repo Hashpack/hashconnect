@@ -15,6 +15,7 @@ import { PairingComponent } from './components/pairing/pairing.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';
 import { SmartcontractCallComponent } from './components/smartcontract-call/smartcontract-call.component';
 import { SmartcontractCreateComponent } from './components/smartcontract-create/smartcontract-create.component';
+import { SmartcontractDeleteComponent } from './components/smartcontract-delete/smartcontract-delete.component';
 import { SmartcontractExecuteComponent } from './components/smartcontract-execute/smartcontract-execute.component';
 
 import { HashconnectService } from './services/hashconnect.service';
@@ -199,6 +200,22 @@ export class AppComponent {
 
     smartcontractExecute() {
         const dialogPopup = new DialogInitializer(SmartcontractExecuteComponent);
+
+        dialogPopup.setConfig({
+            Width: '500px',
+            LayoutType: DialogLayoutDisplay.NONE
+        });
+
+        dialogPopup.setButtons([
+            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
+            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
+        ]);
+
+        dialogPopup.openDialog$().subscribe(resp => { });
+    }
+
+    smartcontractDelete() {
+        const dialogPopup = new DialogInitializer(SmartcontractDeleteComponent);
 
         dialogPopup.setConfig({
             Width: '500px',

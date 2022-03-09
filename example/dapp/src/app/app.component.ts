@@ -7,6 +7,7 @@ import { DeleteTokenComponent } from './components/delete-token/delete-token.com
 import { DisassociateTokenComponent } from './components/disassociate-token/disassociate-token.component';
 import { FileCreateComponent } from './components/file-create/file-create.component';
 import { HcsCreateTopicComponent } from './components/hcs-create-topic/hcs-create-topic.component';
+import { HcsDeleteTopicComponent } from './components/hcs-delete-topic/hcs-delete-topic.component';
 import { HcsSubmitMessageComponent } from './components/hcs-submit-message/hcs-submit-message.component';
 import { MintTokenComponent } from './components/mint-token/mint-token.component';
 import { PairingComponent } from './components/pairing/pairing.component';
@@ -230,6 +231,22 @@ export class AppComponent {
 
     hcsCreateTopic() {
         const dialogPopup = new DialogInitializer(HcsCreateTopicComponent);
+
+        dialogPopup.setConfig({
+            Width: '500px',
+            LayoutType: DialogLayoutDisplay.NONE
+        });
+
+        dialogPopup.setButtons([
+            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
+            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
+        ]);
+
+        dialogPopup.openDialog$().subscribe(resp => { });
+    }
+
+    hcsDeleteTopic() {
+        const dialogPopup = new DialogInitializer(HcsDeleteTopicComponent);
 
         dialogPopup.setConfig({
             Width: '500px',

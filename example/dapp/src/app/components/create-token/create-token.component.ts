@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { CustomFee, CustomFixedFee, CustomRoyaltyFee, Hbar, HbarUnit, PublicKey, TokenCreateTransaction, TokenSupplyType, TokenType } from '@hashgraph/sdk';
+import { CustomFee, CustomFixedFee, CustomFractionalFee, CustomRoyaltyFee, Hbar, HbarUnit, PublicKey, TokenCreateTransaction, TokenSupplyType, TokenType } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -37,8 +37,14 @@ export class CreateTokenComponent implements OnInit {
         includeFractionalFee: false,
         royaltyPercent: 1,
         fixedFee: 0,
-        fractionalFee: 0,
-        fallbackFee: 0
+        fixedTokenId: "",
+        fractionalFee: {
+            percent: 0,
+            max: 0,
+            min: 0
+        },
+        fallbackFee: 0,
+        decimals: 0
     }
     
 
@@ -94,8 +100,13 @@ export class CreateTokenComponent implements OnInit {
             .setWipeKey(key)
             .setAutoRenewAccountId(this.signingAcct)
             
-        if(this.tokenData.supplyType != TokenSupplyType.Infinite)
+        if(this.tokenData.supplyType != TokenSupplyType.Infinite){
             trans.setMaxSupply(this.tokenData.maxSupply);
+        }
+
+        if(this.tokenData.type == TokenType.FungibleCommon){
+            trans.setDecimals(this.tokenData.decimals);
+        }
             
         if(this.tokenData.includeRoyalty){
             let fallback = await new CustomFixedFee()
@@ -111,10 +122,27 @@ export class CreateTokenComponent implements OnInit {
             customFees.push(royaltyInfo);
         }
 
+        if(this.tokenData.includeFractionalFee){
+            let fractional = await new CustomFractionalFee()
+            .setFeeCollectorAccountId(this.signingAcct)
+            .setNumerator(this.tokenData.fractionalFee.percent)
+            .setDenominator(100)
+            .setMax(this.tokenData.fractionalFee.max)
+            .setMin(this.tokenData.fractionalFee.min)
+            
+            customFees.push(fractional);
+        }
+
         if(this.tokenData.includeFixedFee) {
             let fixedFee = await new CustomFixedFee()
-            .setHbarAmount(Hbar.from(this.tokenData.fixedFee, HbarUnit.Hbar))
             .setFeeCollectorAccountId(this.signingAcct);
+
+            if(this.tokenData.fixedTokenId && this.tokenData.fixedTokenId != ""){
+                fixedFee.setDenominatingTokenId(this.tokenData.fixedTokenId);
+                fixedFee.setAmount(this.tokenData.fixedFee);
+            }
+            else
+                fixedFee.setHbarAmount(Hbar.from(this.tokenData.fixedFee, HbarUnit.Hbar))
 
             customFees.push(fixedFee);
         }

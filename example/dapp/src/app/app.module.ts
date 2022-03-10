@@ -13,6 +13,15 @@ import { CreateTokenComponent } from './components/create-token/create-token.com
 import { DeleteTokenComponent } from './components/delete-token/delete-token.component';
 import { MintTokenComponent } from './components/mint-token/mint-token.component';
 import { BurnTokenComponent } from './components/burn-token/burn-token.component';
+import { SmartcontractCreateComponent } from './components/smartcontract-create/smartcontract-create.component';
+import { FileCreateComponent } from './components/file-create/file-create.component';
+import { SmartcontractCallComponent } from './components/smartcontract-call/smartcontract-call.component';
+import { SmartcontractExecuteComponent } from './components/smartcontract-execute/smartcontract-execute.component';
+import { HcsCreateTopicComponent } from './components/hcs-create-topic/hcs-create-topic.component';
+import { HcsSubmitMessageComponent } from './components/hcs-submit-message/hcs-submit-message.component';
+import { HcsDeleteTopicComponent } from './components/hcs-delete-topic/hcs-delete-topic.component';
+import { HcsUpdateTopicComponent } from './components/hcs-update-topic/hcs-update-topic.component';
+import { SmartcontractDeleteComponent } from './components/smartcontract-delete/smartcontract-delete.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +34,16 @@ import { BurnTokenComponent } from './components/burn-token/burn-token.component
     CreateTokenComponent,
     DeleteTokenComponent,
     MintTokenComponent,
-    BurnTokenComponent
+    BurnTokenComponent,
+    SmartcontractCreateComponent,
+    FileCreateComponent,
+    SmartcontractCallComponent,
+    SmartcontractExecuteComponent,
+    HcsCreateTopicComponent,
+    HcsSubmitMessageComponent,
+    HcsDeleteTopicComponent,
+    HcsUpdateTopicComponent,
+    SmartcontractDeleteComponent
   ],
   imports: [
     BrowserModule,

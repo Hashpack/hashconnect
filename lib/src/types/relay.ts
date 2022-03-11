@@ -1,4 +1,5 @@
 import { Event } from "ts-typed-events"
+import { HashConnectConnectionState } from ".";
 import { HashConnect } from "../main";
 
 /**
@@ -72,16 +73,19 @@ export class WebSocketRelay implements IRelay {
     }
 
     connectToSocket(callback: () => void) {
-        // this.socket = new WebSocket('ws://localhost:9001');
-        this.socket = new WebSocket('wss://hashconnect.hashpack.app');
+        this.socket = new WebSocket('ws://localhost:9001');
+        // this.socket = new WebSocket('wss://hashconnect.hashpack.app');
 
         this.socket.onopen = () => {
             if (this.hc.debug) console.log("hashconnect - connected");
+
+            this.hc.connectionStatusChange.emit(HashConnectConnectionState.Connected);
             callback();
         };
 
         this.socket.onclose = () => {
             console.log("hashconnect - disconnected")
+            this.hc.connectionStatusChange.emit(HashConnectConnectionState.Disconnected);
             setTimeout(() => {
                 this.reconnect();
             }, 300);

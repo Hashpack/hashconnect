@@ -1,7 +1,7 @@
 import { Event } from "ts-typed-events";
 import { IRelay, WebSocketRelay } from "./types/relay";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
-import { HashConnectTypes, IHashConnect } from "./types/hashconnect";
+import { HashConnectTypes, IHashConnect, HashConnectConnectionState } from "./types/hashconnect";
 global.Buffer = global.Buffer || require('buffer').Buffer;
 
 /**
@@ -17,6 +17,7 @@ export class HashConnect implements IHashConnect {
     transactionEvent: Event<MessageTypes.Transaction>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
+    connectionStatusChange: Event<HashConnectConnectionState>;
     
     transactionResolver: (value: MessageTypes.TransactionResponse | PromiseLike<MessageTypes.TransactionResponse>) => void;
     additionalAccountResolver: (value: MessageTypes.AdditionalAccountResponse | PromiseLike<MessageTypes.AdditionalAccountResponse>) => void;
@@ -39,7 +40,8 @@ export class HashConnect implements IHashConnect {
         this.transactionEvent = new Event<MessageTypes.Transaction>();
         this.acknowledgeMessageEvent = new Event<MessageTypes.Acknowledge>();
         this.additionalAccountRequestEvent = new Event<MessageTypes.AdditionalAccountRequest>();
-
+        this.connectionStatusChange = new Event<HashConnectConnectionState>();
+        
         this.messages = new MessageUtil();
         this.messageParser = new MessageHandler();
 

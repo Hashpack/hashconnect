@@ -54,7 +54,7 @@ export class MessageHandler implements IMessageHandler {
                 if(transaction_response_data.receipt)
                     transaction_response_data.receipt = new Uint8Array(Buffer.from(transaction_response_data.receipt as string,'base64'));
                 
-                hc.transactionResponseEvent.emit(transaction_response_data);
+                hc.transactionResolver(transaction_response_data);
 
                 await hc.acknowledge(parsedData.topic, hc.publicKeys[transaction_response_data.topic], transaction_response_data.id!);
             break;
@@ -72,7 +72,7 @@ export class MessageHandler implements IMessageHandler {
 
                 let response_data: MessageTypes.AdditionalAccountResponse = message.data;
 
-                hc.additionalAccountResponseEvent.emit(response_data);
+                hc.additionalAccountResolver(response_data);
 
                 await hc.acknowledge(parsedData.topic, hc.publicKeys[response_data.topic], response_data.id!);
             break;

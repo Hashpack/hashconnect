@@ -15,10 +15,11 @@ export class HashConnect implements IHashConnect {
     foundExtensionEvent: Event<HashConnectTypes.WalletMetadata>;
     pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
-    transactionResponseEvent: Event<MessageTypes.TransactionResponse>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
-    additionalAccountResponseEvent: Event<MessageTypes.AdditionalAccountResponse>;
+    
+    transactionResolver: (value: MessageTypes.TransactionResponse | PromiseLike<MessageTypes.TransactionResponse>) => void;
+    additionalAccountResolver: (value: MessageTypes.AdditionalAccountResponse | PromiseLike<MessageTypes.AdditionalAccountResponse>) => void;
 
     // messages util
     messageParser: MessageHandler;
@@ -36,10 +37,8 @@ export class HashConnect implements IHashConnect {
         this.foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
         this.pairingEvent = new Event<MessageTypes.ApprovePairing>();
         this.transactionEvent = new Event<MessageTypes.Transaction>();
-        this.transactionResponseEvent = new Event<MessageTypes.TransactionResponse>();
         this.acknowledgeMessageEvent = new Event<MessageTypes.Acknowledge>();
         this.additionalAccountRequestEvent = new Event<MessageTypes.AdditionalAccountRequest>();
-        this.additionalAccountResponseEvent = new Event<MessageTypes.AdditionalAccountResponse>();
 
         this.messages = new MessageUtil();
         this.messageParser = new MessageHandler();
@@ -120,22 +119,23 @@ export class HashConnect implements IHashConnect {
     /**
      * Send functions
      */
-    async sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<string> {
+    async sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<MessageTypes.TransactionResponse> {
         transaction.byteArray = Buffer.from(transaction.byteArray).toString("base64");
 
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction, topic, this);
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
         this.sendEncryptedLocalTransaction(msg);
 
-        return transaction.id!;
+        return await new Promise<MessageTypes.TransactionResponse>(resolve => this.transactionResolver = resolve)
     }
 
-    async requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<string> {
+    async requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<MessageTypes.AdditionalAccountResponse> {
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountRequest, message, topic, this);
 
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
+        
+        return await new Promise<MessageTypes.AdditionalAccountResponse>(resolve => this.additionalAccountResolver = resolve)
 
-        return message.id!;
     }
 
     async sendAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountResponse): Promise<string> {

@@ -77,22 +77,22 @@ export class HashconnectService {
             console.log("Found extension", data);
         })
 
-        this.hashconnect.transactionResponseEvent.on((data) => {
-            // console.log("transaction response", data)
-            if(data.success && !data.signedTransaction)
-                console.log(TransactionReceipt.fromBytes(data.receipt as Uint8Array));
-            else if(data.success && data.signedTransaction)
-                console.log(Transaction.fromBytes(data.signedTransaction as Uint8Array));
-        })
+        // this.hashconnect.transactionResponseEvent.on((data) => {
+        //     // console.log("transaction response", data)
+        //     if(data.success && !data.signedTransaction)
+        //         console.log(TransactionReceipt.fromBytes(data.receipt as Uint8Array));
+        //     else if(data.success && data.signedTransaction)
+        //         console.log(Transaction.fromBytes(data.signedTransaction as Uint8Array));
+        // })
 
-        this.hashconnect.additionalAccountResponseEvent.on((data) => {
-            console.log("Received account info", data);
+        // this.hashconnect.additionalAccountResponseEvent.on((data) => {
+        //     console.log("Received account info", data);
             
-            data.accountIds.forEach(id => {
-                if(this.saveData.pairedAccounts.indexOf(id) == -1)
-                    this.saveData.pairedAccounts.push(id);
-            })
-        })
+        //     data.accountIds.forEach(id => {
+        //         if(this.saveData.pairedAccounts.indexOf(id) == -1)
+        //             this.saveData.pairedAccounts.push(id);
+        //     })
+        // })
 
         this.hashconnect.pairingEvent.on((data) => {
             console.log("Paired with wallet", data);
@@ -133,7 +133,7 @@ export class HashconnectService {
             }
         }
 
-        await this.hashconnect.sendTransaction(this.saveData.topic, transaction)
+        return await this.hashconnect.sendTransaction(this.saveData.topic, transaction)
     }
 
     async requestAccountInfo() {

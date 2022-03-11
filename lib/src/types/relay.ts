@@ -72,8 +72,8 @@ export class WebSocketRelay implements IRelay {
     }
 
     connectToSocket(callback: () => void) {
-        this.socket = new WebSocket('ws://localhost:9001');
-        // this.socket = new WebSocket('wss://hashconnect.hashpack.app');
+        // this.socket = new WebSocket('ws://localhost:9001');
+        this.socket = new WebSocket('wss://hashconnect.hashpack.app');
 
         this.socket.onopen = () => {
             if (this.hc.debug) console.log("hashconnect - connected");
@@ -122,12 +122,10 @@ export class WebSocketRelay implements IRelay {
         if (this.hc.debug) console.log("hashconnect - Unsubscribing to " + topic);
 
         this.socket.send(JSON.stringify({ action: "unsub", topic: topic }))
-        // this.waku.relay.unsubscribe(topic);
     }
 
     // TODO: determine appropriate types for sending messages, string should suffice for now
     async publish(topic: string, message: any, pubKey: string): Promise<void> {
-        // const wakuMessage = await WakuMessage.fromBytes(message, topic);
         const msg = {
             action: "pub",
             payload: JSON.stringify(message),

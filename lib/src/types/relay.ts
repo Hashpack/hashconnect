@@ -48,6 +48,7 @@ export class WebSocketRelay implements IRelay {
     connected: Event<any>;
     payload: Event<any>;
     hc: HashConnect;
+    subscribedTopics: string[] = [];
 
     // TODO: is there a better way to do this?
     private processMessage(e: MessageEvent<any>) {
@@ -64,19 +65,46 @@ export class WebSocketRelay implements IRelay {
     async init(): Promise<void> {
         // TODO error flow
         return new Promise((resolve) => {
-            // this.socket = new WebSocket('ws://localhost:9001');
-            this.socket = new WebSocket('wss://hashconnect.hashpack.app');
-
-            this.socket.onopen = () => {
-                if (this.hc.debug) console.log("hashconnect - connected");
+            this.connectToSocket(() => {
                 resolve();
-            };
+            })
         });
+    }
 
+    connectToSocket(callback: () => void) {
+        this.socket = new WebSocket('ws://localhost:9001');
+        // this.socket = new WebSocket('wss://hashconnect.hashpack.app');
+
+        this.socket.onopen = () => {
+            if (this.hc.debug) console.log("hashconnect - connected");
+            callback();
+        };
+
+        this.socket.onclose = () => {
+            console.log("hashconnect - disconnected")
+            setTimeout(() => {
+                this.reconnect();
+            }, 300);
+        }
+    }
+
+    reconnect() {
+        if (this.hc.debug) console.log("hashconnect - reconnecting...")
+
+        this.connectToSocket(async () => {
+            for(let topic of this.subscribedTopics) {
+                await this.subscribe(topic);
+            }
+
+            if (this.hc.debug) console.log("hashconnect - reconnected")
+        })
     }
 
     async subscribe(topic: string): Promise<void> {
         if (this.hc.debug) console.log("hashconnect - Subscribing to topic id " + topic);
+
+        if(this.subscribedTopics.indexOf(topic) == -1) this.subscribedTopics.push(topic);
+
         this.socket.send(JSON.stringify({ action: 'sub', topic: topic }));
 
         this.socket.onmessage = (e) => {

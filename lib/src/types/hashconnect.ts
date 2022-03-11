@@ -12,10 +12,12 @@ export interface IHashConnect {
     foundExtensionEvent: Event<HashConnectTypes.WalletMetadata>;
     pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
-    transactionResponseEvent: Event<MessageTypes.TransactionResponse>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
-    additionalAccountResponseEvent: Event<MessageTypes.AdditionalAccountResponse>;
+    
+    //promises
+    transactionResolver: (value: MessageTypes.TransactionResponse | PromiseLike<MessageTypes.TransactionResponse>) => void;
+    additionalAccountResolver: (value: MessageTypes.AdditionalAccountResponse | PromiseLike<MessageTypes.AdditionalAccountResponse>) => void;
 
     /** Messages util for protobufs */
     messages: MessageUtil;
@@ -54,9 +56,9 @@ export interface IHashConnect {
      * @param topic topic to publish to
      * @param transaction transaction to send
      */
-    sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<string>;
+    sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<MessageTypes.TransactionResponse>;
     
-    requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<string>;
+    requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<MessageTypes.AdditionalAccountResponse>;
     
     sendAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountResponse): Promise<string>;
     

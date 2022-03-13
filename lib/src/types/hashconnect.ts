@@ -14,7 +14,8 @@ export interface IHashConnect {
     transactionEvent: Event<MessageTypes.Transaction>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
-    
+    connectionStatusChange: Event<HashConnectConnectionState>;
+
     //promises
     transactionResolver: (value: MessageTypes.TransactionResponse | PromiseLike<MessageTypes.TransactionResponse>) => void;
     additionalAccountResolver: (value: MessageTypes.AdditionalAccountResponse | PromiseLike<MessageTypes.AdditionalAccountResponse>) => void;
@@ -117,4 +118,9 @@ export declare namespace HashConnectTypes {
         network: string;
         multiAccount: boolean;
     }
+}
+
+export enum HashConnectConnectionState {
+    Connected="Connected",
+    Disconnected="Disconnected"
 }

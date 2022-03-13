@@ -28,7 +28,8 @@
     "build-watch": "tsc -w -p tsconfig.json",
     "build-all": "yarn clean && yarn build",
     "copy-readme": "cp ../README.md README.md",
-    "prepack": "npm run build && npm run copy-readme"
+    "copy-changelog": "cp ../CHANGELOG.md CHANGELOG.md",
+    "prepack": "npm run build && npm run copy-readme && npm run copy-changelog"
   },
   "devDependencies": {
     "@types/jest": "^26.0.21",

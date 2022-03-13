@@ -1,4 +1,5 @@
 import { Event } from "ts-typed-events"
+import { HashConnectConnectionState } from ".";
 import { HashConnect } from "../main";
 
 /**
@@ -48,6 +49,7 @@ export class WebSocketRelay implements IRelay {
     connected: Event<any>;
     payload: Event<any>;
     hc: HashConnect;
+    subscribedTopics: string[] = [];
 
     // TODO: is there a better way to do this?
     private processMessage(e: MessageEvent<any>) {
@@ -64,19 +66,49 @@ export class WebSocketRelay implements IRelay {
     async init(): Promise<void> {
         // TODO error flow
         return new Promise((resolve) => {
-            // this.socket = new WebSocket('ws://localhost:9001');
-            this.socket = new WebSocket('wss://hashconnect.hashpack.app');
-
-            this.socket.onopen = () => {
-                if (this.hc.debug) console.log("hashconnect - connected");
+            this.connectToSocket(() => {
                 resolve();
-            };
+            })
         });
+    }
 
+    connectToSocket(callback: () => void) {
+        this.socket = new WebSocket('ws://localhost:9001');
+        // this.socket = new WebSocket('wss://hashconnect.hashpack.app');
+
+        this.socket.onopen = () => {
+            if (this.hc.debug) console.log("hashconnect - connected");
+
+            this.hc.connectionStatusChange.emit(HashConnectConnectionState.Connected);
+            callback();
+        };
+
+        this.socket.onclose = () => {
+            console.log("hashconnect - disconnected")
+            this.hc.connectionStatusChange.emit(HashConnectConnectionState.Disconnected);
+            setTimeout(() => {
+                this.reconnect();
+            }, 300);
+        }
+    }
+
+    reconnect() {
+        if (this.hc.debug) console.log("hashconnect - reconnecting...")
+
+        this.connectToSocket(async () => {
+            for(let topic of this.subscribedTopics) {
+                await this.subscribe(topic);
+            }
+
+            if (this.hc.debug) console.log("hashconnect - reconnected")
+        })
     }
 
     async subscribe(topic: string): Promise<void> {
         if (this.hc.debug) console.log("hashconnect - Subscribing to topic id " + topic);
+
+        if(this.subscribedTopics.indexOf(topic) == -1) this.subscribedTopics.push(topic);
+
         this.socket.send(JSON.stringify({ action: 'sub', topic: topic }));
 
         this.socket.onmessage = (e) => {
@@ -94,12 +126,10 @@ export class WebSocketRelay implements IRelay {
         if (this.hc.debug) console.log("hashconnect - Unsubscribing to " + topic);
 
         this.socket.send(JSON.stringify({ action: "unsub", topic: topic }))
-        // this.waku.relay.unsubscribe(topic);
     }
 
     // TODO: determine appropriate types for sending messages, string should suffice for now
     async publish(topic: string, message: any, pubKey: string): Promise<void> {
-        // const wakuMessage = await WakuMessage.fromBytes(message, topic);
         const msg = {
             action: "pub",
             payload: JSON.stringify(message),

@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { Hbar, HbarUnit, TokenAssociateTransaction, TransferTransaction } from '@hashgraph/sdk';
+import { Hbar, HbarUnit, TokenAssociateTransaction, TransactionReceipt, TransferTransaction } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -96,6 +96,16 @@ export class SendTransactionComponent implements OnInit {
         let transactionBytes: Uint8Array = await this.SigningService.signAndMakeBytes(trans, this.signingAcct);
 
         let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, this.data.transfer.return_transaction);
+        
+        //handle response
+        let responseData: any = {
+            response: res,
+            receipt: null
+        }
+
+        if(res.success) responseData.receipt = TransactionReceipt.fromBytes(res.receipt as Uint8Array);
+
+        this.HashconnectService.showResultOverlay(responseData);
     }
 
     addTokenTransfer() {

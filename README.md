@@ -6,6 +6,8 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
 
 **[View Demo](https://hashpack.github.io/hashconnect/)**
 
+**[Example React Integration](https://github.com/rajatK012/hashconnectWalletConnect)**
+
 - [Hashconnect](#hashconnect)
   - [Concepts](#concepts)
   - [Usage](#usage)
@@ -23,8 +25,8 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Events](#events)
       - [FoundExtensionEvent](#foundextensionevent)
       - [PairingEvent](#pairingevent)
-      - [Transaction Response](#transaction-response)
       - [Acknowledge Response](#acknowledge-response)
+      - [Connection Status Change](#connection-status-change)
     - [Types](#types)
       - [HashConnectTypes](#hashconnecttypes)
         - [HashConnectTypes.AppMetadata](#hashconnecttypesappmetadata)
@@ -41,7 +43,6 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
         - [MessageTypes.Transaction](#messagetypestransaction)
         - [MessageTypes.TransactionMetadata](#messagetypestransactionmetadata)
         - [MessageTypes.TransactionResponse](#messagetypestransactionresponse)
-  - [Errors](#errors)
 
 ## Concepts
 
@@ -50,8 +51,6 @@ The main functionality of Hashconnect is to send Hedera transactions to a wallet
 Hashconnect uses message relay nodes to communicate between apps. These nodes use something called a **topic ID** to publish/subscribe to. **It is your responsibility** to maintain (using localstorage or a cookie or something) topic ID's and hashconnect encryption keys between user visits.
 
 **Pairing** is the term used to denote a connection between two apps. Generally pairing is the action of exchanging a **topic ID** and a **metadata** object.
-
-Each message has a **message ID** that will be returned by the function used to send the message. Any events that reference a previously sent message will include the relevant **message id**, this allows you to wait for specific actions to be completed or be notified when specific messages have been rejected by the user.
 
 ## Usage
 
@@ -129,6 +128,8 @@ When the users accepts it will fire a [PairingEvent](#pairingevent).
 #### Pairing to extension
 
 HashConnect has 1-click pairing with supported installed extensions. Currently the only supported wallet extension is [HashPack](https://www.hashpack.app/).
+
+**Please note - this only works in SSL secured environments (https urls)**
 
 ```js
 hashconnect.findLocalWallets();
@@ -246,12 +247,7 @@ async requestAdditionalAccounts(network: string) {
         network: network
     } 
 
-    await hashconnect.requestAdditionalAccounts(saveData.topic, request);
-
-    //you should bind a return handler here, handlers are explained more in the next section
-    hashconnect.additionalAccountResponseEvent.once((data) => {
-        console.log("transaction response", data)
-    })
+    let response = await hashconnect.requestAdditionalAccounts(saveData.topic, request);
 }
 ```
 
@@ -279,12 +275,7 @@ async sendTransaction(trans: Transaction, acctToSign: string) {
         }
     }
 
-    await hashconnect.sendTransaction(saveData.topic, transaction)
-
-    //you should bind a return handler here, handlers are explained more in the next section
-    hashconnect.transactionResponseEvent.once((data) => {
-        console.log("transaction response", data)
-    })
+    let response = await hashconnect.sendTransaction(saveData.topic, transaction)
 }
 ```
 
@@ -319,13 +310,6 @@ hashconnect.pairingEvent.once((pairingData) => {
 })
 ```
 
-#### Transaction Response
-```js
-hashconnect.transactionResponseEvent.once((transactionResponse) => {
-    //do something with transaction response data
-})
-```
-
 #### Acknowledge Response
 
 This event returns an [Acknowledge](#messagetypesacknowledge) object. This happens after the wallet has recieved the request, generally you should consider a wallet disconnected if a request doesn't fire an acknowledgement after a few seconds and update the UI accordingly.
@@ -333,8 +317,18 @@ This event returns an [Acknowledge](#messagetypesacknowledge) object. This happe
 The object contains the ID of the message.
 
 ```js
-hashconnect.acknowledge.once((acknowledgeData) => {
+hashconnect.acknowledgeMessageEvent.once((acknowledgeData) => {
     //do something with acknowledge response data
+})
+```
+
+#### Connection Status Change
+
+This event is fired if the connection status changes, this should only really happen if the server goes down. HashConnect will automatically try to reconnect, once reconnected this event will fire again.
+
+```js
+hashconnect.connectionStatusChange.once((connectionStatus) => {
+    //do something with connection status
 })
 ```
 
@@ -472,8 +466,3 @@ export interface TransactionResponse extends BaseMessage {
     error?: string; //error code on response
 }
 ```
-
-
-## Errors
-
-TO-DO

@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { TokenDeleteTransaction } from '@hashgraph/sdk';
+import { TokenDeleteTransaction, TransactionReceipt } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -46,7 +46,17 @@ export class DeleteTokenComponent implements OnInit {
 
         let transBytes:Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
 
-        this.HashconnectService.sendTransaction(transBytes, this.signingAcct);
+        let res = await this.HashconnectService.sendTransaction(transBytes, this.signingAcct);
+
+        //handle response
+        let responseData: any = {
+            response: res,
+            receipt: null
+        }
+
+        if(res.success) responseData.receipt = TransactionReceipt.fromBytes(res.receipt as Uint8Array);
+
+        this.HashconnectService.showResultOverlay(responseData);
     }
 
 }

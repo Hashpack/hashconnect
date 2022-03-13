@@ -22,6 +22,7 @@ import { HcsSubmitMessageComponent } from './components/hcs-submit-message/hcs-s
 import { HcsDeleteTopicComponent } from './components/hcs-delete-topic/hcs-delete-topic.component';
 import { HcsUpdateTopicComponent } from './components/hcs-update-topic/hcs-update-topic.component';
 import { SmartcontractDeleteComponent } from './components/smartcontract-delete/smartcontract-delete.component';
+import { ResultModalComponent } from './components/result-modal/result-modal.component';
 
 @NgModule({
   declarations: [
@@ -43,7 +44,8 @@ import { SmartcontractDeleteComponent } from './components/smartcontract-delete/
     HcsSubmitMessageComponent,
     HcsDeleteTopicComponent,
     HcsUpdateTopicComponent,
-    SmartcontractDeleteComponent
+    SmartcontractDeleteComponent,
+    ResultModalComponent
   ],
   imports: [
     BrowserModule,

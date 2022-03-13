@@ -73,8 +73,8 @@ export class WebSocketRelay implements IRelay {
     }
 
     connectToSocket(callback: () => void) {
-        this.socket = new WebSocket('ws://localhost:9001');
-        // this.socket = new WebSocket('wss://hashconnect.hashpack.app');
+        // this.socket = new WebSocket('ws://localhost:9001');
+        this.socket = new WebSocket('wss://hashconnect.hashpack.app');
 
         this.socket.onopen = () => {
             if (this.hc.debug) console.log("hashconnect - connected");

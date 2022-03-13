@@ -49,7 +49,18 @@ export class SmartcontractCallComponent implements OnInit {
 
         let transactionBytes: Uint8Array = await trans.toBytes();
 
-        this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, false);
+        let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, false);
+
+        //handle response
+        let responseData: any = {
+            response: res,
+            receipt: null
+        }
+
+        //todo: how to change query bytes back to query?
+        // if(res.success) responseData.receipt = TransactionReceipt.fromBytes(res.receipt as Uint8Array);
+
+        this.HashconnectService.showResultOverlay(responseData);
     }
 
 }

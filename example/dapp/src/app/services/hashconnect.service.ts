@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
+import { ButtonLayoutDisplay, ButtonMaker, DialogInitializer, DialogLayoutDisplay } from '@costlydeveloper/ngx-awesome-popup';
 import { Transaction, TransactionReceipt } from '@hashgraph/sdk';
 import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
+import { ResultModalComponent } from '../components/result-modal/result-modal.component';
 import { SigningService } from './signing.service';
 
 
@@ -77,13 +79,6 @@ export class HashconnectService {
             console.log("Found extension", data);
         })
 
-        // this.hashconnect.transactionResponseEvent.on((data) => {
-        //     // console.log("transaction response", data)
-        //     if(data.success && !data.signedTransaction)
-        //         console.log(TransactionReceipt.fromBytes(data.receipt as Uint8Array));
-        //     else if(data.success && data.signedTransaction)
-        //         console.log(Transaction.fromBytes(data.signedTransaction as Uint8Array));
-        // })
 
         // this.hashconnect.additionalAccountResponseEvent.on((data) => {
         //     console.log("Received account info", data);
@@ -121,8 +116,6 @@ export class HashconnectService {
 
 
     async sendTransaction(trans: Uint8Array, acctToSign: string, return_trans: boolean = false) {
-        
-
         const transaction: MessageTypes.Transaction = {
             topic: this.saveData.topic,
             byteArray: trans,
@@ -169,5 +162,22 @@ export class HashconnectService {
         this.saveData.pairedWalletData = undefined;
         this.status = "Connected";
         localStorage.removeItem("hashconnectData");
+    }
+
+    showResultOverlay(data: any) {
+            const dialogPopup = new DialogInitializer(ResultModalComponent);
+    
+            dialogPopup.setCustomData({ data: data });
+            
+            dialogPopup.setConfig({
+                Width: '500px',
+                LayoutType: DialogLayoutDisplay.NONE
+            });
+    
+            dialogPopup.setButtons([
+                new ButtonMaker('Done', 'send', ButtonLayoutDisplay.SUCCESS)
+            ]);
+    
+            dialogPopup.openDialog$().subscribe(resp => { });
     }
 }

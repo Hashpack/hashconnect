@@ -5,6 +5,7 @@ import { BurnTokenComponent } from './components/burn-token/burn-token.component
 import { CreateTokenComponent } from './components/create-token/create-token.component';
 import { DeleteTokenComponent } from './components/delete-token/delete-token.component';
 import { DisassociateTokenComponent } from './components/disassociate-token/disassociate-token.component';
+import { FileAppendComponent } from './components/file-append/file-append.component';
 import { FileCreateComponent } from './components/file-create/file-create.component';
 import { HcsCreateTopicComponent } from './components/hcs-create-topic/hcs-create-topic.component';
 import { HcsDeleteTopicComponent } from './components/hcs-delete-topic/hcs-delete-topic.component';
@@ -56,248 +57,90 @@ export class AppComponent {
 
     sendTransaction() {
         const dialogPopup = new DialogInitializer(SendTransactionComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
     createToken() {
         const dialogPopup = new DialogInitializer(CreateTokenComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
     
     deleteToken() {
         const dialogPopup = new DialogInitializer(DeleteTokenComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
     mintToken() {
         const dialogPopup = new DialogInitializer(MintTokenComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
     
     burnToken() {
         const dialogPopup = new DialogInitializer(BurnTokenComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
     
     associateToken() {
         const dialogPopup = new DialogInitializer(AssociateTokenComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
     disassociateToken() {
         const dialogPopup = new DialogInitializer(DisassociateTokenComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
     smartcontractCreate() {
         const dialogPopup = new DialogInitializer(SmartcontractCreateComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
     smartcontractCall() {
         const dialogPopup = new DialogInitializer(SmartcontractCallComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
     smartcontractExecute() {
         const dialogPopup = new DialogInitializer(SmartcontractExecuteComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
     smartcontractDelete() {
         const dialogPopup = new DialogInitializer(SmartcontractDeleteComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
     fileCreate() {
         const dialogPopup = new DialogInitializer(FileCreateComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
+    fileAppend() {
+        const dialogPopup = new DialogInitializer(FileAppendComponent);
+        this.doPopupStuff(dialogPopup);
+    }
 
     hcsCreateTopic() {
         const dialogPopup = new DialogInitializer(HcsCreateTopicComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
     hcsDeleteTopic() {
         const dialogPopup = new DialogInitializer(HcsDeleteTopicComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
     hcsUpdateTopic() {
         const dialogPopup = new DialogInitializer(HcsUpdateTopicComponent);
-
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
-
-        dialogPopup.setButtons([
-            new ButtonMaker('Send', 'send', ButtonLayoutDisplay.SUCCESS),
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
-
-        dialogPopup.openDialog$().subscribe(resp => { });
+        this.doPopupStuff(dialogPopup);
     }
 
     hcsSubmitMessage() {
         const dialogPopup = new DialogInitializer(HcsSubmitMessageComponent);
+        this.doPopupStuff(dialogPopup);
+    }
 
+    doPopupStuff(dialogPopup: DialogInitializer) {
         dialogPopup.setConfig({
             Width: '500px',
             LayoutType: DialogLayoutDisplay.NONE

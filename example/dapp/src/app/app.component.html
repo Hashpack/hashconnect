@@ -20,6 +20,7 @@
         
         <h3>File Service</h3>
         <button class="primary" (click)="fileCreate()" [disabled]="HashConnectService.status != 'Paired'">File Create</button>
+        <button class="primary" (click)="fileAppend()" [disabled]="HashConnectService.status != 'Paired'">File Append</button>
 
         <h3>Smart Contracts</h3>
         <button class="primary" (click)="smartcontractCreate()" [disabled]="HashConnectService.status != 'Paired'">Smart Contract Create</button>

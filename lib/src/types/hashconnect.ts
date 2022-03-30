@@ -15,10 +15,12 @@ export interface IHashConnect {
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
     connectionStatusChange: Event<HashConnectConnectionState>;
+    authRequestEvent: Event<MessageTypes.AuthenticationRequest>;
 
     //promises
     transactionResolver: (value: MessageTypes.TransactionResponse | PromiseLike<MessageTypes.TransactionResponse>) => void;
     additionalAccountResolver: (value: MessageTypes.AdditionalAccountResponse | PromiseLike<MessageTypes.AdditionalAccountResponse>) => void;
+    authResolver: (value: MessageTypes.AuthenticationResponse | PromiseLike<MessageTypes.AuthenticationResponse>) => void;
 
     /** Messages util for protobufs */
     messages: MessageUtil;
@@ -69,6 +71,7 @@ export interface IHashConnect {
 
     decodeLocalTransaction(message: string): Promise<RelayMessage>;
     
+    authenticate(topic: string, account_id: string): Promise<MessageTypes.AuthenticationResponse>
     /**
      * Send an acknowledgement of receipt
      * 

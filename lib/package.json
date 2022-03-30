@@ -48,6 +48,7 @@
     "yarn": "^1.22.17"
   },
   "dependencies": {
+    "@hashgraph/sdk": "^2.11.3",
     "buffer": "^6.0.3",
     "crypto-es": "^1.2.7",
     "crypto-js": "^4.1.1",

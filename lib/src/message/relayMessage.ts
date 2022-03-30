@@ -22,7 +22,9 @@ export enum RelayMessageType {
     RejectPairing="RejectPairing",
     Acknowledge="Acknowledge",
     AdditionalAccountRequest="AdditionalAccountRequest",
-    AdditionalAccountResponse="AdditionalAccountResponse"
+    AdditionalAccountResponse="AdditionalAccountResponse",
+    AuthenticationRequest="AuthenticationRequest",
+    AuthenticationResponse="AuthenticationResponse"
 }
 
 export declare namespace MessageTypes {
@@ -73,6 +75,15 @@ export declare namespace MessageTypes {
     export interface TransactionResponse extends BaseMessage {
         success: boolean;
         receipt?: Uint8Array | string; 
+        signedTransaction?: Uint8Array | string;
+        error?: string;
+    }
+
+    export interface AuthenticationRequest extends Transaction {
+        
+    }
+
+    export interface AuthenticationResponse extends BaseMessage {
         signedTransaction?: Uint8Array | string;
         error?: string;
     }

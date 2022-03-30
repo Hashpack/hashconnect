@@ -23,6 +23,7 @@ export class HashConnect implements IHashConnect {
     
     transactionResolver: (value: MessageTypes.TransactionResponse | PromiseLike<MessageTypes.TransactionResponse>) => void;
     additionalAccountResolver: (value: MessageTypes.AdditionalAccountResponse | PromiseLike<MessageTypes.AdditionalAccountResponse>) => void;
+    authResolver: (value: MessageTypes.AuthenticationResponse | PromiseLike<MessageTypes.AuthenticationResponse>) => void;
 
     // messages util
     messageParser: MessageHandler;
@@ -250,7 +251,7 @@ export class HashConnect implements IHashConnect {
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
         this.sendEncryptedLocalTransaction(msg);
 
-        return await new Promise<MessageTypes.AuthenticationResponse>(resolve => this.transactionResolver = resolve)
+        return await new Promise<MessageTypes.AuthenticationResponse>(resolve => this.authResolver = resolve)
     }
 
 

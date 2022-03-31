@@ -24,6 +24,7 @@ import { HcsUpdateTopicComponent } from './components/hcs-update-topic/hcs-updat
 import { SmartcontractDeleteComponent } from './components/smartcontract-delete/smartcontract-delete.component';
 import { ResultModalComponent } from './components/result-modal/result-modal.component';
 import { FileAppendComponent } from './components/file-append/file-append.component';
+import { AuthenticateComponent } from './components/authenticate/authenticate.component';
 
 @NgModule({
   declarations: [
@@ -47,7 +48,8 @@ import { FileAppendComponent } from './components/file-append/file-append.compon
     HcsUpdateTopicComponent,
     SmartcontractDeleteComponent,
     ResultModalComponent,
-    FileAppendComponent
+    FileAppendComponent,
+    AuthenticateComponent
   ],
   imports: [
     BrowserModule,

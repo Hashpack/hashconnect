@@ -254,6 +254,16 @@ export class HashConnect implements IHashConnect {
         return await new Promise<MessageTypes.AuthenticationResponse>(resolve => this.authResolver = resolve)
     }
 
+    async sendAuthenticationResponse(topic: string, message: MessageTypes.AuthenticationResponse): Promise<string> {
+        if (message.signedTransaction) message.signedTransaction = Buffer.from(message.signedTransaction).toString("base64");
+
+        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AuthenticationResponse, message, topic, this);
+
+        await this.relay.publish(topic, msg, this.publicKeys[topic]);
+
+        return message.id!;
+    }
+
 
     /**
      * Helpers

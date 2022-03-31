@@ -71,7 +71,10 @@ export interface IHashConnect {
 
     decodeLocalTransaction(message: string): Promise<RelayMessage>;
     
-    authenticate(topic: string, account_id: string): Promise<MessageTypes.AuthenticationResponse>
+    authenticate(topic: string, account_id: string): Promise<MessageTypes.AuthenticationResponse>;
+    
+    sendAuthenticationResponse(topic: string, message: MessageTypes.AuthenticationResponse): Promise<string>
+
     /**
      * Send an acknowledgement of receipt
      * 

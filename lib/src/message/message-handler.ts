@@ -76,6 +76,28 @@ export class MessageHandler implements IMessageHandler {
 
                 await hc.acknowledge(parsedData.topic, hc.publicKeys[response_data.topic], response_data.id!);
             break;
+            case RelayMessageType.AuthenticationRequest:
+                if(hc.debug) console.log("hashconnect - Got auth request", message);
+
+                let auth_request_data: MessageTypes.AuthenticationRequest = message.data;
+                auth_request_data.byteArray = new Uint8Array(Buffer.from(auth_request_data.byteArray as string,'base64'));
+
+                hc.authRequestEvent.emit(auth_request_data);
+
+                await hc.acknowledge(parsedData.topic, hc.publicKeys[auth_request_data.topic], auth_request_data.id!);
+            break;
+            case RelayMessageType.AuthenticationResponse:
+                if(hc.debug) console.log("hashconnect - Got auth response", message);
+
+                let auth_response_data: MessageTypes.AuthenticationResponse = message.data;
+                
+                if(auth_response_data.signedTransaction)
+                    auth_response_data.signedTransaction = new Uint8Array(Buffer.from(auth_response_data.signedTransaction as string,'base64'));
+                
+                hc.authResolver(auth_response_data);
+
+                await hc.acknowledge(parsedData.topic, hc.publicKeys[auth_response_data.topic], auth_response_data.id!);
+            break;
             default:
                 break;
         }

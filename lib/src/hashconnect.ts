@@ -2,6 +2,7 @@ import { Event } from "ts-typed-events";
 import { IRelay, WebSocketRelay } from "./types/relay";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
 import { HashConnectTypes, IHashConnect, HashConnectConnectionState } from "./types/hashconnect";
+import { AccountId, Hbar, HbarUnit, TransactionId, TransferTransaction } from "@hashgraph/sdk";
 global.Buffer = global.Buffer || require('buffer').Buffer;
 
 /**
@@ -18,9 +19,11 @@ export class HashConnect implements IHashConnect {
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
     connectionStatusChange: Event<HashConnectConnectionState>;
+    authRequestEvent: Event<MessageTypes.AuthenticationRequest>;
     
     transactionResolver: (value: MessageTypes.TransactionResponse | PromiseLike<MessageTypes.TransactionResponse>) => void;
     additionalAccountResolver: (value: MessageTypes.AdditionalAccountResponse | PromiseLike<MessageTypes.AdditionalAccountResponse>) => void;
+    authResolver: (value: MessageTypes.AuthenticationResponse | PromiseLike<MessageTypes.AuthenticationResponse>) => void;
 
     // messages util
     messageParser: MessageHandler;
@@ -41,6 +44,7 @@ export class HashConnect implements IHashConnect {
         this.acknowledgeMessageEvent = new Event<MessageTypes.Acknowledge>();
         this.additionalAccountRequestEvent = new Event<MessageTypes.AdditionalAccountRequest>();
         this.connectionStatusChange = new Event<HashConnectConnectionState>();
+        this.authRequestEvent = new Event<MessageTypes.AuthenticationRequest>();
         
         this.messages = new MessageUtil();
         this.messageParser = new MessageHandler();
@@ -216,6 +220,48 @@ export class HashConnect implements IHashConnect {
 
         const ackPayload = await this.messages.prepareSimpleMessage(RelayMessageType.Acknowledge, ack, topic, this);
         await this.relay.publish(topic, ackPayload, pubKey)
+    }
+
+
+    async authenticate(topic: string, account_id: string): Promise<MessageTypes.AuthenticationResponse> {
+        let transaction: MessageTypes.AuthenticationRequest = {
+            topic: topic,
+            byteArray: "",
+            metadata: {
+                accountToSign: account_id,
+                returnTransaction: true
+            }
+        }
+        // Create a transaction for 0 hbar, this won't be sent or executed
+        const nodeId = [new AccountId(3)];
+        const transId = TransactionId.generate(account_id);
+
+        // set the memo as the account to be authenticated to allow retrieval by the peer
+        let trans = new TransferTransaction()
+            .setTransactionMemo(account_id)
+            .setNodeAccountIds(nodeId)
+            .setTransactionId(transId)
+            .addHbarTransfer(account_id, Hbar.from(0, HbarUnit.Hbar))
+            .addHbarTransfer(account_id, Hbar.from(0, HbarUnit.Hbar))
+            .freeze();
+
+        transaction.byteArray = Buffer.from(trans.toBytes()).toString("base64");
+
+        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AuthenticationRequest, transaction, topic, this);
+        await this.relay.publish(topic, msg, this.publicKeys[topic]);
+        this.sendEncryptedLocalTransaction(msg);
+
+        return await new Promise<MessageTypes.AuthenticationResponse>(resolve => this.authResolver = resolve)
+    }
+
+    async sendAuthenticationResponse(topic: string, message: MessageTypes.AuthenticationResponse): Promise<string> {
+        if (message.signedTransaction) message.signedTransaction = Buffer.from(message.signedTransaction).toString("base64");
+
+        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AuthenticationResponse, message, topic, this);
+
+        await this.relay.publish(topic, msg, this.publicKeys[topic]);
+
+        return message.id!;
     }
 
 

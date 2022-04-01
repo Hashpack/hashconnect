@@ -8,6 +8,7 @@
         <button class="primary" (click)="pair()" [disabled]="HashConnectService.status != 'Connected'">Pair</button>
         <button class="primary" (click)="HashConnectService.clearPairings()" [disabled]="HashConnectService.status != 'Paired'">Clear Pairings</button>
         <button class="primary" (click)="HashConnectService.requestAccountInfo()" [disabled]="HashConnectService.status != 'Paired'">Request Additional Accounts</button>
+        <button class="primary" (click)="auth()" [disabled]="HashConnectService.status != 'Paired'">Authenticate</button>
         <button class="primary" (click)="sendTransaction()" [disabled]="HashConnectService.status != 'Paired'">Create basic transaction</button>
         
         <h3>Tokens</h3>
@@ -20,6 +21,7 @@
         
         <h3>File Service</h3>
         <button class="primary" (click)="fileCreate()" [disabled]="HashConnectService.status != 'Paired'">File Create</button>
+        <button class="primary" (click)="fileAppend()" [disabled]="HashConnectService.status != 'Paired'">File Append</button>
 
         <h3>Smart Contracts</h3>
         <button class="primary" (click)="smartcontractCreate()" [disabled]="HashConnectService.status != 'Paired'">Smart Contract Create</button>

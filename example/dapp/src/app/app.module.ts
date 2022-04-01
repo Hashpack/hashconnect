@@ -23,6 +23,8 @@ import { HcsDeleteTopicComponent } from './components/hcs-delete-topic/hcs-delet
 import { HcsUpdateTopicComponent } from './components/hcs-update-topic/hcs-update-topic.component';
 import { SmartcontractDeleteComponent } from './components/smartcontract-delete/smartcontract-delete.component';
 import { ResultModalComponent } from './components/result-modal/result-modal.component';
+import { FileAppendComponent } from './components/file-append/file-append.component';
+import { AuthenticateComponent } from './components/authenticate/authenticate.component';
 
 @NgModule({
   declarations: [
@@ -45,7 +47,9 @@ import { ResultModalComponent } from './components/result-modal/result-modal.com
     HcsDeleteTopicComponent,
     HcsUpdateTopicComponent,
     SmartcontractDeleteComponent,
-    ResultModalComponent
+    ResultModalComponent,
+    FileAppendComponent,
+    AuthenticateComponent
   ],
   imports: [
     BrowserModule,

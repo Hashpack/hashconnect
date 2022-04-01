@@ -1,3 +1,7 @@
+## v0.1.4
+- Added authentication functionality
+  - Please see documentation for details
+
 ## v0.1.3
 
 - Added this changelog file

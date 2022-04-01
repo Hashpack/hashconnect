@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { ButtonLayoutDisplay, ButtonMaker, DialogInitializer, DialogLayoutDisplay } from '@costlydeveloper/ngx-awesome-popup';
 import { AssociateTokenComponent } from './components/associate-token/associate-token.component';
+import { AuthenticateComponent } from './components/authenticate/authenticate.component';
 import { BurnTokenComponent } from './components/burn-token/burn-token.component';
 import { CreateTokenComponent } from './components/create-token/create-token.component';
 import { DeleteTokenComponent } from './components/delete-token/delete-token.component';
@@ -53,6 +54,11 @@ export class AppComponent {
         ]);
 
         dialogPopup.openDialog$().subscribe(resp => { });
+    }
+
+    auth() {
+        const dialogPopup = new DialogInitializer(AuthenticateComponent);
+        this.doPopupStuff(dialogPopup);
     }
 
     sendTransaction() {

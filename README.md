@@ -22,6 +22,7 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Sending Requests](#sending-requests)
       - [Request Additional Accounts](#request-additional-accounts)
       - [Send Transaction](#send-transaction)
+      - [Authenticate](#authenticate)
     - [Events](#events)
       - [FoundExtensionEvent](#foundextensionevent)
       - [PairingEvent](#pairingevent)
@@ -276,6 +277,50 @@ async sendTransaction(trans: Transaction, acctToSign: string) {
     }
 
     let response = await hashconnect.sendTransaction(saveData.topic, transaction)
+}
+```
+
+#### Authenticate
+
+This request sends an authentication response to the wallet, the authentication response is an hbar transaction for 0 hbar which the user signs and is then returned without executing. This signed transaction is meant to have its signature validated **on your server**, which can be used to generate an authentication token for use with a backend system.
+
+```js
+await hashconnect.authenticate(topic, account_id);
+```
+
+**Example Implementation:**
+
+```js
+async send(accountId) {     
+    let res = await hashconnect.authenticate(topic, accountId);
+
+    if(!res.success) {
+        //user rejected authentication request
+        return;
+    }
+
+    //FOLLOWING IS EXAMPLE ONLY
+    //!!!!!!!!!! DO NOT DO THIS ON THE CLIENT SIDE - YOU MUST PASS THE TRANSACTION BYTES TO THE SERVER AND VERIFY THERE
+    // after verified on the server, generate some sort of auth token to use with your backend
+    let trans = Transaction.fromBytes(res.signedTransaction as Uint8Array);
+
+    let url = "https://testnet.mirrornode.hedera.com/api/v1/accounts/" + this.signingAcct;
+
+    fetch(url, { method: "GET" }).then(async res => {
+        if (res.ok) {
+            let data = await res.json();
+            console.log("Got account info")
+
+            let pubKey = PublicKey.fromString(data.key.key);
+            let authenticated = pubKey.verifyTransaction(trans as Transaction)
+            
+            //if authenticated is true, do your token generation
+        } else {
+            alert("Error getting public key")
+        }
+    })
+    //!!!!!!!!!! DO NOT DO THIS ON THE CLIENT SIDE - YOU MUST PASS THE TRANSACTION BYTES TO THE SERVER AND VERIFY THERE
+    
 }
 ```
 

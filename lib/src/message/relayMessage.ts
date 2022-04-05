@@ -79,8 +79,12 @@ export declare namespace MessageTypes {
         error?: string;
     }
 
-    export interface AuthenticationRequest extends Transaction {
-        
+    export interface AuthenticationRequest extends BaseMessage {
+        accountToSign: string;
+        payload: {
+            url: string,
+            data: any
+        }
     }
 
     export interface AuthenticationResponse extends BaseMessage {

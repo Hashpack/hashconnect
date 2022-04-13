@@ -71,7 +71,7 @@ export interface IHashConnect {
 
     decodeLocalTransaction(message: string): Promise<RelayMessage>;
     
-    authenticate(topic: string, account_id: string): Promise<MessageTypes.AuthenticationResponse>;
+    authenticate(topic: string, account_id: string, server_signing_account: string, signature: Uint8Array, payload: {url: string, data: any }): Promise<MessageTypes.AuthenticationResponse>;
     
     sendAuthenticationResponse(topic: string, message: MessageTypes.AuthenticationResponse): Promise<string>
 

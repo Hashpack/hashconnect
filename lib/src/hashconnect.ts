@@ -169,8 +169,6 @@ export class HashConnect implements IHashConnect {
         if (this.debug) console.log("hashconnect - Pairing to " + pairingData.metadata.name);
         let state = await this.connect(pairingData.topic);
 
-        
-
         let msg: MessageTypes.ApprovePairing = {
             metadata: this.metadata as HashConnectTypes.WalletMetadata,
             topic: pairingData.topic,
@@ -223,7 +221,7 @@ export class HashConnect implements IHashConnect {
 
 
     async authenticate(topic: string, account_id: string, server_signing_account: string, serverSignature: Uint8Array, payload: {url: string, data: any }): Promise<MessageTypes.AuthenticationResponse> {
-        let transaction: MessageTypes.AuthenticationRequest = {
+        let message: MessageTypes.AuthenticationRequest = {
             topic: topic,
             accountToSign: account_id,
             serverSigningAccount: server_signing_account,
@@ -231,7 +229,9 @@ export class HashConnect implements IHashConnect {
             payload: payload
         }
 
-        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AuthenticationRequest, transaction, topic, this);
+        message.serverSignature = Buffer.from(message.serverSignature).toString("base64")
+        console.log(message.serverSignature)
+        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AuthenticationRequest, message, topic, this);
         await this.relay.publish(topic, msg, this.publicKeys[topic]);
         this.sendEncryptedLocalTransaction(msg);
 
@@ -240,6 +240,7 @@ export class HashConnect implements IHashConnect {
 
     async sendAuthenticationResponse(topic: string, message: MessageTypes.AuthenticationResponse): Promise<string> {
         if (message.userSignature) message.userSignature = Buffer.from(message.userSignature).toString("base64");
+        if (message.signedPayload) message.signedPayload.serverSignature = Buffer.from(message.signedPayload.serverSignature).toString("base64");
 
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AuthenticationResponse, message, topic, this);
 

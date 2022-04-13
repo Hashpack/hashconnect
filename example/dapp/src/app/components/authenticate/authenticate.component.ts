@@ -39,7 +39,7 @@ export class AuthenticateComponent implements OnInit {
     }
 
     async send() {
-        let payload = { url: "test.com", data: { a: "asdasd" } };
+        let payload = { url: "test.com", data: { token: "fufhr9e84hf9w8fehw9e8fhwo9e8fw938fw3o98fhjw3of" } };
 
         let signing_data = this.SigningService.signData(payload);
 

@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { ButtonLayoutDisplay, ButtonMaker, DialogInitializer, DialogLayoutDisplay } from '@costlydeveloper/ngx-awesome-popup';
+import { AccountUpdateComponent } from './components/account-update/account-update.component';
 import { AssociateTokenComponent } from './components/associate-token/associate-token.component';
 import { AuthenticateComponent } from './components/authenticate/authenticate.component';
 import { BurnTokenComponent } from './components/burn-token/burn-token.component';
@@ -143,6 +144,11 @@ export class AppComponent {
 
     hcsSubmitMessage() {
         const dialogPopup = new DialogInitializer(HcsSubmitMessageComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
+    accountUpdate() {
+        const dialogPopup = new DialogInitializer(AccountUpdateComponent);
         this.doPopupStuff(dialogPopup);
     }
 

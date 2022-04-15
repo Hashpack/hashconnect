@@ -39,20 +39,19 @@ export class AuthenticateComponent implements OnInit {
     }
 
     async send() {
+        //!!!!!!!!!! DO NOT DO THIS ON THE CLIENT SIDE - YOU MUST SIGN THE PAYLOAD IN YOUR BACKEND
+        // after verified on the server, generate some sort of auth token to use with your backend
         let payload = { url: "test.com", data: { token: "fufhr9e84hf9w8fehw9e8fhwo9e8fw938fw3o98fhjw3of" } };
 
         let signing_data = this.SigningService.signData(payload);
 
+        //this line you should do client side, after generating the signed payload on the server
         let res = await this.HashconnectService.hashconnect.authenticate(this.HashconnectService.saveData.topic, this.signingAcct, signing_data.serverSigningAccount, signing_data.signature, payload);
 
         if(!res.success) {
             this.HashconnectService.showResultOverlay(res);
             return;
         }
-
-        //!!!!!!!!!! DO NOT DO THIS ON THE CLIENT SIDE - YOU MUST PASS THE TRANSACTION BYTES TO THE SERVER AND VERIFY THERE
-        // after verified on the server, generate some sort of auth token to use with your backend
-        let payloadBytes = new Uint8Array(Buffer.from(JSON.stringify(payload)));
 
         let url = "https://testnet.mirrornode.hedera.com/api/v1/accounts/" + this.signingAcct;
 

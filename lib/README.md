@@ -44,6 +44,8 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
         - [MessageTypes.Transaction](#messagetypestransaction)
         - [MessageTypes.TransactionMetadata](#messagetypestransactionmetadata)
         - [MessageTypes.TransactionResponse](#messagetypestransactionresponse)
+        - [MessageTypes.AuthenticationRequest](#messagetypesauthenticationrequest)
+        - [MessageTypes.AuthenticationResponse](#messagetypesauthenticationresponse)
 
 ## Concepts
 
@@ -282,39 +284,55 @@ async sendTransaction(trans: Transaction, acctToSign: string) {
 
 #### Authenticate
 
-This request sends an authentication response to the wallet, the authentication response is an hbar transaction for 0 hbar which the user signs and is then returned without executing. This signed transaction is meant to have its signature validated **on your server**, which can be used to generate an authentication token for use with a backend system.
+This request sends an authentication response to the wallet which can be used to generate an authentication token for use with a backend system.
+
+The expected use of this is as follows:
+- generate a payload and signature on the server, this payload should contain a single-use code you can validate later
+- send that payload and signature to the frontend
+- send to the users wallet
+- receive a new payload back along with the users signature of the new payload
+- send this payload and user signature to your backend
+- use this in your auth flow
+
+This returns a [AuthenticationResponse](#messagetypesauthenticationresponse)
 
 ```js
-await hashconnect.authenticate(topic, account_id);
+let payload = { url: "test.com", data: { token: "fufhr9e84hf9w8fehw9e8fhwo9e8fw938fw3o98fhjw3of" } };
+
+await hashconnect.authenticate(topic, signingAcct, serverSigningAccount, serverSignature, payload);
 ```
 
 **Example Implementation:**
 
 ```js
-async send(accountId) {     
-    let res = await hashconnect.authenticate(topic, accountId);
-
-    if(!res.success) {
-        //user rejected authentication request
-        return;
-    }
-
-    //FOLLOWING IS EXAMPLE ONLY
-    //!!!!!!!!!! DO NOT DO THIS ON THE CLIENT SIDE - YOU MUST PASS THE TRANSACTION BYTES TO THE SERVER AND VERIFY THERE
+async send() {
+    //!!!!!!!!!! DO NOT DO THIS ON THE CLIENT SIDE - YOU MUST SIGN THE PAYLOAD IN YOUR BACKEND
     // after verified on the server, generate some sort of auth token to use with your backend
-    let trans = Transaction.fromBytes(res.signedTransaction as Uint8Array);
+    let payload = { url: "test.com", data: { token: "fufhr9e84hf9w8fehw9e8fhwo9e8fw938fw3o98fhjw3of" } };
 
+    let signing_data = this.SigningService.signData(payload);
+
+    //this line you should do client side, after generating the signed payload on the server
+    let res = await this.HashconnectService.hashconnect.authenticate(this.HashconnectService.saveData.topic, this.signingAcct, signing_data.serverSigningAccount, signing_data.signature, payload);
+    //send res to backend for validation
+    
+    //THE FOLLOWING IS SERVER SIDE ONLY
     let url = "https://testnet.mirrornode.hedera.com/api/v1/accounts/" + this.signingAcct;
 
-    fetch(url, { method: "GET" }).then(async res => {
-        if (res.ok) {
-            let data = await res.json();
-            console.log("Got account info")
+    fetch(url, { method: "GET" }).then(async accountInfoResponse => {
+        if (accountInfoResponse.ok) {
+            let data = await accountInfoResponse.json();
+            console.log("Got account info", data);
 
-            let pubKey = PublicKey.fromString(data.key.key);
-            let authenticated = pubKey.verifyTransaction(trans as Transaction)
+            if(!res.signedPayload) return; 
             
-            //if authenticated is true, do your token generation
+                let server_key_verified = this.SigningService.verifyData(res.signedPayload.originalPayload, this.SigningService.publicKey, res.signedPayload.serverSignature as Uint8Array);
+                let user_key_verified = this.SigningService.verifyData(res.signedPayload, data.key.key, res.userSignature as Uint8Array);
+
+            if(server_key_verified && user_key_verified)
+                //authenticated
+            else 
+                //not authenticated
         } else {
             alert("Error getting public key")
         }
@@ -509,5 +527,35 @@ export interface TransactionResponse extends BaseMessage {
     receipt?: Uint8Array | string; //returns receipt on success
     signedTransaction?: Uint8Array | string; //will return signed transaction rather than executing if returnTransaction in request is true
     error?: string; //error code on response
+}
+```
+
+##### MessageTypes.AuthenticationRequest
+```js
+export interface AuthenticationRequest extends BaseMessage {
+    accountToSign: string;
+    serverSigningAccount: string;
+    serverSignature: Uint8Array | string;
+    payload: {
+        url: string,
+        data: any
+    }
+}
+```
+
+##### MessageTypes.AuthenticationResponse
+
+```js
+export interface AuthenticationResponse extends BaseMessage {
+    success: boolean;
+    error?: string;
+    userSignature?: Uint8Array | string;
+    signedPayload?: {
+        serverSignature: Uint8Array | string,
+        originalPayload: {
+            url: string,
+            data: any
+        }
+    }
 }
 ```

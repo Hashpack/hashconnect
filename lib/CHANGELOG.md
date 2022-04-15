@@ -1,3 +1,6 @@
+## v0.1.5
+- Refactored authentication to be more secure
+
 ## v0.1.4
 - Added authentication functionality
   - Please see documentation for details

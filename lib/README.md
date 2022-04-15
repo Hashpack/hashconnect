@@ -297,8 +297,6 @@ The expected use of this is as follows:
 This returns a [AuthenticationResponse](#messagetypesauthenticationresponse)
 
 ```js
-let payload = { url: "test.com", data: { token: "fufhr9e84hf9w8fehw9e8fhwo9e8fw938fw3o98fhjw3of" } };
-
 await hashconnect.authenticate(topic, signingAcct, serverSigningAccount, serverSignature, payload);
 ```
 

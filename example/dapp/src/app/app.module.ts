@@ -25,6 +25,7 @@ import { SmartcontractDeleteComponent } from './components/smartcontract-delete/
 import { ResultModalComponent } from './components/result-modal/result-modal.component';
 import { FileAppendComponent } from './components/file-append/file-append.component';
 import { AuthenticateComponent } from './components/authenticate/authenticate.component';
+import { AccountUpdateComponent } from './components/account-update/account-update.component';
 
 @NgModule({
   declarations: [
@@ -49,7 +50,8 @@ import { AuthenticateComponent } from './components/authenticate/authenticate.co
     SmartcontractDeleteComponent,
     ResultModalComponent,
     FileAppendComponent,
-    AuthenticateComponent
+    AuthenticateComponent,
+    AccountUpdateComponent
   ],
   imports: [
     BrowserModule,

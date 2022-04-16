@@ -11,6 +11,9 @@
         <button class="primary" (click)="auth()" [disabled]="HashConnectService.status != 'Paired'">Authenticate</button>
         <button class="primary" (click)="sendTransaction()" [disabled]="HashConnectService.status != 'Paired'">Create basic transaction</button>
         
+        <h3>Account</h3>
+        <button class="primary" (click)="accountUpdate()" [disabled]="HashConnectService.status != 'Paired'">Account Update</button>
+
         <h3>Tokens</h3>
         <button class="primary" (click)="createToken()" [disabled]="HashConnectService.status != 'Paired'">Create Token</button>
         <button class="primary" (click)="deleteToken()" [disabled]="HashConnectService.status != 'Paired'">Delete Token</button>

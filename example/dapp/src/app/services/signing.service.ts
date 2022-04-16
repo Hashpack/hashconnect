@@ -7,7 +7,8 @@ import {
     Transaction,
     AccountId,
     Hbar,
-    TransactionId
+    TransactionId,
+    PublicKey
 } from "@hashgraph/sdk"
 
 @Injectable({
@@ -27,6 +28,7 @@ export class SigningService {
 
     client: Client;
     pk = "302e020100300506032b65700422042093e3a32a53b0878429043643be0c992cec4f3e2aba8ccbde9905192e9326e0d2";
+    publicKey = "ce1311702fa06b70c76fa36e9bfb52d1ce6f250634f35f8c822259a1ef9a4a38";
     acc = "0.0.572001";
 
     async init() {
@@ -71,5 +73,28 @@ export class SigningService {
         let transBytes = trans.toBytes();
 
         return transBytes;
+    }
+
+    signData(data: object): { signature: Uint8Array, serverSigningAccount: string  } {
+        const privKey = PrivateKey.fromString(this.pk);
+        const pubKey = privKey.publicKey;
+
+        let bytes = new Uint8Array(Buffer.from(JSON.stringify(data)));
+
+        let signature = privKey.sign(bytes);
+
+        let verify = pubKey.verify(bytes, signature); //this will be true
+
+        return { signature: signature, serverSigningAccount: this.acc }
+    }
+
+    verifyData(data: object, publicKey: string, signature: Uint8Array): boolean {
+        const pubKey = PublicKey.fromString(publicKey);
+
+        let bytes = new Uint8Array(Buffer.from(JSON.stringify(data)));
+
+        let verify = pubKey.verify(bytes, signature);
+
+        return verify;
     }
 }

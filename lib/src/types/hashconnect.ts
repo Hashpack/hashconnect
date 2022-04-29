@@ -2,6 +2,9 @@ import { IRelay } from "./relay";
 import { Event } from "ts-typed-events";
 import { MessageTypes, MessageUtil, RelayMessage } from "../message";
 import { MessageHandler } from "../message/message-handler";
+import { Provider } from "@hashgraph/sdk/lib/Provider";
+import { Signer } from "@hashgraph/sdk/lib/Signer";
+import { HashConnectProvider } from "../provider/provider";
 
 export interface IHashConnect {
     
@@ -89,6 +92,9 @@ export interface IHashConnect {
      * @param network either 'testnet' or 'mainnet'
      */
     generatePairingString(state: HashConnectTypes.ConnectionState, network: string, multiAccount: boolean): string;
+
+    getProvider(): Provider;
+    getSigner(provider: HashConnectProvider): Signer;
 }
 
 export declare namespace HashConnectTypes {    

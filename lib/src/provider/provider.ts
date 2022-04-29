@@ -1,18 +1,22 @@
 import {
     AccountBalanceQuery, AccountId, AccountInfoQuery,
-    AccountRecordsQuery, Client, Provider, Query, 
-    Transaction, TransactionId, TransactionReceiptQuery, 
+    AccountRecordsQuery, Client, Provider, Query,
+    Transaction, TransactionId, TransactionReceiptQuery,
     TransactionResponse
 } from '@hashgraph/sdk';
 import Executable from '@hashgraph/sdk/lib/Executable';
+import { HashConnect } from '../main';
 
 export class HashConnectProvider implements Provider {
     private readonly client: Client;
+    private hashconnect: HashConnect;
 
     public constructor(
-          private readonly sender: any, 
-        networkName: string) {
-            // super();
+        private readonly sender: any,
+        networkName: string,
+        hashconnect: HashConnect) {
+
+        this.hashconnect = hashconnect;
         this.client = Client.forName(networkName);
     }
 

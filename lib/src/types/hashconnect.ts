@@ -2,9 +2,8 @@ import { IRelay } from "./relay";
 import { Event } from "ts-typed-events";
 import { MessageTypes, MessageUtil, RelayMessage } from "../message";
 import { MessageHandler } from "../message/message-handler";
-import { Provider } from "@hashgraph/sdk/lib/Provider";
-import { Signer } from "@hashgraph/sdk/lib/Signer";
 import { HashConnectProvider } from "../provider/provider";
+import { HashConnectSigner } from "../provider/signer";
 
 export interface IHashConnect {
     
@@ -93,8 +92,8 @@ export interface IHashConnect {
      */
     generatePairingString(state: HashConnectTypes.ConnectionState, network: string, multiAccount: boolean): string;
 
-    getProvider(): Provider;
-    getSigner(provider: HashConnectProvider): Signer;
+    getProvider(topicId: string): HashConnectProvider;
+    getSigner(provider: HashConnectProvider, accountToSign: string, topicId: string): HashConnectSigner;
 }
 
 export declare namespace HashConnectTypes {    

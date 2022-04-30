@@ -3,8 +3,6 @@ import { IRelay, WebSocketRelay } from "./types/relay";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
 import { HashConnectTypes, IHashConnect, HashConnectConnectionState } from "./types/hashconnect";
 import { HashConnectProvider } from "./provider/provider";
-import { Provider } from "@hashgraph/sdk/lib/Provider";
-import { Signer } from "@hashgraph/sdk/lib/Signer";
 import { HashConnectSigner } from "./provider/signer";
 global.Buffer = global.Buffer || require('buffer').Buffer;
 
@@ -343,11 +341,11 @@ export class HashConnect implements IHashConnect {
      * Provider stuff
      */
     
-    getProvider(): Provider {
-        return new HashConnectProvider("", "testnet", this);
+    getProvider(topicId: string): HashConnectProvider {
+        return new HashConnectProvider("testnet", topicId, this);
     }
 
-    getSigner(provider: HashConnectProvider): Signer {
-        return new HashConnectSigner(this, provider);
+    getSigner(provider: HashConnectProvider, accountToSign: string, topicId: string): HashConnectSigner {
+        return new HashConnectSigner(this, provider, accountToSign, topicId);
     }
 }

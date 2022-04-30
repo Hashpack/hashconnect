@@ -1,5 +1,10 @@
 import { hethers } from '@hashgraph/hethers';
+import { TransferTransaction } from '@hashgraph/sdk';
+import { Provider } from '@hashgraph/sdk/lib/Provider';
+import { Signer } from '@hashgraph/sdk/lib/Signer';
 import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
+import { HashConnectProvider } from 'hashconnect/dist/provider/provider';
+import { HashConnectSigner } from 'hashconnect/dist/provider/signer';
 
 class HashConnectHelper {
     constructor() {
@@ -47,7 +52,7 @@ class HashConnectHelper {
             this.saveData.topic = state.topic;
             
             //generate a pairing string, which you can display and generate a QR code from
-            this.saveData.pairingString = this.hashconnect.generatePairingString(state, "testnet", true);
+            this.saveData.pairingString = this.hashconnect.generatePairingString(state, "testnet", false);
             
 
             //find any supported local wallets
@@ -123,8 +128,18 @@ class Example {
         });
     }
 
-    setUpHethers() {
-        let provider = this.hashconnectHelper.hashconnect.getProvider();
+    async setUpHethers() {
+        let provider: HashConnectProvider = this.hashconnectHelper.hashconnect.getProvider(this.hashconnectHelper.saveData.topic);
+        let signer: HashConnectSigner = this.hashconnectHelper.hashconnect.getSigner(provider, "0.0.2077256", this.hashconnectHelper.saveData.topic);
+        
+        let trans = await new TransferTransaction()
+            .addHbarTransfer("0.0.2077256", -1)
+            .addHbarTransfer("0.0.2077257", 1)
+            .freezeWithSigner(signer);
+
+        let res = await trans.executeWithSigner(signer);
+
+        console.log("AAAAAA", res);
     }
 }
 

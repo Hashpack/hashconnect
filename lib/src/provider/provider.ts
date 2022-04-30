@@ -6,18 +6,23 @@ import {
 } from '@hashgraph/sdk';
 import Executable from '@hashgraph/sdk/lib/Executable';
 import { HashConnect } from '../main';
+import { HashConnectProviderSender } from './sender';
 
 export class HashConnectProvider implements Provider {
-    private readonly client: Client;
+    client: Client;
     private hashconnect: HashConnect;
+    private sender: HashConnectProviderSender;
+    private network: string;
 
     public constructor(
-        private readonly sender: any,
         networkName: string,
+        topicId: string,
         hashconnect: HashConnect) {
-
+            
         this.hashconnect = hashconnect;
+        this.network = networkName;
         this.client = Client.forName(networkName);
+        this.sender = new HashConnectProviderSender(this.hashconnect, topicId);
     }
 
     getLedgerId() {
@@ -28,10 +33,7 @@ export class HashConnectProvider implements Provider {
         return this.client.network;
     }
 
-    getMirrorNetwork() {
-        return this.client.mirrorNetwork;
-    }
-
+    getMirrorNetwork: () => string[];
 
     getAccountBalance(accountId: AccountId | string) {
         return new AccountBalanceQuery()
@@ -66,7 +68,7 @@ export class HashConnectProvider implements Provider {
 
     async sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
         const requestBytes = this.getBytesOf(request);
-        const { signedTransaction, error } = await this.sender.send(request._operator!.accountId, requestBytes);
+        const { signedTransaction, error } = await this.sender.send(request._operator!.accountId, requestBytes, false);
 
         if (error) {
             throw new Error(`There was an issue while signing the request: ${error}`);

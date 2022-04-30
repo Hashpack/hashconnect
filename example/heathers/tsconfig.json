@@ -1,20 +1,26 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
     "strict": true,
     "noImplicitReturns": true,
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
     "declaration": true,
-    "target": "es2015",
-    "lib": ["es2017", "dom"],
+    "target": "es2020",
+    "module": "es2020",
+    "lib": [
+      "es2018",
+      "dom"
+    ],
     "outDir": "dist",
     "rootDir": "./",
     "baseUrl": ".",
     "paths": {
       "*": ["types/*"]
-    }
+    },
+    "types": ["node"],
+    "moduleResolution": "node",
+    "typeRoots": [ "../node_modules/@types" ],
   },
   "include": [
     "src/**/*"

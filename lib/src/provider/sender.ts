@@ -4,22 +4,22 @@ import {
 import { AccountId } from "@hashgraph/sdk";
 import { MessageTypes } from '../main';
 
-export class HashConnectSender {
+export class HashConnectProviderSender {
     public constructor(
-        private readonly hashConnect: HashConnect,
+        private readonly hashconnect: HashConnect,
         private readonly topicId: string
     ) { }
 
-    public send(accountId: AccountId, message: Uint8Array): Promise<MessageTypes.TransactionResponse> {
+    public send(accountId: AccountId, message: Uint8Array, returnTransaction: boolean): Promise<MessageTypes.TransactionResponse> {
         const transaction = {
             byteArray: message,
             metadata: {
                 accountToSign: accountId.toString(),
-                returnTransaction: true,
+                returnTransaction: returnTransaction,
             },
             topic: this.topicId,
         };
 
-        return this.hashConnect.sendTransaction(this.topicId, transaction);
+        return this.hashconnect.sendTransaction(this.topicId, transaction);
     }
 }

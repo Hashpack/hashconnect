@@ -341,8 +341,8 @@ export class HashConnect implements IHashConnect {
      * Provider stuff
      */
     
-    getProvider(topicId: string): HashConnectProvider {
-        return new HashConnectProvider("testnet", topicId, this);
+    getProvider(network:string, topicId: string): HashConnectProvider {
+        return new HashConnectProvider(network, topicId, this);
     }
 
     getSigner(provider: HashConnectProvider, accountToSign: string, topicId: string): HashConnectSigner {

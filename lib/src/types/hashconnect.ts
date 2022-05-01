@@ -92,7 +92,7 @@ export interface IHashConnect {
      */
     generatePairingString(state: HashConnectTypes.ConnectionState, network: string, multiAccount: boolean): string;
 
-    getProvider(topicId: string): HashConnectProvider;
+    getProvider(network: string, topicId: string): HashConnectProvider;
     getSigner(provider: HashConnectProvider, accountToSign: string, topicId: string): HashConnectSigner;
 }
 

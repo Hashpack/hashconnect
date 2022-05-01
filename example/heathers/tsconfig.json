@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "strict": true,
+    "strict": false,
     "noImplicitReturns": true,
     "removeComments": true,
     "preserveConstEnums": true,

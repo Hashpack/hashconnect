@@ -25,6 +25,7 @@ export class HashConnectSigner implements Signer {
     getAccountBalance: () => Promise<AccountBalance>;
     getAccountInfo: () => Promise<AccountInfo>;
     getAccountRecords: () => Promise<TransactionRecord[]>;
+    
     async signTransaction(transaction: Transaction): Promise<Transaction> {
         return transaction.freezeWith(this.provider.client)
     };
@@ -58,14 +59,20 @@ export class HashConnectSigner implements Signer {
         return (response as unknown) as OutputT;
     }
 
-    private getBytesOf<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Uint8Array {
-        console.log(request);
-        console.log(typeof(request))
-        return ((request as unknown) as Transaction).toBytes();
-        if (request instanceof Transaction || request instanceof Query) {
-        } else {
-          throw new Error("Only Transactions and Queries can be serialized to be sent for signing by the HashPack wallet.");
-        }
+    private getBytesOf<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Uint8Array {        
+        let transaction = (request as unknown) as Transaction;
+        let query;
+
+        if(!transaction)
+            query = (request as unknown) as Query<any>;
+
+        if(!transaction && !query)
+            throw new Error("Only Transactions and Queries can be serialized to be sent for signing by the HashPack wallet.");
+        
+        if(transaction)
+            return ((request as unknown) as Transaction).toBytes();
+        else
+            return ((request as unknown) as Query<any>).toBytes();
       }
 
 }

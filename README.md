@@ -29,8 +29,8 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
       - [Acknowledge Response](#acknowledge-response)
       - [Connection Status Change](#connection-status-change)
     - [Provider/Signer](#providersigner)
-    - [Get Provider](#get-provider)
-    - [Get Signer](#get-signer)
+      - [Get Provider](#get-provider)
+      - [Get Signer](#get-signer)
     - [Types](#types)
       - [HashConnectTypes](#hashconnecttypes)
         - [HashConnectTypes.AppMetadata](#hashconnecttypesappmetadata)
@@ -402,7 +402,7 @@ In accordance with [HIP-338](https://hips.hedera.com/hip/hip-338) and [hethers.j
 
 You need to initialize HashConnect normally, then once you have your ```hashconnect``` variable you can use the ```.getProvider()``` and ```.getSigner()``` methods.
 
-### Get Provider
+#### Get Provider
 
 Just pass in these couple variables, and you'll get a provider back! 
 
@@ -412,7 +412,7 @@ This allows you to interact using the API's [detailed here](https://docs.hedera.
 provider = hashconnect.getProvider(network, topic, accountId);
 ```
 
-### Get Signer
+#### Get Signer
 
 Pass the provider into this method to get a signer back, this allows you to interact with HashConnect using a simpler API.
 

@@ -412,6 +412,12 @@ This allows you to interact using the API's [detailed here](https://docs.hedera.
 provider = hashconnect.getProvider(network, topic, accountId);
 ```
 
+Example Usage
+
+```js
+let balance = await provider.getAccountBalance(accountId);
+```
+
 #### Get Signer
 
 Pass the provider into this method to get a signer back, this allows you to interact with HashConnect using a simpler API.

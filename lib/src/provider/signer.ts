@@ -17,7 +17,9 @@ export class HashConnectSigner implements Signer {
         this.topicId = topic;
     }
 
-    getLedgerId: () => LedgerId | null;
+    getLedgerId(): LedgerId | null {
+        return this.provider.client.ledgerId;
+    };
 
     getAccountId():AccountId {
         return AccountId.fromString(this.accountToSign);
@@ -31,12 +33,16 @@ export class HashConnectSigner implements Signer {
     };
     
     getMirrorNetwork() {
-        throw new Error("Get Mirror Network not implemented in HashConnect provider");
+        throw new Error("Get Mirror Network not implemented in HashConnect");
 
         return [];
     };    
     
-    sign: (messages: Uint8Array[]) => Promise<SignerSignature[]>;
+    sign(messages: Uint8Array[]):Promise<SignerSignature[]> {
+        throw new Error("Sign messages not implemented in HashConnect");
+
+        console.log(messages);
+    };
 
     getAccountBalance() {
         return new AccountBalanceQuery()
@@ -60,7 +66,11 @@ export class HashConnectSigner implements Signer {
         return transaction.freezeWith(this.provider.client)
     };
 
-    checkTransaction: (transaction: Transaction) => Promise<Transaction>;
+    checkTransaction(transaction: Transaction): Promise<Transaction> {
+        throw new Error("Check transaction not implemented in HashConnect");
+
+        console.log(transaction);
+    };
 
     async populateTransaction(transaction: Transaction): Promise<Transaction> {
         // await this.checkTransaction(transaction);

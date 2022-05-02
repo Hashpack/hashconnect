@@ -1,6 +1,5 @@
-## v0.2.0
+## v0.1.6
 - Added provider/signer (HIP-338) functionality
-- Added ability to also get transaction record
 - Added transaction response in addition to receipt
   
 ## v0.1.5

@@ -6,23 +6,20 @@ import {
 } from '@hashgraph/sdk';
 import Executable from '@hashgraph/sdk/lib/Executable';
 import { HashConnect } from '../main';
-import { HashConnectProviderSender } from './sender';
 
 export class HashConnectProvider implements Provider {
     client: Client;
     private hashconnect: HashConnect;
-    private sender: HashConnectProviderSender;
-    private network: string;
+    network: string;
+    topicId: string;
+    accountToSign: string;
 
-    public constructor(
-        networkName: string,
-        topicId: string,
-        hashconnect: HashConnect) {
-            
+    public constructor(networkName: string, hashconnect: HashConnect, topicId: string, accountToSign: string) {
         this.hashconnect = hashconnect;
         this.network = networkName;
         this.client = Client.forName(networkName);
-        this.sender = new HashConnectProviderSender(this.hashconnect, topicId);
+        this.topicId = topicId;
+        this.accountToSign = accountToSign;
     }
 
     getLedgerId() {
@@ -33,7 +30,11 @@ export class HashConnectProvider implements Provider {
         return this.client.network;
     }
 
-    getMirrorNetwork: () => string[];
+    getMirrorNetwork() {
+        throw new Error("Get Mirror Network not implemented in HashConnect provider");
+
+        return [];
+    };
 
     getAccountBalance(accountId: AccountId | string) {
         return new AccountBalanceQuery()
@@ -67,31 +68,36 @@ export class HashConnectProvider implements Provider {
     }
 
     async sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
-        const requestBytes = this.getBytesOf(request);
-        const { signedTransaction, error } = await this.sender.send(request._operator!.accountId, requestBytes, false);
+        const transaction = {
+            byteArray: this.getBytesOf(request),
+            metadata: {
+                accountToSign: this.accountToSign.toString(),
+                returnTransaction: false,
+            },
+            topic: this.topicId,
+        };
 
-        if (error) {
-            throw new Error(`There was an issue while signing the request: ${error}`);
-        } else if (request instanceof Transaction) {
-            const sdkSignedTransaction = Transaction.fromBytes(signedTransaction as Uint8Array);
-
-            return (sdkSignedTransaction.execute(this.client) as unknown) as Promise<OutputT>;
-        } else if (request instanceof Query) {
-            // TODO: execute query somehow?
-            const sdkSignedTransaction = Query.fromBytes(signedTransaction as Uint8Array);
-
-            return (sdkSignedTransaction.execute(this.client) as unknown) as Promise<OutputT>;
-
-        } else {
+        let res = await this.hashconnect.sendTransaction(this.topicId, transaction);
+        
+        let response: TransactionResponse = res.response as TransactionResponse;
+        
+        return (response as unknown) as OutputT;
             throw new Error(`We only know how to forward Transactions and Queries.`);
-        }
     }
 
     private getBytesOf<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Uint8Array {
-        if (request instanceof Transaction || request instanceof Query) {
-            return request.toBytes();
-        } else {
+        let transaction = (request as unknown) as Transaction;
+        let query;
+
+        if (!transaction)
+            query = (request as unknown) as Query<any>;
+
+        if (!transaction && !query)
             throw new Error("Only Transactions and Queries can be serialized to be sent for signing by the HashPack wallet.");
-        }
+
+        if (transaction)
+            return ((request as unknown) as Transaction).toBytes();
+        else
+            return ((request as unknown) as Query<any>).toBytes();
     }
 }

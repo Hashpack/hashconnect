@@ -1,4 +1,4 @@
-import { LedgerId, AccountId, SignerSignature, AccountBalance, AccountInfo, TransactionRecord, Transaction, Executable, Query, TransactionResponse, TransactionId } from "@hashgraph/sdk";
+import { LedgerId, AccountId, SignerSignature, AccountBalance, AccountInfo, TransactionRecord, Transaction, Executable, Query, TransactionResponse, TransactionId, AccountBalanceQuery, AccountInfoQuery, AccountRecordsQuery } from "@hashgraph/sdk";
 import { Signer } from "@hashgraph/sdk/lib/Signer";
 import { HashConnect } from "../main";
 import { HashConnectProvider } from "./provider";
@@ -8,7 +8,7 @@ export class HashConnectSigner implements Signer {
     private hashconnect: HashConnect;
     private provider: HashConnectProvider;
     private topicId: string;
-    private accountToSign: string | AccountId;
+    private accountToSign: string;
 
     constructor(hashconnect: HashConnect, provider: HashConnectProvider, accountToSign: string, topic: string) {
         this.hashconnect = hashconnect;
@@ -18,20 +18,50 @@ export class HashConnectSigner implements Signer {
     }
 
     getLedgerId: () => LedgerId | null;
-    getAccountId: () => AccountId;
-    getNetwork: () => { [key: string]: string | AccountId; };
-    getMirrorNetwork: () => string[];
-    sign: (messages: Uint8Array[]) => Promise<SignerSignature[]>;
-    getAccountBalance: () => Promise<AccountBalance>;
-    getAccountInfo: () => Promise<AccountInfo>;
-    getAccountRecords: () => Promise<TransactionRecord[]>;
+
+    getAccountId():AccountId {
+        return AccountId.fromString(this.accountToSign);
+    };
+
+    getNetwork() {
+        let network: { [key: string]: string } = {};
+        network[this.accountToSign.toString()] = this.provider.network;
+        
+        return network;
+    };
     
+    getMirrorNetwork() {
+        throw new Error("Get Mirror Network not implemented in HashConnect provider");
+
+        return [];
+    };    
+    
+    sign: (messages: Uint8Array[]) => Promise<SignerSignature[]>;
+
+    getAccountBalance() {
+        return new AccountBalanceQuery()
+            .setAccountId(this.accountToSign)
+            .execute(this.provider.client);
+    }
+
+    getAccountInfo() {
+        return new AccountInfoQuery()
+            .setAccountId(this.accountToSign)
+            .execute(this.provider.client);
+    }
+
+    getAccountRecords() {
+        return new AccountRecordsQuery()
+            .setAccountId(this.accountToSign)
+            .execute(this.provider.client);
+    }
+
     async signTransaction(transaction: Transaction): Promise<Transaction> {
         return transaction.freezeWith(this.provider.client)
     };
 
     checkTransaction: (transaction: Transaction) => Promise<Transaction>;
-    
+
     async populateTransaction(transaction: Transaction): Promise<Transaction> {
         // await this.checkTransaction(transaction);
 
@@ -42,7 +72,6 @@ export class HashConnectSigner implements Signer {
     };
 
     async sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
-        
         const transaction = {
             byteArray: this.getBytesOf(request),
             metadata: {
@@ -53,26 +82,26 @@ export class HashConnectSigner implements Signer {
         };
 
         let res = await this.hashconnect.sendTransaction(this.topicId, transaction);
-        
+
         let response: TransactionResponse = res.response as TransactionResponse;
-        
+
         return (response as unknown) as OutputT;
     }
 
-    private getBytesOf<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Uint8Array {        
+    private getBytesOf<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Uint8Array {
         let transaction = (request as unknown) as Transaction;
         let query;
 
-        if(!transaction)
+        if (!transaction)
             query = (request as unknown) as Query<any>;
 
-        if(!transaction && !query)
+        if (!transaction && !query)
             throw new Error("Only Transactions and Queries can be serialized to be sent for signing by the HashPack wallet.");
-        
-        if(transaction)
+
+        if (transaction)
             return ((request as unknown) as Transaction).toBytes();
         else
             return ((request as unknown) as Query<any>).toBytes();
-      }
+    }
 
 }

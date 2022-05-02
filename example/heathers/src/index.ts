@@ -47,8 +47,8 @@ class Example {
     }
 
     setUpExample() {
-        this.provider = this.hashconnectHelper.hashconnect.getProvider("testnet", this.hashconnectHelper.saveData.topic);
-        this.signer = this.hashconnectHelper.hashconnect.getSigner(this.provider, this.hashconnectHelper.saveData.pairedAccounts[0], this.hashconnectHelper.saveData.topic);
+        this.provider = this.hashconnectHelper.hashconnect.getProvider("testnet", this.hashconnectHelper.saveData.topic, this.hashconnectHelper.saveData.pairedAccounts[0]);
+        this.signer = this.hashconnectHelper.hashconnect.getSigner(this.provider);
 
         //demo event listeners
         document.getElementById('testTransaction')!.onclick = this.TransactionTest;

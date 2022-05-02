@@ -341,11 +341,11 @@ export class HashConnect implements IHashConnect {
      * Provider stuff
      */
     
-    getProvider(network:string, topicId: string): HashConnectProvider {
-        return new HashConnectProvider(network, topicId, this);
+    getProvider(network:string, topicId: string, accountToSign: string): HashConnectProvider {
+        return new HashConnectProvider(network, this, topicId, accountToSign);
     }
 
-    getSigner(provider: HashConnectProvider, accountToSign: string, topicId: string): HashConnectSigner {
-        return new HashConnectSigner(this, provider, accountToSign, topicId);
+    getSigner(provider: HashConnectProvider): HashConnectSigner {
+        return new HashConnectSigner(this, provider, provider.accountToSign, provider.topicId);
     }
 }

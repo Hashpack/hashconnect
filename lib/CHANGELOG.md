@@ -1,3 +1,7 @@
+## v0.1.6
+- Added provider/signer (HIP-338) functionality
+- Added transaction response in addition to receipt
+  
 ## v0.1.5
 - Refactored authentication to be more secure
 

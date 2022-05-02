@@ -63,7 +63,6 @@ export class SigningService {
     }
 
     async makeBytes(trans: Transaction, signingAcctId: string) {
-        
         let transId = TransactionId.generate(signingAcctId)
         trans.setTransactionId(transId);
         trans.setNodeAccountIds([new AccountId(3)]);

@@ -61,7 +61,6 @@ export declare namespace MessageTypes {
     }
     
     export interface Transaction extends BaseMessage {
-        // type: TransactionType;
         byteArray: Uint8Array | string;
         metadata: TransactionMetadata;
     }
@@ -70,11 +69,14 @@ export declare namespace MessageTypes {
         accountToSign: string;
         returnTransaction: boolean;
         nftPreviewUrl?: string;
+        getRecord?: boolean;
     }
 
     export interface TransactionResponse extends BaseMessage {
         success: boolean;
-        receipt?: Uint8Array | string; 
+        response?: object | string; 
+        receipt?: Uint8Array | string;
+        record?: Uint8Array | string;
         signedTransaction?: Uint8Array | string;
         error?: string;
     }

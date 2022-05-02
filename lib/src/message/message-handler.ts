@@ -54,6 +54,9 @@ export class MessageHandler implements IMessageHandler {
                 if(transaction_response_data.receipt)
                     transaction_response_data.receipt = new Uint8Array(Buffer.from(transaction_response_data.receipt as string,'base64'));
                 
+                if(transaction_response_data.response)
+                    transaction_response_data.response = JSON.parse(transaction_response_data.response as string);
+                    
                 hc.transactionResolver(transaction_response_data);
 
                 await hc.acknowledge(parsedData.topic, hc.publicKeys[transaction_response_data.topic], transaction_response_data.id!);

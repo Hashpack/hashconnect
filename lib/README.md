@@ -28,6 +28,9 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
       - [PairingEvent](#pairingevent)
       - [Acknowledge Response](#acknowledge-response)
       - [Connection Status Change](#connection-status-change)
+    - [Provider/Signer](#providersigner)
+      - [Get Provider](#get-provider)
+      - [Get Signer](#get-signer)
     - [Types](#types)
       - [HashConnectTypes](#hashconnecttypes)
         - [HashConnectTypes.AppMetadata](#hashconnecttypesappmetadata)
@@ -391,6 +394,47 @@ This event is fired if the connection status changes, this should only really ha
 hashconnect.connectionStatusChange.once((connectionStatus) => {
     //do something with connection status
 })
+```
+
+### Provider/Signer
+
+In accordance with [HIP-338](https://hips.hedera.com/hip/hip-338) and [hethers.js](https://docs.hedera.com/hethers/getting-started) we have added provider/signer support.
+
+You need to initialize HashConnect normally, then once you have your ```hashconnect``` variable you can use the ```.getProvider()``` and ```.getSigner()``` methods.
+
+#### Get Provider
+
+Just pass in these couple variables, and you'll get a provider back! 
+
+This allows you to interact using the API's [detailed here](https://docs.hedera.com/hethers/application-programming-interface/providers/provider).
+
+```js
+provider = hashconnect.getProvider(network, topic, accountId);
+```
+
+Example Usage
+
+```js
+let balance = await provider.getAccountBalance(accountId);
+```
+
+#### Get Signer
+
+Pass the provider into this method to get a signer back, this allows you to interact with HashConnect using a simpler API.
+
+```js
+signer = this.hashconnectHelper.hashconnect.getSigner(provider);
+```
+
+Usage
+
+```js
+let trans = await new TransferTransaction()
+    .addHbarTransfer(fromAccount, -1)
+    .addHbarTransfer(toAccount, 1)
+    .freezeWithSigner(this.signer);
+
+let res = await trans.executeWithSigner(this.signer);
 ```
 
 ### Types

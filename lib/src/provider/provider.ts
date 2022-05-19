@@ -67,7 +67,7 @@ export class HashConnectProvider implements Provider {
             .execute(this.client);
     }
 
-    async sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
+    async call<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
         const transaction = {
             byteArray: this.getBytesOf(request),
             metadata: {

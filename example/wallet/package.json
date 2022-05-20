@@ -19,7 +19,7 @@
     "@angular/platform-browser-dynamic": "~13.0.0",
     "@angular/router": "~13.0.0",
     "@costlydeveloper/ngx-awesome-popup": "^2.0.4",
-    "@hashgraph/sdk": "2.10.0",
+    "@hashgraph/sdk": "2.14.2",
     "hashconnect": "^0.1.6",
     "process": "^0.11.10",
     "rxjs": "~7.4.0",

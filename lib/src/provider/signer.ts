@@ -1,5 +1,5 @@
-import { LedgerId, AccountId, SignerSignature, AccountBalance, AccountInfo, TransactionRecord, Transaction, Executable, Query, TransactionResponse, TransactionId, AccountBalanceQuery, AccountInfoQuery, AccountRecordsQuery } from "@hashgraph/sdk";
-import { Signer } from "@hashgraph/sdk/lib/Signer";
+import { LedgerId, AccountId, SignerSignature, AccountBalance, AccountInfo, TransactionRecord, Executable, Query, TransactionResponse, TransactionId, AccountBalanceQuery, AccountInfoQuery, AccountRecordsQuery } from "@hashgraph/sdk";
+import { Signer, Transaction } from "@hashgraph/sdk/lib/Signer";
 import { HashConnect } from "../main";
 import { HashConnectProvider } from "./provider";
 
@@ -61,27 +61,28 @@ export class HashConnectSigner implements Signer {
             .setAccountId(this.accountToSign)
             .execute(this.provider.client);
     }
-
-    async signTransaction(transaction: Transaction): Promise<Transaction> {
+    
+    async signTransaction<T extends Transaction>(transaction: T): Promise<T> {
         return transaction.freezeWith(this.provider.client)
     };
 
-    checkTransaction(transaction: Transaction): Promise<Transaction> {
+    checkTransaction<T extends Transaction>(transaction: T): Promise<T> {
         throw new Error("Check transaction not implemented in HashConnect");
 
         console.log(transaction);
     };
 
-    async populateTransaction(transaction: Transaction): Promise<Transaction> {
+    async populateTransaction<T extends Transaction>(transaction: T): Promise<T> {
         // await this.checkTransaction(transaction);
 
         transaction.setTransactionId(TransactionId.generate(this.accountToSign));
+        transaction.freezeWith(this.provider.client)
         // transaction.setNodeAccountIds([]);
 
         return transaction;
     };
 
-    async sendRequest<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
+    async call<RequestT, ResponseT, OutputT>(request: Executable<RequestT, ResponseT, OutputT>): Promise<OutputT> {
         const transaction = {
             byteArray: this.getBytesOf(request),
             metadata: {

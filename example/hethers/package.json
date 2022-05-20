@@ -28,6 +28,6 @@
   "dependencies": {
     "@hashgraph/hethers": "^1.1.0",
     "@hashgraph/sdk": "^2.14.2",
-    "hashconnect": "^0.1.6"
+    "hashconnect": "^0.1.7"
   }
 }

@@ -73,8 +73,8 @@ export class WebSocketRelay implements IRelay {
     }
 
     connectToSocket(callback: () => void) {
-        // this.socket = new WebSocket('ws://localhost:9001');
-        this.socket = new WebSocket('wss://hashconnect.hashpack.app');
+        this.socket = new WebSocket('ws://localhost:9001');
+        // this.socket = new WebSocket('wss://hashconnect.hashpack.app');
 
         this.socket.onopen = () => {
             if (this.hc.debug) console.log("hashconnect - connected");
@@ -112,6 +112,7 @@ export class WebSocketRelay implements IRelay {
         this.socket.send(JSON.stringify({ action: 'sub', topic: topic }));
 
         this.socket.onmessage = (e) => {
+            console.log("process", e)
             this.processMessage(e);
         };
     }
@@ -132,7 +133,7 @@ export class WebSocketRelay implements IRelay {
     async publish(topic: string, message: any, pubKey: string): Promise<void> {
         const msg = {
             action: "pub",
-            payload: JSON.stringify(message),
+            payload: message,
             topic: topic
         }
 

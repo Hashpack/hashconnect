@@ -10,6 +10,10 @@ export class MessageHandler implements IMessageHandler {
     
     async onPayload(message: RelayMessage, hc: IHashConnect): Promise<void> {
         const parsedData = message.data;
+        
+        if(message.origin)
+            parsedData.origin = message.origin;
+        
         if(hc.debug) console.log(`hashconnect - Message Received of type ${message.type}, sent at ${message.timestamp.toString()}`, parsedData);
         
         // Should always have a topic

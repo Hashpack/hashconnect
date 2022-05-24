@@ -101,17 +101,17 @@ export declare namespace HashConnectTypes {
     export interface AppMetadata {
         name: string;
         description: string;
-        url?: string;
         icon: string;
         publicKey?: string;
+        url?: string;
     }
 
     export interface WalletMetadata {
         name: string;
         description: string;
-        url?: string;
         icon: string;
         publicKey?: string;
+        url?: string
     }
 
     export interface InitilizationData {
@@ -128,6 +128,7 @@ export declare namespace HashConnectTypes {
         topic: string;
         network: string;
         multiAccount: boolean;
+        origin?: string
     }
 }
 

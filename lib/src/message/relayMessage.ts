@@ -33,6 +33,7 @@ export declare namespace MessageTypes {
     export interface BaseMessage {
         topic: string;
         id?: string;
+        origin?: string;
     }    
 
     export interface ApprovePairing extends BaseMessage {

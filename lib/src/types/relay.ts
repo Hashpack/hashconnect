@@ -112,6 +112,7 @@ export class WebSocketRelay implements IRelay {
         this.socket.send(JSON.stringify({ action: 'sub', topic: topic }));
 
         this.socket.onmessage = (e) => {
+            console.log("process", e)
             this.processMessage(e);
         };
     }
@@ -132,7 +133,7 @@ export class WebSocketRelay implements IRelay {
     async publish(topic: string, message: any, pubKey: string): Promise<void> {
         const msg = {
             action: "pub",
-            payload: JSON.stringify(message),
+            payload: JSON.stringify(message), //todo: remove this stringify after people have updated
             topic: topic
         }
 

@@ -6,6 +6,7 @@ export class RelayMessage {
     type: RelayMessageType;
     data: any;
     topic: string;
+    origin: string;
 
     constructor(timestamp: number, type: RelayMessageType, data: any, topic: string) {
         this.timestamp = timestamp;
@@ -32,6 +33,7 @@ export declare namespace MessageTypes {
     export interface BaseMessage {
         topic: string;
         id?: string;
+        origin?: string;
     }    
 
     export interface ApprovePairing extends BaseMessage {

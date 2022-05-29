@@ -46,7 +46,11 @@ export class MessageUtil {
     public async decode(payload: string, hc: HashConnect): Promise<RelayMessage> {
         if (hc.debug) console.log("hashconnect - decoding message payload")
 
-        let message: RelayMessage = JSON.parse(payload);
+        //todo: this is temporary to enable backwards compatibility
+        let parsedPayload:any = payload;
+        if(typeof(payload) == "string") parsedPayload = JSON.parse(payload);
+
+        let message: RelayMessage = parsedPayload;
 
         message.data = await this.decrypt(message.data, hc.publicKeys[message.topic]);
         //uncomment this to decode protobuf

@@ -82,6 +82,7 @@ export class CreateTokenComponent implements OnInit {
 
     async send() {
         let accountInfo:any = await window.fetch("https://testnet.mirrornode.hedera.com/api/v1/accounts/" + this.signingAcct, { method: "GET" });
+        // let accountInfo:any = await window.fetch("https://mainnet-public.mirrornode.hedera.com/api/v1/accounts/" + this.signingAcct, { method: "GET" });
         accountInfo = await accountInfo.json();
         let customFees: CustomFee[] = [];
 

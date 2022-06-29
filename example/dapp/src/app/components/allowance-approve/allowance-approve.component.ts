@@ -21,7 +21,7 @@ export class AllowanceApproveComponent implements OnInit {
     subscriptions: Subscription = new Subscription();
 
     signingAcct: string;
-    spenderId: "0.0.467126";
+    spenderId = "0.0.467126";
 
     data: { 
         hbarAllowance: boolean,
@@ -91,8 +91,6 @@ export class AllowanceApproveComponent implements OnInit {
 
         let transBytes: Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
 
-        let test = Transaction.fromBytes(transBytes);
-        debugger
         let res = await this.HashconnectService.sendTransaction(transBytes, this.signingAcct);
 
         //handle response

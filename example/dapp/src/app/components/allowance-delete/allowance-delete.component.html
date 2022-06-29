@@ -1,1 +1,6 @@
-<p>allowance-delete works!</p>
+<h2>Allowance Delete</h2>
+
+<select [(ngModel)]="signingAcct">
+    <option *ngFor="let acc of HashconnectService.saveData.pairedAccounts" [value]="acc" [selected]="signingAcct == acc">
+        {{acc}}</option>
+</select>

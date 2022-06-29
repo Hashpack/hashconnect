@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { AccountAllowanceDeleteTransaction, TransactionReceipt } from '@hashgraph/sdk';
+import { AccountAllowanceDeleteTransaction, NftId, TokenId, Transaction, TransactionReceipt } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -44,9 +44,13 @@ export class AllowanceDeleteComponent implements OnInit {
     }
 
     async send() {
-        let trans = new AccountAllowanceDeleteTransaction();
+        let trans = new AccountAllowanceDeleteTransaction().deleteAllTokenNftAllowances(new NftId(TokenId.fromString("0.0.29631020"), 1), this.signingAcct);
 
         let transBytes: Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
+
+        let trans2 = Transaction.fromBytes(transBytes);
+
+        debugger
 
         let res = await this.HashconnectService.sendTransaction(transBytes, this.signingAcct);
 

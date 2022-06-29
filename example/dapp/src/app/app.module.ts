@@ -26,6 +26,8 @@ import { ResultModalComponent } from './components/result-modal/result-modal.com
 import { FileAppendComponent } from './components/file-append/file-append.component';
 import { AuthenticateComponent } from './components/authenticate/authenticate.component';
 import { AccountUpdateComponent } from './components/account-update/account-update.component';
+import { AllowanceApproveComponent } from './components/allowance-approve/allowance-approve.component';
+import { AllowanceDeleteComponent } from './components/allowance-delete/allowance-delete.component';
 
 @NgModule({
   declarations: [
@@ -51,7 +53,9 @@ import { AccountUpdateComponent } from './components/account-update/account-upda
     ResultModalComponent,
     FileAppendComponent,
     AuthenticateComponent,
-    AccountUpdateComponent
+    AccountUpdateComponent,
+    AllowanceApproveComponent,
+    AllowanceDeleteComponent
   ],
   imports: [
     BrowserModule,

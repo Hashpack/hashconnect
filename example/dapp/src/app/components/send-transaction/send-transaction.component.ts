@@ -103,7 +103,7 @@ export class SendTransactionComponent implements OnInit {
             receipt: null
         }
 
-        if(res.success) responseData.receipt = TransactionReceipt.fromBytes(res.receipt as Uint8Array);
+        if(res.success && !this.data.transfer.return_transaction) responseData.receipt = TransactionReceipt.fromBytes(res.receipt as Uint8Array);
 
         this.HashconnectService.showResultOverlay(responseData);
     }

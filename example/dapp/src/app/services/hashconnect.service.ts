@@ -122,7 +122,7 @@ export class HashconnectService {
             
             metadata: {
                 accountToSign: acctToSign,
-                returnTransaction: return_trans
+                returnTransaction: return_trans,
             }
         }
 

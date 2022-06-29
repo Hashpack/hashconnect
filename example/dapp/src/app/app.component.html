@@ -13,6 +13,8 @@
         
         <h3>Account</h3>
         <button class="primary" (click)="accountUpdate()" [disabled]="HashConnectService.status != 'Paired'">Account Update</button>
+        <button class="primary" (click)="allowanceApprove()" [disabled]="HashConnectService.status != 'Paired'">Allowance Approve</button>
+        <button class="primary" (click)="allowanceDelete()" [disabled]="HashConnectService.status != 'Paired'">Allowance Delete</button>
 
         <h3>Tokens</h3>
         <button class="primary" (click)="createToken()" [disabled]="HashConnectService.status != 'Paired'">Create Token</button>

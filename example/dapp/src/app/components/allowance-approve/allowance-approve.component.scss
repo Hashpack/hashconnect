@@ -1,0 +1,22 @@
+:host {
+    section {
+        span {
+            display: flex;
+            align-items: center;
+
+            input {
+                margin-right: 8px
+            }
+
+            label {
+                margin: 0;
+            }
+        }
+
+        .allowance {
+            border-bottom: solid 1px white;
+            margin-bottom: 4px;
+            padding-bottom: 4px;
+        }
+    }
+}

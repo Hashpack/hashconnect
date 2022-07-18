@@ -1,3 +1,6 @@
+## v0.1.10
+- Added iframe connection logic
+
 ## v0.1.6
 - Added provider/signer (HIP-338) functionality
 - Added transaction response in addition to receipt

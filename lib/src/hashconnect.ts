@@ -15,6 +15,7 @@ export class HashConnect implements IHashConnect {
 
     // events
     foundExtensionEvent: Event<HashConnectTypes.WalletMetadata>;
+    foundIframeEvent: Event<HashConnectTypes.WalletMetadata>;
     pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
@@ -40,6 +41,7 @@ export class HashConnect implements IHashConnect {
         this.relay = new WebSocketRelay(this);
 
         this.foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
+        this.foundIframeEvent = new Event<HashConnectTypes.WalletMetadata>();
         this.pairingEvent = new Event<MessageTypes.ApprovePairing>();
         this.transactionEvent = new Event<MessageTypes.Transaction>();
         this.acknowledgeMessageEvent = new Event<MessageTypes.Acknowledge>();
@@ -311,11 +313,23 @@ export class HashConnect implements IHashConnect {
                 if (event.data.metadata)
                     this.foundExtensionEvent.emit(event.data.metadata);
             }
+
+            if(event.data.type && event.data.type == "hashconnect-iframe-response"){
+                if(this.debug) console.log("hashconnect - iFrame wallet metadata recieved", event.data);
+
+                if(event.data.metadata)
+                    this.foundIframeEvent.emit(event.data.metadata);
+            }
         }, false);
 
         setTimeout(() => {
             window.postMessage({ type: "hashconnect-query-extension" }, "*");
+            if(window.parent) window.parent.postMessage({type: "hashconnect-iframe-query"}, '*');
         }, 50);
+    }
+
+    connectToIframeParent(pairingString: string) {
+        window.parent.postMessage({type: "hashconnect-iframe-pairing", pairingString: pairingString }, '*');
     }
 
     connectToLocalWallet(pairingString: string) {

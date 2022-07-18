@@ -79,6 +79,9 @@ export class HashconnectService {
             console.log("Found extension", data);
         })
 
+        this.hashconnect.foundIframeEvent.on(walletMetadata => {
+            this.hashconnect.connectToIframeParent(this.saveData.pairingString);
+        })
 
         // this.hashconnect.additionalAccountResponseEvent.on((data) => {
         //     console.log("Received account info", data);

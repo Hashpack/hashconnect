@@ -12,6 +12,7 @@ export interface IHashConnect {
 
     /** Event emitters */
     foundExtensionEvent: Event<HashConnectTypes.WalletMetadata>;
+    foundIframeEvent: Event<HashConnectTypes.WalletMetadata>;
     pairingEvent: Event<MessageTypes.ApprovePairing>;
     transactionEvent: Event<MessageTypes.Transaction>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
@@ -72,6 +73,12 @@ export interface IHashConnect {
     reject(topic: string, reason: string, msg_id: string): Promise<void>;
 
     decodeLocalTransaction(message: string): Promise<RelayMessage>;
+
+
+    connectToIframeParent(pairingString: string): void;
+
+    connectToLocalWallet(pairingString: string): void;
+    
     
     authenticate(topic: string, account_id: string, server_signing_account: string, signature: Uint8Array, payload: {url: string, data: any }): Promise<MessageTypes.AuthenticationResponse>;
     

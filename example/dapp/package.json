@@ -21,7 +21,7 @@
     "@costlydeveloper/ngx-awesome-popup": "^2.1.2",
     "@hashgraph/sdk": "2.16.4-beta.3",
     "awesome-qr": "^2.1.5-rc.0",
-    "hashconnect": "0.1.9",
+    "hashconnect": "0.1.10",
     "process": "^0.11.10",
     "rxjs": "~6.6.0",
     "service": "^0.1.4",

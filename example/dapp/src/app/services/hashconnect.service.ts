@@ -20,54 +20,24 @@ export class HashconnectService {
     
     availableExtensions: HashConnectTypes.WalletMetadata[] = []
 
-    saveData: {
-        topic: string;
-        pairingString: string;
-        privateKey?: string;
-        pairedWalletData?: HashConnectTypes.WalletMetadata;
-        pairedAccounts: string[];
-    } = {
-        topic: "",
-        pairingString: "",
-        privateKey: undefined,
-        pairedWalletData: undefined,
-        pairedAccounts: []
-    }
-
     appMetadata: HashConnectTypes.AppMetadata = {
         name: "dApp Example",
         description: "An example hedera dApp",
         icon: "https://www.hashpack.app/img/logo.svg"
     }
 
+    topic: string;
+    pairingString: string;
+    pairedWalletData: HashConnectTypes.WalletMetadata | null = null;
+    pairedAccountIds: string[];
+
     async initHashconnect() {
         //create the hashconnect instance
         this.hashconnect = new HashConnect(true);
-
-        if(!this.loadLocalData()){
-            //first init, store the private key in localstorage
-            let initData = await this.hashconnect.init(this.appMetadata);
-            this.saveData.privateKey = initData.privKey;
-
-            //then connect, storing the new topic in localstorage
-            const state = await this.hashconnect.connect();
-            console.log("Received state", state);
-            this.saveData.topic = state.topic;
-            
-            //generate a pairing string, which you can display and generate a QR code from
-            this.saveData.pairingString = this.hashconnect.generatePairingString(state, "testnet", true);
-            
-            //find any supported local wallets
-            this.hashconnect.findLocalWallets();
-
-            this.status = "Connected";
-        }
-        else {
-            await this.hashconnect.init(this.appMetadata, this.saveData.privateKey);
-            await this.hashconnect.connect(this.saveData.topic, this.saveData.pairedWalletData!);
-
-            this.status = "Paired";
-        }
+        let hcData = await this.hashconnect.init(this.appMetadata, "testnet");
+        
+        this.topic = hcData.topic;
+        this.pairingString = hcData.pairingString;
 
         this.setUpEvents();
     }
@@ -80,7 +50,7 @@ export class HashconnectService {
         })
 
         this.hashconnect.foundIframeEvent.on(walletMetadata => {
-            this.hashconnect.connectToIframeParent(this.saveData.pairingString);
+            this.hashconnect.connectToIframeParent();
         })
 
         // this.hashconnect.additionalAccountResponseEvent.on((data) => {
@@ -96,14 +66,10 @@ export class HashconnectService {
             console.log("Paired with wallet", data);
             this.status = "Paired";
 
-            this.saveData.pairedWalletData = data.metadata;
+            this.pairedWalletData = data.metadata;
 
-            data.accountIds.forEach(id => {
-                if(this.saveData.pairedAccounts.indexOf(id) == -1)
-                    this.saveData.pairedAccounts.push(id);
-            })
+            this.pairedAccountIds = data.accountIds;
 
-            this.saveDataInLocalstorage();
         });
 
 
@@ -114,13 +80,13 @@ export class HashconnectService {
     }
 
     async connectToExtension() {
-        this.hashconnect.connectToLocalWallet(this.saveData.pairingString);
+        this.hashconnect.connectToLocalWallet();
     }
 
 
     async sendTransaction(trans: Uint8Array, acctToSign: string, return_trans: boolean = false) {
         const transaction: MessageTypes.Transaction = {
-            topic: this.saveData.topic,
+            topic: this.topic,
             byteArray: trans,
             
             metadata: {
@@ -129,42 +95,23 @@ export class HashconnectService {
             }
         }
 
-        return await this.hashconnect.sendTransaction(this.saveData.topic, transaction)
+        return await this.hashconnect.sendTransaction(this.topic, transaction)
     }
 
     async requestAccountInfo() {
         let request:MessageTypes.AdditionalAccountRequest = {
-            topic: this.saveData.topic,
+            topic: this.topic,
             network: "mainnet",
             multiAccount: true
         } 
 
-        await this.hashconnect.requestAdditionalAccounts(this.saveData.topic, request);
-    }
-
-    saveDataInLocalstorage() {
-        let data = JSON.stringify(this.saveData);
-        
-        localStorage.setItem("hashconnectData", data);
-    }
-
-    loadLocalData() :boolean {
-        let foundData = localStorage.getItem("hashconnectData");
-
-        if(foundData){
-            this.saveData = JSON.parse(foundData);
-            console.log("Found local data", this.saveData)
-            return true;
-        }
-        else
-            return false;
+        await this.hashconnect.requestAdditionalAccounts(this.topic, request);
     }
 
     clearPairings() {
-        this.saveData.pairedAccounts = [];
-        this.saveData.pairedWalletData = undefined;
-        this.status = "Connected";
-        localStorage.removeItem("hashconnectData");
+        this.hashconnect.clearConnectionsAndData();
+        this.pairedAccountIds = [];
+        this.pairedWalletData = null;
     }
 
     showResultOverlay(data: any) {

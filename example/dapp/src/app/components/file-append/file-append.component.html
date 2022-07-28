@@ -3,7 +3,7 @@
 
 <p>From:
     <select [(ngModel)]="signingAcct">
-        <option *ngFor="let acc of HashconnectService.saveData.pairedAccounts" [value]="acc" [selected]="signingAcct == acc">
+        <option *ngFor="let acc of HashconnectService.pairedAccountIds" [value]="acc" [selected]="signingAcct == acc">
             {{acc}}</option>
     </select>
 </p>

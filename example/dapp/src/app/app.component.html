@@ -2,10 +2,10 @@
     <h1>{{title}}</h1>
     <h2>Status: {{HashConnectService.status}}</h2>
 
-    <h3>Connected accounts: {{ HashConnectService.saveData.pairedAccounts | json}}</h3>
+    <h3>Connected accounts: {{ HashConnectService.pairedAccountIds | json}}</h3>
 
     <div class="buttons">
-        <button class="primary" (click)="pair()" [disabled]="HashConnectService.status != 'Connected'">Pair</button>
+        <button class="primary" (click)="pair()" [disabled]="HashConnectService.hashconnect.status != 'Connected'">Pair</button>
         <button class="primary" (click)="HashConnectService.clearPairings()" [disabled]="HashConnectService.status != 'Paired'">Clear Pairings</button>
         <button class="primary" (click)="HashConnectService.requestAccountInfo()" [disabled]="HashConnectService.status != 'Paired'">Request Additional Accounts</button>
         <button class="primary" (click)="auth()" [disabled]="HashConnectService.status != 'Paired'">Authenticate</button>

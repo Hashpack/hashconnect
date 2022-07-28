@@ -4,6 +4,7 @@ import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageTy
 import { HashConnectTypes, IHashConnect, HashConnectConnectionState } from "./types/hashconnect";
 import { HashConnectProvider } from "./provider/provider";
 import { HashConnectSigner } from "./provider/signer";
+import { ConnectionStatus } from "./types/connectionStatus";
 global.Buffer = global.Buffer || require('buffer').Buffer;
 
 /**
@@ -36,6 +37,19 @@ export class HashConnect implements IHashConnect {
     private privateKey: string;
 
     debug: boolean = false;
+    status: ConnectionStatus = ConnectionStatus.Disconnected;
+
+    hcData: {
+        topic: string;
+        pairingString: string;
+        privateKey: string;
+        pairingData: HashConnectTypes.SavedPairingData[];
+    } = {
+        topic: "",
+        pairingString: "",
+        privateKey: "",
+        pairingData: [],
+    }
 
     constructor(debug?: boolean) {
         this.relay = new WebSocketRelay(this);
@@ -57,24 +71,19 @@ export class HashConnect implements IHashConnect {
         this.setupEvents();
     }
 
-
-    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: string): Promise<HashConnectTypes.InitilizationData> {
+    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet"|"mainnet"|"previewnet", pairings: HashConnectTypes.PairingData[] = []): Promise<HashConnectTypes.InitilizationData> {
 
         return new Promise(async (resolve) => {
+            let initData: HashConnectTypes.InitilizationData = {
+                topic: "",
+                pairingString: ""
+            };
+
             this.metadata = metadata;
 
             if (this.debug) console.log("hashconnect - Initializing")
 
-            if (!privKey)
-                this.privateKey = await this.generateEncryptionKeys();
-            else
-                this.privateKey = privKey;
-
             metadata.publicKey = this.privateKey;
-
-            let initData: HashConnectTypes.InitilizationData = {
-                privKey: this.privateKey
-            }
 
             if (window)
                 this.metadata.url = window.location.origin;
@@ -82,6 +91,34 @@ export class HashConnect implements IHashConnect {
             await this.relay.init();
 
             if (this.debug) console.log("hashconnect - Initialized")
+
+            if(!this.loadLocalData()){
+                //first init, store the private key in localstorage
+                this.hcData.privateKey = await this.generateEncryptionKeys();
+    
+                //then connect, storing the new topic in localstorage
+                const state = await this.connect();
+                console.log("Received state", state);
+                this.hcData.topic = state.topic;
+                initData.topic = state.topic;
+                //generate a pairing string, which you can display and generate a QR code from
+                this.hcData.pairingString = this.generatePairingString(state, network, true);
+                initData.pairingString = this.hcData.pairingString;
+
+                this.status = ConnectionStatus.Connected;
+            }
+            else {
+                this.privateKey = this.hcData.privateKey!;
+                
+                initData.pairingString = this.hcData.pairingString;
+                initData.topic = this.hcData.topic;
+
+                for(let pairing of pairings) {
+                    await this.connect(pairing.topic, pairing.metadata);
+                }
+    
+                this.status = ConnectionStatus.Paired;
+            }
 
             resolve(initData);
         });
@@ -122,6 +159,33 @@ export class HashConnect implements IHashConnect {
 
             await this.messageParser.onPayload(message, this);
         })
+    }
+
+    /**
+     * Local data management
+     */
+    saveDataInLocalstorage() {
+        let data = JSON.stringify(this.hcData);
+        
+        localStorage.setItem("hashconnectData", data);
+    }
+
+    loadLocalData() :boolean {
+        let foundData = localStorage.getItem("hashconnectData");
+
+        if(foundData){
+            this.hcData = JSON.parse(foundData);
+            console.log("Found local data", this.hcData)
+            return true;
+        }
+        else
+            return false;
+    }
+
+    clearConnectionsAndData() {
+        // this.pair = [];
+        // this.hcData.pairedWalletData = undefined;
+        localStorage.removeItem("hashconnectData");
     }
 
 
@@ -328,14 +392,16 @@ export class HashConnect implements IHashConnect {
         }, 50);
     }
 
-    connectToIframeParent(pairingString: string) {
-        window.parent.postMessage({type: "hashconnect-iframe-pairing", pairingString: pairingString }, '*');
+    connectToIframeParent() {
+        if (this.debug) console.log("hashconnect - Connecting to iframe parent wallet")
+
+        window.parent.postMessage({type: "hashconnect-iframe-pairing", pairingString:this.hcData.pairingString }, '*');
     }
 
-    connectToLocalWallet(pairingString: string) {
+    connectToLocalWallet() {
         if (this.debug) console.log("hashconnect - Connecting to local wallet")
         //todo: add extension metadata support
-        window.postMessage({ type: "hashconnect-connect-extension", pairingString: pairingString }, "*")
+        window.postMessage({ type: "hashconnect-connect-extension", pairingString: this.hcData.pairingString }, "*")
     }
 
     sendEncryptedLocalTransaction(message: string) {

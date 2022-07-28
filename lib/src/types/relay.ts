@@ -1,6 +1,7 @@
 import { Event } from "ts-typed-events"
 import { HashConnectConnectionState } from ".";
 import { HashConnect } from "../main";
+import { ConnectionStatus } from "./connectionStatus";
 
 /**
  * Relay interface
@@ -84,6 +85,7 @@ export class WebSocketRelay implements IRelay {
         };
 
         this.socket.onclose = () => {
+            this.hc.status = ConnectionStatus.Disconnected;
             console.log("hashconnect - disconnected")
             this.hc.connectionStatusChange.emit(HashConnectConnectionState.Disconnected);
             setTimeout(() => {
@@ -99,7 +101,7 @@ export class WebSocketRelay implements IRelay {
             for(let topic of this.subscribedTopics) {
                 await this.subscribe(topic);
             }
-
+            this.hc.status = ConnectionStatus.Connected;
             if (this.hc.debug) console.log("hashconnect - reconnected")
         })
     }

@@ -37,7 +37,7 @@ export interface IHashConnect {
     /**
      * Initialize the client
      */
-     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: string): Promise<HashConnectTypes.InitilizationData>
+     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet"|"mainnet"|"previewnet", pairings: HashConnectTypes.PairingData[]): Promise<HashConnectTypes.InitilizationData>
 
     /**
      * Connect to a topic and produce a topic ID for a peer
@@ -75,10 +75,11 @@ export interface IHashConnect {
     decodeLocalTransaction(message: string): Promise<RelayMessage>;
 
 
-    connectToIframeParent(pairingString: string): void;
+    connectToIframeParent(): void;
 
-    connectToLocalWallet(pairingString: string): void;
+    connectToLocalWallet(): void;
     
+    clearConnectionsAndData(): void;
     
     authenticate(topic: string, account_id: string, server_signing_account: string, signature: Uint8Array, payload: {url: string, data: any }): Promise<MessageTypes.AuthenticationResponse>;
     
@@ -122,7 +123,8 @@ export declare namespace HashConnectTypes {
     }
 
     export interface InitilizationData {
-        privKey: string;
+        topic: string;
+        pairingString: string;
     }
 
     export interface ConnectionState {
@@ -131,11 +133,20 @@ export declare namespace HashConnectTypes {
     }
 
     export interface PairingData {
-        metadata: HashConnectTypes.AppMetadata;
+        metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
         topic: string;
         network: string;
         multiAccount: boolean;
         origin?: string
+    }
+
+    export interface SavedPairingData {
+        metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
+        topic: string;
+        network: string;
+        multiAccount: boolean;
+        origin?: string;
+        accountIds: string[]
     }
 }
 

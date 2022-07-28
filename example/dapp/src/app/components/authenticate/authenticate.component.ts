@@ -46,7 +46,7 @@ export class AuthenticateComponent implements OnInit {
         let signing_data = this.SigningService.signData(payload);
 
         //this line you should do client side, after generating the signed payload on the server
-        let res = await this.HashconnectService.hashconnect.authenticate(this.HashconnectService.saveData.topic, this.signingAcct, signing_data.serverSigningAccount, signing_data.signature, payload);
+        let res = await this.HashconnectService.hashconnect.authenticate(this.HashconnectService.topic, this.signingAcct, signing_data.serverSigningAccount, signing_data.signature, payload);
 
         if(!res.success) {
             this.HashconnectService.showResultOverlay(res);

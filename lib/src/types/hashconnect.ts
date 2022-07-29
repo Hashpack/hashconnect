@@ -105,7 +105,6 @@ export interface IHashConnect {
 }
 
 export declare namespace HashConnectTypes {    
-    
     export interface AppMetadata {
         name: string;
         description: string;
@@ -128,6 +127,7 @@ export declare namespace HashConnectTypes {
         topic: string;
         pairingString: string;
         encryptionKey: string;
+        savedPairings: SavedPairingData[]
     }
 
     export interface ConnectionState {
@@ -146,7 +146,6 @@ export declare namespace HashConnectTypes {
         metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
         topic: string;
         network: string;
-        multiAccount: boolean;
         origin?: string;
         accountIds: string[]
     }

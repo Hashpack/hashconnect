@@ -29,17 +29,23 @@ export class HashconnectService {
     state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
     topic: string;
     pairingString: string;
-    pairedWalletData: HashConnectTypes.WalletMetadata | null = null;
-    pairedAccountIds: string[];
+    pairingData: HashConnectTypes.SavedPairingData | null = null;
 
     async initHashconnect() {
         //create the hashconnect instance
         this.hashconnect = new HashConnect(true);
+        
+        //register events
         this.setUpHashConnectEvents();
+
+        //initialize and use returned data
         let initData = await this.hashconnect.init(this.appMetadata, "testnet", false);
         
         this.topic = initData.topic;
         this.pairingString = initData.pairingString;
+        
+        //Saved pairing will return here
+        this.pairingData = initData.savedPairings[0];
     }
 
     setUpHashConnectEvents() {
@@ -53,8 +59,7 @@ export class HashconnectService {
         this.hashconnect.pairingEvent.on((data) => {
             console.log("Paired with wallet", data);
 
-            this.pairedWalletData = data.metadata;
-            this.pairedAccountIds = data.accountIds;
+            this.pairingData = data;
         });
 
         //This is fired when HashConnect loses connection, pairs successfully, or is starting connection
@@ -65,11 +70,14 @@ export class HashconnectService {
 
         //This is fired when an iframe parent responds with wallet data
         this.hashconnect.foundIframeEvent.on(walletMetadata => {
+            //you'll want to automatically connect to a foundIframeEvent as it means
+            //its embedded in HashPack
             this.hashconnect.connectToIframeParent();
         })
     }
 
     async connectToExtension() {
+        //this will automatically pop up a pairing request in the HashPack extension
         this.hashconnect.connectToLocalWallet();
     }
 
@@ -101,8 +109,7 @@ export class HashconnectService {
 
     clearPairings() {
         this.hashconnect.clearConnectionsAndData();
-        this.pairedAccountIds = [];
-        this.pairedWalletData = null;
+        this.pairingData = null;
     }
 
     showResultOverlay(data: any) {

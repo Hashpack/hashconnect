@@ -34,7 +34,6 @@ export class HashConnect implements IHashConnect {
     private metadata!: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
 
     encryptionKeys: Record<string, string> = {}; //enc keys with topic id as the key
-    private encryptionKey: string;
 
     debug: boolean = false;
     status: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
@@ -71,13 +70,14 @@ export class HashConnect implements IHashConnect {
         this.setupEvents();
     }
 
-    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet" | "mainnet" | "previewnet", singleAccount: boolean = true, pairings: HashConnectTypes.PairingData[] = []): Promise<HashConnectTypes.InitilizationData> {
+    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet" | "mainnet" | "previewnet", singleAccount: boolean = true): Promise<HashConnectTypes.InitilizationData> {
 
         return new Promise(async (resolve) => {
             let initData: HashConnectTypes.InitilizationData = {
                 topic: "",
                 pairingString: "",
                 encryptionKey: "",
+                savedPairings: []
             };
 
             this.metadata = metadata;
@@ -92,12 +92,13 @@ export class HashConnect implements IHashConnect {
             if (this.debug) console.log("hashconnect - Initialized")
 
             if (!this.loadLocalData()) {
+                if (this.debug) console.log("hashconnect - No local data found, initializing");
+
                 //first init, store the private key in localstorage
                 this.hcData.encryptionKey = await this.generateEncryptionKeys();
-                this.encryptionKey = this.hcData.encryptionKey;
-                this.metadata.encryptionKey = this.encryptionKey;
-                this.metadata.publicKey = this.encryptionKey; //todo: remove as depracted
-                initData.encryptionKey = this.encryptionKey;
+                this.metadata.encryptionKey = this.hcData.encryptionKey;
+                this.metadata.publicKey = this.hcData.encryptionKey; //todo: remove as depracted
+                initData.encryptionKey = this.hcData.encryptionKey;
 
                 //then connect, storing the new topic in localstorage
                 const state = await this.connect();
@@ -105,7 +106,7 @@ export class HashConnect implements IHashConnect {
 
                 this.hcData.topic = state.topic;
                 initData.topic = state.topic;
-                
+
                 //generate a pairing string, which you can display and generate a QR code from
                 this.hcData.pairingString = this.generatePairingString(state, network, !singleAccount);
                 initData.pairingString = this.hcData.pairingString;
@@ -114,16 +115,19 @@ export class HashConnect implements IHashConnect {
                 this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
             }
             else {
-                this.encryptionKey = this.hcData.encryptionKey;
+                if (this.debug) console.log("hashconnect - Found saved local data", this.hcData);
+
                 this.metadata.publicKey = this.hcData.encryptionKey;
                 this.metadata.encryptionKey = this.hcData.encryptionKey;
 
                 this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connecting);
+                
                 initData.pairingString = this.hcData.pairingString;
                 initData.topic = this.hcData.topic;
-                initData.encryptionKey = this.encryptionKey;
+                initData.encryptionKey = this.hcData.encryptionKey;
+                initData.savedPairings = this.hcData.pairingData;
 
-                for (let pairing of pairings) {
+                for (let pairing of this.hcData.pairingData) {
                     await this.connect(pairing.topic, pairing.metadata);
                 }
 
@@ -141,12 +145,18 @@ export class HashConnect implements IHashConnect {
 
         if (!topic) {
             topic = this.messages.createRandomTopicId();
-            this.encryptionKeys[topic] = this.encryptionKey;
+            this.encryptionKeys[topic] = this.hcData.encryptionKey;
             if (this.debug) console.log("hashconnect - Created new topic id - " + topic);
         }
 
-        if (metadataToConnect)
-            this.encryptionKeys[topic] = metadataToConnect.encryptionKey as string;
+        if (metadataToConnect){
+            if(metadataToConnect.encryptionKey) this.encryptionKeys[topic] = metadataToConnect.encryptionKey as string;
+            //todo: remove this public key - backwards compatibility
+            else if(metadataToConnect.publicKey) {
+                this.encryptionKeys[topic] = metadataToConnect.publicKey as string;
+                metadataToConnect.encryptionKey = metadataToConnect.publicKey;
+            }
+        }
 
         let state: HashConnectTypes.ConnectionState = {
             topic: topic
@@ -171,6 +181,12 @@ export class HashConnect implements IHashConnect {
 
             await this.messageParser.onPayload(message, this);
         })
+
+        this.pairingEvent.on((pairingEvent) => {
+            this.hcData.pairingData.push(pairingEvent.pairingData!);
+
+            this.saveDataInLocalstorage();
+        })
     }
 
     /**
@@ -180,6 +196,8 @@ export class HashConnect implements IHashConnect {
         if (!window || !localStorage) return;
 
         let data = JSON.stringify(this.hcData);
+
+        if (this.debug) console.log("hashconnect - saving local data", this.hcData);
 
         localStorage.setItem("hashconnectData", data);
     }
@@ -191,7 +209,6 @@ export class HashConnect implements IHashConnect {
 
         if (foundData) {
             this.hcData = JSON.parse(foundData);
-            console.log("Found local data", this.hcData)
             return true;
         }
         else
@@ -201,7 +218,11 @@ export class HashConnect implements IHashConnect {
     clearConnectionsAndData() {
         // this.pair = [];
         // this.hcData.pairedWalletData = undefined;
+        if (this.debug) console.log("hashconnect - clearing local data");
+
         localStorage.removeItem("hashconnectData");
+        this.status = HashConnectConnectionState.Connected;
+        this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
     }
 
 

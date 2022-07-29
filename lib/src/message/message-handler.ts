@@ -1,4 +1,4 @@
-import { HashConnectConnectionState, IHashConnect } from "../types";
+import { HashConnectConnectionState, HashConnectTypes, IHashConnect } from "../types";
 import { MessageTypes, RelayMessage, RelayMessageType } from ".";
 
 export interface IMessageHandler {
@@ -25,6 +25,16 @@ export class MessageHandler implements IMessageHandler {
             case RelayMessageType.ApprovePairing:
                 if(hc.debug) console.log("hashconnect - approved", message.data);
                 let approval_data: MessageTypes.ApprovePairing = message.data;
+                
+                let newPairingData: HashConnectTypes.SavedPairingData = {
+                    accountIds: approval_data.accountIds,
+                    metadata: approval_data.metadata,
+                    network: approval_data.network,
+                    topic: approval_data.topic,
+                    origin: approval_data.origin
+                }
+
+                approval_data.pairingData = newPairingData;
                 
                 hc.pairingEvent.emit(approval_data);
                 hc.connectionStatusChangeEvent.emit(HashConnectConnectionState.Paired);

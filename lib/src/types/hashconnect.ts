@@ -37,7 +37,7 @@ export interface IHashConnect {
     /**
      * Initialize the client
      */
-     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet"|"mainnet"|"previewnet", singleAccount: boolean, pairings: HashConnectTypes.PairingData[]): Promise<HashConnectTypes.InitilizationData>
+     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet"|"mainnet"|"previewnet", singleAccount: boolean): Promise<HashConnectTypes.InitilizationData>
 
     /**
      * Connect to a topic and produce a topic ID for a peer
@@ -54,7 +54,7 @@ export interface IHashConnect {
      * 
      * @param pairingStr string containing topic and meta data
      */
-    pair(pairingData: HashConnectTypes.PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState>;
+    pair(pairingData: HashConnectTypes.PairingStringData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState>;
 
     /**
      * Send a transaction
@@ -134,7 +134,7 @@ export declare namespace HashConnectTypes {
         topic: string;
     }
 
-    export interface PairingData {
+    export interface PairingStringData {
         metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
         topic: string;
         network: string;

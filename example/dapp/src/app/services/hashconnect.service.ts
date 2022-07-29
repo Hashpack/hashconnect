@@ -44,7 +44,7 @@ export class HashconnectService {
         this.topic = initData.topic;
         this.pairingString = initData.pairingString;
         
-        //Saved pairing will return here
+        //Saved pairings will return here, generally you will only have one unless you are doing something advanced
         this.pairingData = initData.savedPairings[0];
     }
 

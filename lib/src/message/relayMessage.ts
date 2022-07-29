@@ -36,6 +36,7 @@ export declare namespace MessageTypes {
         origin?: string;
     }    
 
+    //todo: this is kind of redundant, should only be saved pairing data?
     export interface ApprovePairing extends BaseMessage {
         pairingData?: HashConnectTypes.SavedPairingData;
         metadata: HashConnectTypes.WalletMetadata;

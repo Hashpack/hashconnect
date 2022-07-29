@@ -270,7 +270,7 @@ export class HashConnect implements IHashConnect {
         return message.id!;
     }
 
-    async pair(pairingData: HashConnectTypes.PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState> {
+    async pair(pairingData: HashConnectTypes.PairingStringData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState> {
         if (this.debug) console.log("hashconnect - Pairing to " + pairingData.metadata.name);
         let state = await this.connect(pairingData.topic);
 
@@ -362,7 +362,7 @@ export class HashConnect implements IHashConnect {
     generatePairingString(state: HashConnectTypes.ConnectionState, network: string, multiAccount: boolean): string {
         if (this.debug) console.log("hashconnect - Generating pairing string");
 
-        let data: HashConnectTypes.PairingData = {
+        let data: HashConnectTypes.PairingStringData = {
             metadata: this.metadata,
             topic: state.topic,
             network: network,
@@ -381,7 +381,7 @@ export class HashConnect implements IHashConnect {
 
     decodePairingString(pairingString: string) {
         let json_string: string = Buffer.from(pairingString, 'base64').toString();
-        let data: HashConnectTypes.PairingData = JSON.parse(json_string);
+        let data: HashConnectTypes.PairingStringData = JSON.parse(json_string);
         // data.metadata.publicKey = Buffer.from(data.metadata.publicKey as string, 'base64');
 
         return data;

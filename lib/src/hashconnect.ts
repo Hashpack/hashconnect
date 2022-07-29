@@ -101,9 +101,11 @@ export class HashConnect implements IHashConnect {
 
                 //then connect, storing the new topic in localstorage
                 const state = await this.connect();
-                console.log("Received state", state);
+                if (this.debug) console.log("hashconnect - Received state", state);
+
                 this.hcData.topic = state.topic;
                 initData.topic = state.topic;
+                
                 //generate a pairing string, which you can display and generate a QR code from
                 this.hcData.pairingString = this.generatePairingString(state, network, !singleAccount);
                 initData.pairingString = this.hcData.pairingString;
@@ -175,12 +177,16 @@ export class HashConnect implements IHashConnect {
      * Local data management
      */
     saveDataInLocalstorage() {
+        if (!window || !localStorage) return;
+
         let data = JSON.stringify(this.hcData);
 
         localStorage.setItem("hashconnectData", data);
     }
 
     loadLocalData(): boolean {
+        if (!window || !localStorage) return false;
+
         let foundData = localStorage.getItem("hashconnectData");
 
         if (foundData) {
@@ -380,6 +386,11 @@ export class HashConnect implements IHashConnect {
      */
 
     findLocalWallets() {
+        if (!window) {
+            if (this.debug) console.log("hashconnect - Cancel findLocalWallets - no window object")
+            return;
+        }
+
         if (this.debug) console.log("hashconnect - Finding local wallets");
         window.addEventListener("message", (event) => {
             if (event.data.type && (event.data.type == "hashconnect-query-extension-response")) {
@@ -403,18 +414,33 @@ export class HashConnect implements IHashConnect {
     }
 
     connectToIframeParent() {
+        if (!window) {
+            if (this.debug) console.log("hashconnect - Cancel iframe connection - no window object")
+            return;
+        }
+
         if (this.debug) console.log("hashconnect - Connecting to iframe parent wallet")
 
         window.parent.postMessage({ type: "hashconnect-iframe-pairing", pairingString: this.hcData.pairingString }, '*');
     }
 
     connectToLocalWallet() {
+        if (!window) {
+            if (this.debug) console.log("hashconnect - Cancel connect to local wallet - no window object")
+            return;
+        }
+
         if (this.debug) console.log("hashconnect - Connecting to local wallet")
         //todo: add extension metadata support
         window.postMessage({ type: "hashconnect-connect-extension", pairingString: this.hcData.pairingString }, "*")
     }
 
     sendEncryptedLocalTransaction(message: string) {
+        if (!window) {
+            if (this.debug) console.log("hashconnect - Cancel send local transaction - no window object")
+            return;
+        }
+
         if (this.debug) console.log("hashconnect - sending local transaction", message);
         window.postMessage({ type: "hashconnect-send-local-transaction", message: message }, "*")
     }

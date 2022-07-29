@@ -85,7 +85,7 @@ export class WebSocketRelay implements IRelay {
 
         this.socket.onclose = () => {
             this.hc.status = HashConnectConnectionState.Disconnected;
-            console.log("hashconnect - disconnected")
+            if (this.hc.debug) console.log("hashconnect - disconnected")
             this.hc.connectionStatusChangeEvent.emit(HashConnectConnectionState.Disconnected);
             setTimeout(() => {
                 this.reconnect();

@@ -17,9 +17,6 @@ export class HashconnectService {
     ) { }
 
     hashconnect: HashConnect;
-    state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
-    
-    availableExtension: HashConnectTypes.WalletMetadata;
 
     appMetadata: HashConnectTypes.AppMetadata = {
         name: "dApp Example",
@@ -27,6 +24,9 @@ export class HashconnectService {
         icon: "https://www.hashpack.app/img/logo.svg"
     }
 
+    availableExtension: HashConnectTypes.WalletMetadata;
+    
+    state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
     topic: string;
     pairingString: string;
     pairedWalletData: HashConnectTypes.WalletMetadata | null = null;
@@ -82,6 +82,7 @@ export class HashconnectService {
             metadata: {
                 accountToSign: acctToSign,
                 returnTransaction: return_trans,
+                hideNft: false
             }
         }
 

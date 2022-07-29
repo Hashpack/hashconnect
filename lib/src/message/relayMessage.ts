@@ -70,7 +70,7 @@ export declare namespace MessageTypes {
     export class TransactionMetadata {
         accountToSign: string;
         returnTransaction: boolean;
-        hideNft?: string;
+        hideNft?: boolean;
         getRecord?: boolean;
     }
 

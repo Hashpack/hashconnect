@@ -17,7 +17,7 @@ export interface IHashConnect {
     transactionEvent: Event<MessageTypes.Transaction>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
-    connectionStatusChange: Event<HashConnectConnectionState>;
+    connectionStatusChangeEvent: Event<HashConnectConnectionState>;
     authRequestEvent: Event<MessageTypes.AuthenticationRequest>;
 
     //promises
@@ -30,14 +30,14 @@ export interface IHashConnect {
 
     /** Message event parser */
     messageParser: MessageHandler;
-    publicKeys: Record<string, string>;
+    encryptionKeys: Record<string, string>;
 
     debug: boolean;
     
     /**
      * Initialize the client
      */
-     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet"|"mainnet"|"previewnet", pairings: HashConnectTypes.PairingData[]): Promise<HashConnectTypes.InitilizationData>
+     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet"|"mainnet"|"previewnet", singleAccount: boolean, pairings: HashConnectTypes.PairingData[]): Promise<HashConnectTypes.InitilizationData>
 
     /**
      * Connect to a topic and produce a topic ID for a peer
@@ -110,7 +110,8 @@ export declare namespace HashConnectTypes {
         name: string;
         description: string;
         icon: string;
-        publicKey?: string;
+        publicKey?: string; //todo: remove as deprecated
+        encryptionKey?: string;
         url?: string;
     }
 
@@ -119,17 +120,18 @@ export declare namespace HashConnectTypes {
         description: string;
         icon: string;
         publicKey?: string;
+        encryptionKey?: string;
         url?: string
     }
 
     export interface InitilizationData {
         topic: string;
         pairingString: string;
+        encryptionKey: string;
     }
 
     export interface ConnectionState {
         topic: string;
-        expires: number;
     }
 
     export interface PairingData {
@@ -151,6 +153,8 @@ export declare namespace HashConnectTypes {
 }
 
 export enum HashConnectConnectionState {
+    Connecting="Connecting",
     Connected="Connected",
-    Disconnected="Disconnected"
+    Disconnected="Disconnected",
+    Paired="Paired"
 }

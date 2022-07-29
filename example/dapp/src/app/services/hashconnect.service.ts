@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ButtonLayoutDisplay, ButtonMaker, DialogInitializer, DialogLayoutDisplay } from '@costlydeveloper/ngx-awesome-popup';
 import { Transaction, TransactionReceipt } from '@hashgraph/sdk';
 import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
+import { HashConnectConnectionState } from 'hashconnect/dist/types';
 import { ResultModalComponent } from '../components/result-modal/result-modal.component';
 import { SigningService } from './signing.service';
 
@@ -16,9 +17,9 @@ export class HashconnectService {
     ) { }
 
     hashconnect: HashConnect;
-    status: string = "Initializing";
+    state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
     
-    availableExtensions: HashConnectTypes.WalletMetadata[] = []
+    availableExtension: HashConnectTypes.WalletMetadata;
 
     appMetadata: HashConnectTypes.AppMetadata = {
         name: "dApp Example",
@@ -34,49 +35,38 @@ export class HashconnectService {
     async initHashconnect() {
         //create the hashconnect instance
         this.hashconnect = new HashConnect(true);
-        let hcData = await this.hashconnect.init(this.appMetadata, "testnet");
+        this.setUpHashConnectEvents();
+        let initData = await this.hashconnect.init(this.appMetadata, "testnet", false);
         
-        this.topic = hcData.topic;
-        this.pairingString = hcData.pairingString;
-
-        this.setUpEvents();
+        this.topic = initData.topic;
+        this.pairingString = initData.pairingString;
     }
 
-    setUpEvents() {
-
+    setUpHashConnectEvents() {
+        //This is fired when a extension is found
         this.hashconnect.foundExtensionEvent.on((data) => {
-            this.availableExtensions.push(data);
             console.log("Found extension", data);
+            this.availableExtension = data;
         })
 
+        //This is fired when a wallet approves a pairing
+        this.hashconnect.pairingEvent.on((data) => {
+            console.log("Paired with wallet", data);
+
+            this.pairedWalletData = data.metadata;
+            this.pairedAccountIds = data.accountIds;
+        });
+
+        //This is fired when HashConnect loses connection, pairs successfully, or is starting connection
+        this.hashconnect.connectionStatusChangeEvent.on((state) => {
+            console.log("hashconnect state change event", state);
+            this.state = state;
+        })
+
+        //This is fired when an iframe parent responds with wallet data
         this.hashconnect.foundIframeEvent.on(walletMetadata => {
             this.hashconnect.connectToIframeParent();
         })
-
-        // this.hashconnect.additionalAccountResponseEvent.on((data) => {
-        //     console.log("Received account info", data);
-            
-        //     data.accountIds.forEach(id => {
-        //         if(this.saveData.pairedAccounts.indexOf(id) == -1)
-        //             this.saveData.pairedAccounts.push(id);
-        //     })
-        // })
-
-        this.hashconnect.pairingEvent.on((data) => {
-            console.log("Paired with wallet", data);
-            this.status = "Paired";
-
-            this.pairedWalletData = data.metadata;
-
-            this.pairedAccountIds = data.accountIds;
-
-        });
-
-
-        this.hashconnect.transactionEvent.on((data) => {
-            //this will not be common to be used in a dapp
-            console.log("transaction event callback");
-        });
     }
 
     async connectToExtension() {

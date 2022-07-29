@@ -1,7 +1,6 @@
 import { Event } from "ts-typed-events"
 import { HashConnectConnectionState } from ".";
 import { HashConnect } from "../main";
-import { ConnectionStatus } from "./connectionStatus";
 
 /**
  * Relay interface
@@ -80,14 +79,14 @@ export class WebSocketRelay implements IRelay {
         this.socket.onopen = () => {
             if (this.hc.debug) console.log("hashconnect - connected");
 
-            this.hc.connectionStatusChange.emit(HashConnectConnectionState.Connected);
+            this.hc.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
             callback();
         };
 
         this.socket.onclose = () => {
-            this.hc.status = ConnectionStatus.Disconnected;
+            this.hc.status = HashConnectConnectionState.Disconnected;
             console.log("hashconnect - disconnected")
-            this.hc.connectionStatusChange.emit(HashConnectConnectionState.Disconnected);
+            this.hc.connectionStatusChangeEvent.emit(HashConnectConnectionState.Disconnected);
             setTimeout(() => {
                 this.reconnect();
             }, 300);
@@ -101,7 +100,7 @@ export class WebSocketRelay implements IRelay {
             for(let topic of this.subscribedTopics) {
                 await this.subscribe(topic);
             }
-            this.hc.status = ConnectionStatus.Connected;
+            this.hc.status = HashConnectConnectionState.Connected;
             if (this.hc.debug) console.log("hashconnect - reconnected")
         })
     }
@@ -122,7 +121,7 @@ export class WebSocketRelay implements IRelay {
     addDecryptionKey(privKey: string, topic: string) {
         console.log("hashconnect - Adding decryption key \n PrivKey: " + privKey);
         if (this.hc.debug) console.log("hashconnect - Adding decryption key \n PrivKey: " + privKey);
-        this.hc.publicKeys[topic] = privKey;
+        this.hc.encryptionKeys[topic] = privKey;
     }
 
     async unsubscribe(topic: string): Promise<void> {

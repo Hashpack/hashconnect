@@ -30,7 +30,7 @@ export class MessageUtil {
 
         //uncomment this to encode as protobuff
 
-        let encryptedData = await this.encrypt(JSON.stringify(data), hc.publicKeys[data.topic]);
+        let encryptedData = await this.encrypt(JSON.stringify(data), hc.encryptionKeys[data.topic]);
 
         let message = new RelayMessage(
             Date.now(),
@@ -52,10 +52,10 @@ export class MessageUtil {
 
         let message: RelayMessage = parsedPayload;
 
-        message.data = await this.decrypt(message.data, hc.publicKeys[message.topic]);
+        message.data = await this.decrypt(message.data, hc.encryptionKeys[message.topic]);
         //uncomment this to decode protobuf
         // return this.proto.SimpleMessage.decode(payload)
-        // this.decrypt(payload, hc.publicKeys[])
+        // this.decrypt(payload, hc.encryptionKeys[])
         
         return message
     }

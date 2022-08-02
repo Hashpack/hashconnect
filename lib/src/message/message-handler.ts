@@ -31,7 +31,8 @@ export class MessageHandler implements IMessageHandler {
                     metadata: approval_data.metadata,
                     network: approval_data.network,
                     topic: approval_data.topic,
-                    origin: approval_data.origin
+                    origin: approval_data.origin,
+                    encryptionKey: hc.hcData.encryptionKey
                 }
 
                 approval_data.pairingData = newPairingData;

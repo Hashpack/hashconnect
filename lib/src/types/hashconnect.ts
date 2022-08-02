@@ -32,6 +32,13 @@ export interface IHashConnect {
     messageParser: MessageHandler;
     encryptionKeys: Record<string, string>;
 
+    hcData: {
+        topic: string;
+        pairingString: string;
+        encryptionKey: string;
+        pairingData: HashConnectTypes.SavedPairingData[];
+    }
+
     debug: boolean;
     
     /**
@@ -47,7 +54,7 @@ export interface IHashConnect {
      * 
      * @returns ConnectionState containing with topic and metadata
      */
-    connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<HashConnectTypes.ConnectionState>;
+    connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, encryptionKey?: string): Promise<HashConnectTypes.ConnectionState>;
     
     /**
      * Pair with a peer
@@ -118,7 +125,7 @@ export declare namespace HashConnectTypes {
         name: string;
         description: string;
         icon: string;
-        publicKey?: string;
+        publicKey?: string; //todo: remove as deprecated
         encryptionKey?: string;
         url?: string
     }
@@ -145,9 +152,10 @@ export declare namespace HashConnectTypes {
     export interface SavedPairingData {
         metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
         topic: string;
+        encryptionKey?: string;
         network: string;
         origin?: string;
-        accountIds: string[]
+        accountIds: string[],
     }
 }
 

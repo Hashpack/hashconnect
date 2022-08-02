@@ -30,7 +30,7 @@ export class MessageUtil {
 
         //uncomment this to encode as protobuff
 
-        let encryptedData = await this.encrypt(JSON.stringify(data), hc.encryptionKeys[data.topic]);
+        let encryptedData = await this.encrypt(JSON.stringify(data), hc.encryptionKeys[data.topic], hc);
 
         let message = new RelayMessage(
             Date.now(),
@@ -52,7 +52,8 @@ export class MessageUtil {
 
         let message: RelayMessage = parsedPayload;
 
-        message.data = await this.decrypt(message.data, hc.encryptionKeys[message.topic]);
+        message.data = await this.decrypt(message.data, hc.encryptionKeys[message.topic], hc);
+        
         //uncomment this to decode protobuf
         // return this.proto.SimpleMessage.decode(payload)
         // this.decrypt(payload, hc.encryptionKeys[])
@@ -69,13 +70,17 @@ export class MessageUtil {
         return uuidv4()
     }
 
-    async encrypt(string: string, key: string): Promise<string> {
+    async encrypt(string: string, key: string, hc: HashConnect): Promise<string> {
+        if (hc.debug) console.log("hashconnect - encrypting with key: " + key);
+        if (hc.debug) console.log("Topic key mapping", hc.encryptionKeys);
+
         var simpleCrypto = new SimpleCrypto(key)
         
         return simpleCrypto.encrypt(string);
     }
 
-    async decrypt(string: string, key: string): Promise<string> {
+    async decrypt(string: string, key: string, hc: HashConnect): Promise<string> {
+        if (hc.debug) console.log("hashconnect - decryption with key: " + key);
         var simpleCrypto = new SimpleCrypto(key)
         let text:string = simpleCrypto.decrypt(string) as string;
         return text;

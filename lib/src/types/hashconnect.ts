@@ -54,14 +54,14 @@ export interface IHashConnect {
      * 
      * @returns ConnectionState containing with topic and metadata
      */
-    connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, encryptionKey?: string): Promise<HashConnectTypes.ConnectionState>;
+    connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, encryptionKey?: string): Promise<string>;
     
     /**
      * Pair with a peer
      * 
      * @param pairingStr string containing topic and meta data
      */
-    pair(pairingData: HashConnectTypes.PairingStringData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState>;
+    pair(pairingData: HashConnectTypes.PairingStringData, accounts: string[], network: string): Promise<HashConnectTypes.SavedPairingData>;
 
     /**
      * Send a transaction
@@ -80,7 +80,6 @@ export interface IHashConnect {
     reject(topic: string, reason: string, msg_id: string): Promise<void>;
 
     decodeLocalTransaction(message: string): Promise<RelayMessage>;
-
 
     connectToIframeParent(): void;
 
@@ -102,13 +101,14 @@ export interface IHashConnect {
     /**
      * Generate a pairing string
      * 
-     * @param state the state object from .connect()
+     * @param topic the topic object from .connect()
      * @param network either 'testnet' or 'mainnet'
      */
-    generatePairingString(state: HashConnectTypes.ConnectionState, network: string, multiAccount: boolean): string;
+    generatePairingString(topic: string, network: string, multiAccount: boolean): string;
 
     getProvider(network:string, topicId: string, accountToSign: string): HashConnectProvider;
     getSigner(provider: HashConnectProvider): HashConnectSigner;
+    getPairingByTopic(topic: string): HashConnectTypes.SavedPairingData | null;
 }
 
 export declare namespace HashConnectTypes {    
@@ -137,16 +137,13 @@ export declare namespace HashConnectTypes {
         savedPairings: SavedPairingData[]
     }
 
-    export interface ConnectionState {
-        topic: string;
-    }
-
     export interface PairingStringData {
         metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
         topic: string;
         network: string;
         multiAccount: boolean;
-        origin?: string
+        origin?: string;
+         
     }
 
     export interface SavedPairingData {
@@ -156,6 +153,7 @@ export declare namespace HashConnectTypes {
         network: string;
         origin?: string;
         accountIds: string[],
+        lastUsed: number;
     }
 }
 

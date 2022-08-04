@@ -59,7 +59,7 @@ export class HashconnectService {
         this.hashconnect.pairingEvent.on((data) => {
             console.log("Paired with wallet", data);
 
-            this.pairingData = data;
+            this.pairingData = data.pairingData!;
         });
 
         //This is fired when HashConnect loses connection, pairs successfully, or is starting connection

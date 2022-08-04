@@ -101,14 +101,14 @@ export class HashConnect implements IHashConnect {
                 initData.encryptionKey = this.hcData.encryptionKey;
 
                 //then connect, storing the new topic in localstorage
-                const state = await this.connect();
-                if (this.debug) console.log("hashconnect - Received state", state);
+                const topic = await this.connect();
+                if (this.debug) console.log("hashconnect - Received state", topic);
 
-                this.hcData.topic = state.topic;
-                initData.topic = state.topic;
+                this.hcData.topic = topic;
+                initData.topic = topic;
 
                 //generate a pairing string, which you can display and generate a QR code from
-                this.hcData.pairingString = this.generatePairingString(state, network, !singleAccount);
+                this.hcData.pairingString = this.generatePairingString(topic, network, !singleAccount);
                 initData.pairingString = this.hcData.pairingString;
 
                 this.status = HashConnectConnectionState.Connected;
@@ -142,7 +142,7 @@ export class HashConnect implements IHashConnect {
     }
 
 
-    async connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, encryptionKey?: string): Promise<HashConnectTypes.ConnectionState> {
+    async connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, encryptionKey?: string): Promise<string> {
 
         if (!topic) {
             topic = this.messages.createRandomTopicId();
@@ -154,13 +154,9 @@ export class HashConnect implements IHashConnect {
             this.encryptionKeys[topic] = encryptionKey as string;
         }
 
-        let state: HashConnectTypes.ConnectionState = {
-            topic: topic
-        }
+        await this.relay.subscribe(topic);
 
-        await this.relay.subscribe(state.topic);
-
-        return state;
+        return topic;
     }
 
     /**
@@ -265,7 +261,7 @@ export class HashConnect implements IHashConnect {
         return message.id!;
     }
 
-    async pair(pairingData: HashConnectTypes.PairingStringData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState> {
+    async pair(pairingData: HashConnectTypes.PairingStringData, accounts: string[], network: string): Promise<HashConnectTypes.SavedPairingData> {
         if (this.debug) console.log("hashconnect - Pairing to " + pairingData.metadata.name);
         let state = await this.connect(pairingData.topic);
 
@@ -282,6 +278,7 @@ export class HashConnect implements IHashConnect {
             network: msg.network,
             topic: msg.topic,
             origin: msg.origin,
+            lastUsed: new Date().getTime(),
             encryptionKey: pairingData.metadata.encryptionKey || pairingData.metadata.publicKey!,
         }
 
@@ -313,7 +310,7 @@ export class HashConnect implements IHashConnect {
 
         this.relay.publish(pairingData.topic, payload, this.encryptionKeys[pairingData.topic])
 
-        return state;
+        return newPairingData;
     }
 
     async reject(topic: string, reason: string, msg_id: string) {
@@ -378,14 +375,14 @@ export class HashConnect implements IHashConnect {
      * Helpers
      */
 
-    generatePairingString(state: HashConnectTypes.ConnectionState, network: string, multiAccount: boolean): string {
+    generatePairingString(topic: string, network: string, multiAccount: boolean): string {
         if (this.debug) console.log("hashconnect - Generating pairing string");
 
         let data: HashConnectTypes.PairingStringData = {
             metadata: this.metadata,
-            topic: state.topic,
+            topic: topic,
             network: network,
-            multiAccount: multiAccount
+            multiAccount: multiAccount,
         }
 
         data.metadata.description = this.sanitizeString(data.metadata.description);
@@ -500,5 +497,17 @@ export class HashConnect implements IHashConnect {
 
     getSigner(provider: HashConnectProvider): HashConnectSigner {
         return new HashConnectSigner(this, provider, provider.accountToSign, provider.topicId);
+    }
+
+    getPairingByTopic(topic: string) {
+        let pairingData: HashConnectTypes.SavedPairingData | undefined = this.hcData.pairingData.find(pairing => {
+            return pairing.topic == topic;
+        })
+
+        if(!pairingData) {
+            return null;
+        }
+
+        return pairingData;
     }
 }

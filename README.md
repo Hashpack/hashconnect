@@ -14,11 +14,11 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Installation](#installation)
     - [Initialization](#initialization)
     - [Metadata](#metadata)
-    - [First Time Connecting](#first-time-connecting)
-      - [Pairing](#pairing)
+    - [Setup](#setup)
+    - [Pairing](#pairing)
       - [Pairing to extension](#pairing-to-extension)
     - [Second Time Connecting](#second-time-connecting)
-    - [All Together](#all-together)
+    - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
       - [Request Additional Accounts](#request-additional-accounts)
       - [Send Transaction](#send-transaction)
@@ -54,9 +54,8 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
 
 The main functionality of Hashconnect is to send Hedera transactions to a wallet to be signed and executed by a user - we assume you are familiar with the [Hedera API's and SDK's](https://docs.hedera.com/guides/docs/hedera-api) used to build these transactions.
 
-Hashconnect uses message relay nodes to communicate between apps. These nodes use something called a **topic ID** to publish/subscribe to. **It is your responsibility** to maintain (using localstorage or a cookie or something) topic ID's and hashconnect encryption keys between user visits.
+Hashconnect uses message relay nodes to communicate between apps. These nodes use something called a **topic ID** to publish/subscribe to.
 
-**Pairing** is the term used to denote a connection between two apps. Generally pairing is the action of exchanging a **topic ID** and a **metadata** object.
 
 ## Usage
 
@@ -76,7 +75,7 @@ Import the library like you would any npm package
 import { HashConnect } from 'hashconnect';
 ```
 
-Create a variable to hold an instance of Hashconnect
+Create a variable to hold an instance of Hashconnect, pass `true` to this to enable debug mode.
 
 ```js
 let hashconnect = new HashConnect();
@@ -93,43 +92,29 @@ let appMetadata: HashConnectTypes.AppMetadata = {
 }
 ```
 
-The url of your app is auto-populated by HashConnect, to prevent spoofing.
+The url of your app is auto-populated by HashConnect to prevent spoofing.
 
-### First Time Connecting
+### Setup
 
-Call init on the Hashconnect variable, passing in the metadata you've defined. This function returns an object containing a PrivateKey, **you should save this** for reuse on subsequent user visits.
-
-```js
-let initData = await hashconnect.init(appMetadata);
-let privateKey = initData.privKey; 
-```
-
-You then need to connect to a node, if this is the first time a user is connecting to a node you don't need to pass anything in to the connect function and it will generate a new **topicID**. If it's a returning user pass in the topic ID that the user was previously connected to.
+All you need to do is create the HashConnect object, set up events, and then call the init function with your parameters.
 
 ```js
-let state = await hashconnect.connect();
-let topic = state.topic;
+//create the hashconnect instance
+let hashconnect = new HashConnect(true);
+
+//register events
+setUpHashConnectEvents();
+
+//initialize and use returned data
+let initData = await this.hashconnect.init(appMetadata, "testnet", false);
 ```
 
-This function returns a *state* object, containing a new **topicID** (if you passed nothing in). **Make sure you store** this topic for reuse on subsequent user visits.
+The init function will return your pairing code and any previously connected pairings as an array of `SavedPairingData`.
 
-Please note, it is possible to connect to more than one wallet.
+Make sure you register your events before calling init - as some events will fire immediately after calling init.
 
-#### Pairing
+### Pairing
 
-If this is the first time a user is pairing, you will need to generate a new pairing string. If it is not the first time a user is using your app you can skip this step and use the instructions in [Second Time Connecting](#second-time-connecting), as both apps will already be subscribed to the topic ID. Pass in the ```state``` variable from the ```.connect()``` function.
-
-You can also specify what network you would like to request accounts for, either "testnet" or "mainnet".
-
-The final argument is a boolean if you wish to have multiple accounts able to be selected or not, generally you'll want this to be false unless you want to use multiple account ID's in your app.
-
-```js
-let pairingString = hashconnect.generatePairingString(state, "testnet", false);
-```
-
-A pairing string is a base64 encoded string containing the topic to subscribe to and the metadata about your app.
-
-When the users accepts it will fire a [PairingEvent](#pairingevent).
 
 #### Pairing to extension
 
@@ -153,83 +138,8 @@ And it will pop up a modal in the extension allowing the user to pair.
 
 ### Second Time Connecting
 
-When a user is returning for the second time you should automatically pair and begin listening for events. The functions from before all take optional parameters in order to reconnect.
 
-Connecting a second time is much simpler, following the steps in [First Time Connecting](#first-time-connecting) and saving the appropriate data you simply call ```init()``` and ```connect()``` with the appropriate parameters.
-
-```js
-await hashconnect.init(appMetadata, saveData.privateKey);
-await hashconnect.connect(saveData.topic, saveData.pairedWalletData!);
-```
-
-If you wanted to reconnect to multiple wallets, you could run ```.connect()``` in a loop, using a different save data structure of course. You only need to run ```init()``` once.
-
-### All Together
-
-So, once we put all this together this is what a rough initialization function would look like:
-
-You can view the example app implementation [here](https://github.com/Hashpack/hashconnect/blob/main/example/dapp/src/app/services/hashconnect.service.ts).
-
-```js
-
-let hashconnect: HashConnect;
-    
-let saveData = {
-    topic: "",
-    pairingString: "",
-    privateKey: "",
-    pairedWalletData: null,
-    pairedAccounts: []
-}
-
-let appMetadata: HashConnectTypes.AppMetadata = {
-    name: "dApp Example",
-    description: "An example hedera dApp",
-    icon: "https://www.hashpack.app/img/logo.svg"
-}
-
-async initHashconnect() {
-    //create the hashconnect instance
-    hashconnect = new HashConnect();
-
-    if(!loadLocalData()){
-        //first init and store the private for later
-        let initData = await hashconnect.init(appMetadata);
-        saveData.privateKey = initData.privKey;
-
-        //then connect, storing the new topic for later
-        const state = await hashconnect.connect();
-        saveData.topic = state.topic;
-        
-        //generate a pairing string, which you can display and generate a QR code from
-        saveData.pairingString = hashconnect.generatePairingString(state, "testnet", true);
-        
-        //find any supported local wallets
-        hashconnect.findLocalWallets();
-    }
-    else {
-        //use loaded data for initialization + connection
-        await hashconnect.init(appMetadata, saveData.privateKey);
-        await hashconnect.connect(saveData.topic, saveData.pairedWalletData);
-    }
-}
-
-loadLocalData(): boolean {
-    let foundData = localStorage.getItem("hashconnectData");
-
-    if(foundData){
-        saveData = JSON.parse(foundData);
-        return true;
-    }
-    else
-        return false;
-}
-
-
-```
-
-You'll need to add more to this code to get it working in your exact setup, but that's the jist of it!
-
+### Disconnecting
 
 ### Sending Requests
 

@@ -159,6 +159,15 @@ export class HashConnect implements IHashConnect {
         return topic;
     }
 
+    async disconnect(topic: string) {
+        await this.relay.unsubscribe(topic);
+
+        let index = this.hcData.pairingData.findIndex(pairing => pairing.topic == topic);
+        this.hcData.pairingData.splice(index, 1);
+
+        this.saveDataInLocalstorage();
+    }
+
     /**
      * Set up event connections
      */

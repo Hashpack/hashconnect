@@ -55,7 +55,8 @@ export interface IHashConnect {
      * @returns ConnectionState containing with topic and metadata
      */
     connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, encryptionKey?: string): Promise<string>;
-    
+    disconnect(topic: string): any;
+
     /**
      * Pair with a peer
      * 

@@ -1,6 +1,13 @@
+## v0.2.0
+- Streamlined setup
+- Added 'hideNft' option to transactions
+- Made connectionStatusChangeEvent work correctly
+- Added lastUsed metadata to pairing data
+- Added disconnect function
+
 ## v0.1.10
 - Added iframe connection logic
-- 
+
 ## v0.1.6
 - Added provider/signer (HIP-338) functionality
 - Added transaction response in addition to receipt

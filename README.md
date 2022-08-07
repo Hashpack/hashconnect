@@ -15,15 +15,17 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Initialization](#initialization)
     - [Metadata](#metadata)
     - [Setup](#setup)
+    - [Events](#events)
     - [Pairing](#pairing)
       - [Pairing to extension](#pairing-to-extension)
+      - [Pairing to Iframe](#pairing-to-iframe)
     - [Second Time Connecting](#second-time-connecting)
     - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
       - [Request Additional Accounts](#request-additional-accounts)
       - [Send Transaction](#send-transaction)
       - [Authenticate](#authenticate)
-    - [Events](#events)
+    - [Events](#events-1)
       - [FoundExtensionEvent](#foundextensionevent)
       - [PairingEvent](#pairingevent)
       - [Acknowledge Response](#acknowledge-response)
@@ -31,12 +33,14 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Provider/Signer](#providersigner)
       - [Get Provider](#get-provider)
       - [Get Signer](#get-signer)
+        - [Usage](#usage-1)
     - [Types](#types)
       - [HashConnectTypes](#hashconnecttypes)
         - [HashConnectTypes.AppMetadata](#hashconnecttypesappmetadata)
         - [HashConnectTypes.WalletMetadata](#hashconnecttypeswalletmetadata)
         - [HashConnectTypes.InitilizationData](#hashconnecttypesinitilizationdata)
-        - [HashConnectTypes.ConnectionState](#hashconnecttypesconnectionstate)
+        - [HashConnectTypes.SavedPairingData](#hashconnecttypessavedpairingdata)
+        - [HashConnectConnectionState](#hashconnectconnectionstate)
       - [MessageTypes](#messagetypes)
         - [MessageTypes.BaseMessage](#messagetypesbasemessage)
         - [MessageTypes.Acknowledge](#messagetypesacknowledge)
@@ -109,12 +113,15 @@ setUpHashConnectEvents();
 let initData = await this.hashconnect.init(appMetadata, "testnet", false);
 ```
 
-The init function will return your pairing code and any previously connected pairings as an array of `SavedPairingData`.
+The init function will return your pairing code and any previously connected pairings as an array of `SavedPairingData` [(details)](#hashconnecttypessavedpairingdata).
 
 Make sure you register your events before calling init - as some events will fire immediately after calling init.
 
+### Events
+
 ### Pairing
 
+User the `pairingString` to connect to HashPack - you can either display the string for the user to copy/paste into HashPack or use it to generate a QR code which they can scan. In the future, we will generate the QR for you but for now its your responsibility.
 
 #### Pairing to extension
 
@@ -136,10 +143,17 @@ hashconnect.connectToLocalWallet(pairingString, extensionMetadata);
 
 And it will pop up a modal in the extension allowing the user to pair. 
 
+#### Pairing to Iframe
+
+It is possible for dapps to be loaded in an iframe embedded in HashPack.
+
 ### Second Time Connecting
 
+When calling init HashConnect will automatically reconnect to any previously connected pairings. These pairings are returned in the init data [(details)](#hashconnecttypesinitilizationdata).
 
 ### Disconnecting
+
+Call `hashconnect.disconnect(topic)` to disconnect a pairing. You can then access the new list of current pairings from `hashconnect.hcData.savedPairings`.
 
 ### Sending Requests
 
@@ -272,15 +286,11 @@ hashconnect.foundExtensionEvent.once((walletMetadata) => {
 
 #### PairingEvent
 
-The pairing event is triggered when a user accepts a pairing. It returns an [ApprovePairing](#messagetypesapprovepairing) object containing accountId's and a [WalletMetadata](#hashconnecttypeswalletmetadata).
+The pairing event is triggered when a user accepts a pairing. You can access the currently connected pairings from `hashconnect.hcData.savedPairings`.
 
 ```js
 hashconnect.pairingEvent.once((pairingData) => {
-    //example
-    pairingData.accountIds.forEach(id => {
-        if(pairedAccounts.indexOf(id) == -1)
-            pairedAccounts.push(id);
-    })
+    //do something
 })
 ```
 
@@ -298,10 +308,10 @@ hashconnect.acknowledgeMessageEvent.once((acknowledgeData) => {
 
 #### Connection Status Change
 
-This event is fired if the connection status changes, this should only really happen if the server goes down. HashConnect will automatically try to reconnect, once reconnected this event will fire again.
+This event is fired if the connection status changes, this should only really happen if the server goes down. HashConnect will automatically try to reconnect, once reconnected this event will fire again. This returns a `HashConnectConnectionState` [(details)](#hashconnectconnectionstate) 
 
 ```js
-hashconnect.connectionStatusChange.once((connectionStatus) => {
+hashconnect.connectionStatusChangeEvent.once((connectionStatus) => {
     //do something with connection status
 })
 ```
@@ -336,7 +346,7 @@ Pass the provider into this method to get a signer back, this allows you to inte
 signer = hashconnect.getSigner(provider);
 ```
 
-Usage
+##### Usage
 
 ```js
 let trans = await new TransferTransaction()
@@ -358,7 +368,7 @@ export interface AppMetadata {
     description: string;
     url?: string;
     icon: string;
-    publicKey?: string;
+    encryptionKey?: string;
 }
 ```
 
@@ -370,7 +380,7 @@ export interface WalletMetadata {
     description: string;
     url?: string;
     icon: string;
-    publicKey?: string;
+    encryptionKey?: string;
 }
 ```
 
@@ -378,16 +388,35 @@ export interface WalletMetadata {
 
 ```js 
 export interface InitilizationData {
-    privKey: string;
+    topic: string;
+    pairingString: string;
+    encryptionKey: string;
+    savedPairings: SavedPairingData[]
 }
 ```
 
-##### HashConnectTypes.ConnectionState
+##### HashConnectTypes.SavedPairingData
+
+```js
+export interface SavedPairingData {
+    metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
+    topic: string;
+    encryptionKey?: string;
+    network: string;
+    origin?: string;
+    accountIds: string[],
+    lastUsed: number;
+}
+```
+
+##### HashConnectConnectionState
 
 ```js 
-export interface ConnectionState {
-    topic: string;
-    expires: number;
+export enum HashConnectConnectionState {
+    Connecting="Connecting",
+    Connected="Connected",
+    Disconnected="Disconnected",
+    Paired="Paired"
 }
 ```
 

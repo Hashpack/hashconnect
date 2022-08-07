@@ -144,7 +144,6 @@ export declare namespace HashConnectTypes {
         network: string;
         multiAccount: boolean;
         origin?: string;
-         
     }
 
     export interface SavedPairingData {

@@ -111,6 +111,8 @@ export class HashConnect implements IHashConnect {
                 this.hcData.pairingString = this.generatePairingString(topic, network, !singleAccount);
                 initData.pairingString = this.hcData.pairingString;
 
+                this.saveDataInLocalstorage();
+
                 this.status = HashConnectConnectionState.Connected;
                 this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
             }

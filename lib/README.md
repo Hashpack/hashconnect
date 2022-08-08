@@ -16,20 +16,19 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Metadata](#metadata)
     - [Setup](#setup)
     - [Events](#events)
-    - [Pairing](#pairing)
-      - [Pairing to extension](#pairing-to-extension)
-      - [Pairing to Iframe](#pairing-to-iframe)
-    - [Second Time Connecting](#second-time-connecting)
-    - [Disconnecting](#disconnecting)
-    - [Sending Requests](#sending-requests)
-      - [Request Additional Accounts](#request-additional-accounts)
-      - [Send Transaction](#send-transaction)
-      - [Authenticate](#authenticate)
-    - [Events](#events-1)
       - [FoundExtensionEvent](#foundextensionevent)
+      - [FoundIframeEvent](#foundiframeevent)
       - [PairingEvent](#pairingevent)
       - [Acknowledge Response](#acknowledge-response)
       - [Connection Status Change](#connection-status-change)
+    - [Pairing](#pairing)
+      - [Pairing to extension](#pairing-to-extension)
+    - [Second Time Connecting](#second-time-connecting)
+    - [Disconnecting](#disconnecting)
+    - [Sending Requests](#sending-requests)
+      - [Send Transaction](#send-transaction)
+      - [Request Additional Accounts](#request-additional-accounts)
+      - [Authenticate](#authenticate)
     - [Provider/Signer](#providersigner)
       - [Get Provider](#get-provider)
       - [Get Signer](#get-signer)
@@ -119,6 +118,56 @@ Make sure you register your events before calling init - as some events will fir
 
 ### Events
 
+Events are emitted by HashConnect to let you know when a request has been fufilled.
+
+You can listen to them by calling .on() or .once() on them. All events return [typed](#types) data.
+
+#### FoundExtensionEvent
+
+This event returns the metadata of the found extensions, will fire once for each extension.
+
+```js
+hashconnect.foundExtensionEvent.once((walletMetadata) => {
+    //do something with metadata
+})
+```
+
+#### FoundIframeEvent
+
+If the app is embedded inside of HashPack it will fire this event. After this event is fired, it will automatically ask the user to pair and then fire a normal pairingEvent (below) with the same data a normal pairing event would fire.
+
+#### PairingEvent
+
+The pairing event is triggered when a user accepts a pairing. You can access the currently connected pairings from `hashconnect.hcData.savedPairings`.
+
+```js
+hashconnect.pairingEvent.once((pairingData) => {
+    //do something
+})
+```
+
+#### Acknowledge Response
+
+This event returns an [Acknowledge](#messagetypesacknowledge) object. This happens after the wallet has recieved the request, generally you should consider a wallet disconnected if a request doesn't fire an acknowledgement after a few seconds and update the UI accordingly.
+
+The object contains the ID of the message.
+
+```js
+hashconnect.acknowledgeMessageEvent.once((acknowledgeData) => {
+    //do something with acknowledge response data
+})
+```
+
+#### Connection Status Change
+
+This event is fired if the connection status changes, this should only really happen if the server goes down. HashConnect will automatically try to reconnect, once reconnected this event will fire again. This returns a `HashConnectConnectionState` [(details)](#hashconnectconnectionstate) 
+
+```js
+hashconnect.connectionStatusChangeEvent.once((connectionStatus) => {
+    //do something with connection status
+})
+```
+
 ### Pairing
 
 User the `pairingString` to connect to HashPack - you can either display the string for the user to copy/paste into HashPack or use it to generate a QR code which they can scan. In the future, we will generate the QR for you but for now its your responsibility.
@@ -127,13 +176,7 @@ User the `pairingString` to connect to HashPack - you can either display the str
 
 HashConnect has 1-click pairing with supported installed extensions. Currently the only supported wallet extension is [HashPack](https://www.hashpack.app/).
 
-**Please note - this only works in SSL secured environments (https urls)**
-
-```js
-hashconnect.findLocalWallets();
-```
-
-Calling this function will send a ping out, and supported wallets will return their metadata in a ```foundExtensionEvent``` [(details)](#foundextensionevent). You should take this metadata, and display buttons with the available extensions. More extensions will be supported in the future!
+When initializing any supported wallets will return their metadata in a ```foundExtensionEvent``` [(details)](#foundextensionevent). You should take this metadata, and display buttons with the available extensions. More extensions will be supported in the future!
 
 You should then call:
 
@@ -142,10 +185,6 @@ hashconnect.connectToLocalWallet(pairingString, extensionMetadata);
 ```
 
 And it will pop up a modal in the extension allowing the user to pair. 
-
-#### Pairing to Iframe
-
-It is possible for dapps to be loaded in an iframe embedded in HashPack.
 
 ### Second Time Connecting
 
@@ -157,7 +196,33 @@ Call `hashconnect.disconnect(topic)` to disconnect a pairing. You can then acces
 
 ### Sending Requests
 
-All requests return a ID string, this can be used to track the request through acknowlege and approval/rejection events (next section).
+#### Send Transaction
+
+This request takes two parameters, **topicID** and [Transaction](#messagetypestransaction).
+
+```js
+await hashconnect.sendTransaction(saveData.topic, transaction);
+```
+
+**Example Implementation:**
+
+```js
+async sendTransaction(trans: Transaction, acctToSign: string) {     
+    let transactionBytes: Uint8Array = await SigningService.signAndMakeBytes(trans);
+
+    const transaction: MessageTypes.Transaction = {
+        topic: saveData.topic,
+        byteArray: transactionBytes,
+        metadata: {
+            accountToSign: acctToSign,
+            returnTransaction: false,
+            hideNft: false
+        }
+    }
+
+    let response = await hashconnect.sendTransaction(saveData.topic, transaction)
+}
+```
 
 #### Request Additional Accounts
 
@@ -178,34 +243,6 @@ async requestAdditionalAccounts(network: string) {
     } 
 
     let response = await hashconnect.requestAdditionalAccounts(saveData.topic, request);
-}
-```
-
-#### Send Transaction
-
-This request takes two parameters, **topicID** and [Transaction](#messagetypestransaction
-).
-
-```js
-await hashconnect.sendTransaction(saveData.topic, transaction);
-```
-
-**Example Implementation:**
-
-```js
-async sendTransaction(trans: Transaction, acctToSign: string) {     
-    let transactionBytes: Uint8Array = await SigningService.signAndMakeBytes(trans);
-
-    const transaction: MessageTypes.Transaction = {
-        topic: saveData.topic,
-        byteArray: transactionBytes,
-        metadata: {
-            accountToSign: acctToSign,
-            returnTransaction: false
-        }
-    }
-
-    let response = await hashconnect.sendTransaction(saveData.topic, transaction)
 }
 ```
 
@@ -265,55 +302,6 @@ async send() {
     //!!!!!!!!!! DO NOT DO THIS ON THE CLIENT SIDE - YOU MUST PASS THE TRANSACTION BYTES TO THE SERVER AND VERIFY THERE
     
 }
-```
-
-
-### Events
-
-Events are emitted by HashConnect to let you know when a request has been fufilled.
-
-You can listen to them by calling .on() or .once() on them. All events return [typed](#types) data.
-
-#### FoundExtensionEvent
-
-This event returns the metadata of the found extensions, will fire once for each extension.
-
-```js
-hashconnect.foundExtensionEvent.once((walletMetadata) => {
-    //do something with metadata
-})
-```
-
-#### PairingEvent
-
-The pairing event is triggered when a user accepts a pairing. You can access the currently connected pairings from `hashconnect.hcData.savedPairings`.
-
-```js
-hashconnect.pairingEvent.once((pairingData) => {
-    //do something
-})
-```
-
-#### Acknowledge Response
-
-This event returns an [Acknowledge](#messagetypesacknowledge) object. This happens after the wallet has recieved the request, generally you should consider a wallet disconnected if a request doesn't fire an acknowledgement after a few seconds and update the UI accordingly.
-
-The object contains the ID of the message.
-
-```js
-hashconnect.acknowledgeMessageEvent.once((acknowledgeData) => {
-    //do something with acknowledge response data
-})
-```
-
-#### Connection Status Change
-
-This event is fired if the connection status changes, this should only really happen if the server goes down. HashConnect will automatically try to reconnect, once reconnected this event will fire again. This returns a `HashConnectConnectionState` [(details)](#hashconnectconnectionstate) 
-
-```js
-hashconnect.connectionStatusChangeEvent.once((connectionStatus) => {
-    //do something with connection status
-})
 ```
 
 ### Provider/Signer
@@ -495,7 +483,7 @@ export interface Transaction extends BaseMessage {
 export class TransactionMetadata extends BaseMessage {
     accountToSign: string;
     returnTransaction: boolean; //set to true if you want the wallet to return a signed transaction instead of executing it
-    nftPreviewUrl?: string;
+    hideNft?: boolean; //set to true to hide NFT preview for blind mints
 }
 ```
 

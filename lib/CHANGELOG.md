@@ -4,6 +4,8 @@
 - Made connectionStatusChangeEvent work correctly
 - Added lastUsed metadata to pairing data
 - Added disconnect function
+- No longer need to use https to test extension connectivity
+- Automatically send pairing request if embedded in an iframe
 
 ## v0.1.10
 - Added iframe connection logic

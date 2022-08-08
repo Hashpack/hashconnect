@@ -1,3 +1,6 @@
+## v0.2.1
+- Fixed issue initializing with legacy hashconnect data
+
 ## v0.2.0
 - Streamlined setup
 - Added 'hideNft' option to transactions

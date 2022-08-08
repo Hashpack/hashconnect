@@ -139,6 +139,8 @@ export class HashConnect implements IHashConnect {
             
             if (this.debug) console.log("hashconnect - init data", initData);
 
+            this.findLocalWallets();
+
             resolve(initData);
         });
     }
@@ -189,6 +191,12 @@ export class HashConnect implements IHashConnect {
             this.hcData.pairingData.push(pairingEvent.pairingData!);
 
             this.saveDataInLocalstorage();
+        })
+
+        this.foundIframeEvent.on(walletMetadata => {
+            if (this.debug) console.log("hashconnect - Found iframe wallet", walletMetadata);
+
+            this.connectToIframeParent();
         })
     }
 

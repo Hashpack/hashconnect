@@ -67,13 +67,6 @@ export class HashconnectService {
             console.log("hashconnect state change event", state);
             this.state = state;
         })
-
-        //This is fired when an iframe parent responds with wallet data
-        this.hashconnect.foundIframeEvent.on(walletMetadata => {
-            //you'll want to automatically connect to a foundIframeEvent as it means
-            //its embedded in HashPack
-            this.hashconnect.connectToIframeParent();
-        })
     }
 
     async connectToExtension() {
@@ -82,7 +75,7 @@ export class HashconnectService {
     }
 
 
-    async sendTransaction(trans: Uint8Array, acctToSign: string, return_trans: boolean = false) {
+    async sendTransaction(trans: Uint8Array, acctToSign: string, return_trans: boolean = false, hideNfts: boolean = false) {
         const transaction: MessageTypes.Transaction = {
             topic: this.topic,
             byteArray: trans,
@@ -90,7 +83,7 @@ export class HashconnectService {
             metadata: {
                 accountToSign: acctToSign,
                 returnTransaction: return_trans,
-                hideNft: false
+                hideNft: hideNfts
             }
         }
 

@@ -18,7 +18,6 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Events](#events)
     - [Pairing](#pairing)
       - [Pairing to extension](#pairing-to-extension)
-      - [Pairing to Iframe](#pairing-to-iframe)
     - [Second Time Connecting](#second-time-connecting)
     - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
@@ -27,6 +26,7 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
       - [Authenticate](#authenticate)
     - [Events](#events-1)
       - [FoundExtensionEvent](#foundextensionevent)
+      - [FoundIframeEvent](#foundiframeevent)
       - [PairingEvent](#pairingevent)
       - [Acknowledge Response](#acknowledge-response)
       - [Connection Status Change](#connection-status-change)
@@ -127,13 +127,7 @@ User the `pairingString` to connect to HashPack - you can either display the str
 
 HashConnect has 1-click pairing with supported installed extensions. Currently the only supported wallet extension is [HashPack](https://www.hashpack.app/).
 
-**Please note - this only works in SSL secured environments (https urls)**
-
-```js
-hashconnect.findLocalWallets();
-```
-
-Calling this function will send a ping out, and supported wallets will return their metadata in a ```foundExtensionEvent``` [(details)](#foundextensionevent). You should take this metadata, and display buttons with the available extensions. More extensions will be supported in the future!
+When initializing any supported wallets will return their metadata in a ```foundExtensionEvent``` [(details)](#foundextensionevent). You should take this metadata, and display buttons with the available extensions. More extensions will be supported in the future!
 
 You should then call:
 
@@ -142,10 +136,6 @@ hashconnect.connectToLocalWallet(pairingString, extensionMetadata);
 ```
 
 And it will pop up a modal in the extension allowing the user to pair. 
-
-#### Pairing to Iframe
-
-It is possible for dapps to be loaded in an iframe embedded in HashPack.
 
 ### Second Time Connecting
 
@@ -183,8 +173,7 @@ async requestAdditionalAccounts(network: string) {
 
 #### Send Transaction
 
-This request takes two parameters, **topicID** and [Transaction](#messagetypestransaction
-).
+This request takes two parameters, **topicID** and [Transaction](#messagetypestransaction).
 
 ```js
 await hashconnect.sendTransaction(saveData.topic, transaction);
@@ -201,7 +190,8 @@ async sendTransaction(trans: Transaction, acctToSign: string) {
         byteArray: transactionBytes,
         metadata: {
             accountToSign: acctToSign,
-            returnTransaction: false
+            returnTransaction: false,
+            hideNft: false
         }
     }
 
@@ -283,6 +273,10 @@ hashconnect.foundExtensionEvent.once((walletMetadata) => {
     //do something with metadata
 })
 ```
+
+#### FoundIframeEvent
+
+If the app is embedded inside of HashPack it will fire this event. After this event is fired, it will automatically ask the user to pair and then fire a normal pairingEvent (below) with the same data a normal pairing event would fire.
 
 #### PairingEvent
 
@@ -495,7 +489,7 @@ export interface Transaction extends BaseMessage {
 export class TransactionMetadata extends BaseMessage {
     accountToSign: string;
     returnTransaction: boolean; //set to true if you want the wallet to return a signed transaction instead of executing it
-    nftPreviewUrl?: string;
+    hideNft?: boolean; //set to true to hide NFT preview for blind mints
 }
 ```
 

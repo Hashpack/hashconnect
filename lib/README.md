@@ -18,6 +18,7 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Events](#events)
     - [Pairing](#pairing)
       - [Pairing to extension](#pairing-to-extension)
+      - [Pairing to Iframe](#pairing-to-iframe)
     - [Second Time Connecting](#second-time-connecting)
     - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
@@ -141,6 +142,10 @@ hashconnect.connectToLocalWallet(pairingString, extensionMetadata);
 ```
 
 And it will pop up a modal in the extension allowing the user to pair. 
+
+#### Pairing to Iframe
+
+It is possible for dapps to be loaded in an iframe embedded in HashPack.
 
 ### Second Time Connecting
 

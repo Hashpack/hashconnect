@@ -17,7 +17,7 @@ export interface IHashConnect {
     transactionEvent: Event<MessageTypes.Transaction>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
-    connectionStatusChange: Event<HashConnectConnectionState>;
+    connectionStatusChangeEvent: Event<HashConnectConnectionState>;
     authRequestEvent: Event<MessageTypes.AuthenticationRequest>;
 
     //promises
@@ -30,14 +30,21 @@ export interface IHashConnect {
 
     /** Message event parser */
     messageParser: MessageHandler;
-    publicKeys: Record<string, string>;
+    encryptionKeys: Record<string, string>;
+
+    hcData: {
+        topic: string;
+        pairingString: string;
+        encryptionKey: string;
+        pairingData: HashConnectTypes.SavedPairingData[];
+    }
 
     debug: boolean;
     
     /**
      * Initialize the client
      */
-     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: string): Promise<HashConnectTypes.InitilizationData>
+     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet"|"mainnet"|"previewnet", singleAccount: boolean): Promise<HashConnectTypes.InitilizationData>
 
     /**
      * Connect to a topic and produce a topic ID for a peer
@@ -47,14 +54,15 @@ export interface IHashConnect {
      * 
      * @returns ConnectionState containing with topic and metadata
      */
-    connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<HashConnectTypes.ConnectionState>;
-    
+    connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, encryptionKey?: string): Promise<string>;
+    disconnect(topic: string): any;
+
     /**
      * Pair with a peer
      * 
      * @param pairingStr string containing topic and meta data
      */
-    pair(pairingData: HashConnectTypes.PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState>;
+    pair(pairingData: HashConnectTypes.PairingStringData, accounts: string[], network: string): Promise<HashConnectTypes.SavedPairingData>;
 
     /**
      * Send a transaction
@@ -74,11 +82,11 @@ export interface IHashConnect {
 
     decodeLocalTransaction(message: string): Promise<RelayMessage>;
 
+    connectToIframeParent(): void;
 
-    connectToIframeParent(pairingString: string): void;
-
-    connectToLocalWallet(pairingString: string): void;
+    connectToLocalWallet(): void;
     
+    clearConnectionsAndData(): void;
     
     authenticate(topic: string, account_id: string, server_signing_account: string, signature: Uint8Array, payload: {url: string, data: any }): Promise<MessageTypes.AuthenticationResponse>;
     
@@ -94,22 +102,23 @@ export interface IHashConnect {
     /**
      * Generate a pairing string
      * 
-     * @param state the state object from .connect()
+     * @param topic the topic object from .connect()
      * @param network either 'testnet' or 'mainnet'
      */
-    generatePairingString(state: HashConnectTypes.ConnectionState, network: string, multiAccount: boolean): string;
+    generatePairingString(topic: string, network: string, multiAccount: boolean): string;
 
     getProvider(network:string, topicId: string, accountToSign: string): HashConnectProvider;
     getSigner(provider: HashConnectProvider): HashConnectSigner;
+    getPairingByTopic(topic: string): HashConnectTypes.SavedPairingData | null;
 }
 
 export declare namespace HashConnectTypes {    
-    
     export interface AppMetadata {
         name: string;
         description: string;
         icon: string;
-        publicKey?: string;
+        publicKey?: string; //todo: remove as deprecated
+        encryptionKey?: string;
         url?: string;
     }
 
@@ -117,29 +126,40 @@ export declare namespace HashConnectTypes {
         name: string;
         description: string;
         icon: string;
-        publicKey?: string;
+        publicKey?: string; //todo: remove as deprecated
+        encryptionKey?: string;
         url?: string
     }
 
     export interface InitilizationData {
-        privKey: string;
-    }
-
-    export interface ConnectionState {
         topic: string;
-        expires: number;
+        pairingString: string;
+        encryptionKey: string;
+        savedPairings: SavedPairingData[]
     }
 
-    export interface PairingData {
-        metadata: HashConnectTypes.AppMetadata;
+    export interface PairingStringData {
+        metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
         topic: string;
         network: string;
         multiAccount: boolean;
-        origin?: string
+        origin?: string;
+    }
+
+    export interface SavedPairingData {
+        metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
+        topic: string;
+        encryptionKey?: string;
+        network: string;
+        origin?: string;
+        accountIds: string[],
+        lastUsed: number;
     }
 }
 
 export enum HashConnectConnectionState {
+    Connecting="Connecting",
     Connected="Connected",
-    Disconnected="Disconnected"
+    Disconnected="Disconnected",
+    Paired="Paired"
 }

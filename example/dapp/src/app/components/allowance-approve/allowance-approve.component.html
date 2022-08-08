@@ -1,7 +1,7 @@
 <h2>Allowance Approve</h2>
 
 <select [(ngModel)]="signingAcct">
-    <option *ngFor="let acc of HashconnectService.saveData.pairedAccounts" [value]="acc" [selected]="signingAcct == acc">
+    <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
         {{acc}}</option>
 </select>
 

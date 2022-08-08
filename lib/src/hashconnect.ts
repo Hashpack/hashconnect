@@ -4,6 +4,7 @@ import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageTy
 import { HashConnectTypes, IHashConnect, HashConnectConnectionState } from "./types/hashconnect";
 import { HashConnectProvider } from "./provider/provider";
 import { HashConnectSigner } from "./provider/signer";
+
 global.Buffer = global.Buffer || require('buffer').Buffer;
 
 /**
@@ -20,9 +21,9 @@ export class HashConnect implements IHashConnect {
     transactionEvent: Event<MessageTypes.Transaction>;
     acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
     additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
-    connectionStatusChange: Event<HashConnectConnectionState>;
+    connectionStatusChangeEvent: Event<HashConnectConnectionState>;
     authRequestEvent: Event<MessageTypes.AuthenticationRequest>;
-    
+
     transactionResolver: (value: MessageTypes.TransactionResponse | PromiseLike<MessageTypes.TransactionResponse>) => void;
     additionalAccountResolver: (value: MessageTypes.AdditionalAccountResponse | PromiseLike<MessageTypes.AdditionalAccountResponse>) => void;
     authResolver: (value: MessageTypes.AuthenticationResponse | PromiseLike<MessageTypes.AuthenticationResponse>) => void;
@@ -32,10 +33,22 @@ export class HashConnect implements IHashConnect {
     messages: MessageUtil;
     private metadata!: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
 
-    publicKeys: Record<string, string> = {};
-    private privateKey: string;
+    encryptionKeys: Record<string, string> = {}; //enc keys with topic id as the key
 
     debug: boolean = false;
+    status: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
+
+    hcData: {
+        topic: string;
+        pairingString: string;
+        encryptionKey: string;
+        pairingData: HashConnectTypes.SavedPairingData[];
+    } = {
+            topic: "",
+            pairingString: "",
+            encryptionKey: "",
+            pairingData: [],
+        }
 
     constructor(debug?: boolean) {
         this.relay = new WebSocketRelay(this);
@@ -46,9 +59,9 @@ export class HashConnect implements IHashConnect {
         this.transactionEvent = new Event<MessageTypes.Transaction>();
         this.acknowledgeMessageEvent = new Event<MessageTypes.Acknowledge>();
         this.additionalAccountRequestEvent = new Event<MessageTypes.AdditionalAccountRequest>();
-        this.connectionStatusChange = new Event<HashConnectConnectionState>();
+        this.connectionStatusChangeEvent = new Event<HashConnectConnectionState>();
         this.authRequestEvent = new Event<MessageTypes.AuthenticationRequest>();
-        
+
         this.messages = new MessageUtil();
         this.messageParser = new MessageHandler();
 
@@ -57,24 +70,19 @@ export class HashConnect implements IHashConnect {
         this.setupEvents();
     }
 
-
-    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, privKey?: string): Promise<HashConnectTypes.InitilizationData> {
+    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet" | "mainnet" | "previewnet", singleAccount: boolean = true): Promise<HashConnectTypes.InitilizationData> {
 
         return new Promise(async (resolve) => {
+            let initData: HashConnectTypes.InitilizationData = {
+                topic: "",
+                pairingString: "",
+                encryptionKey: "",
+                savedPairings: []
+            };
+
             this.metadata = metadata;
 
             if (this.debug) console.log("hashconnect - Initializing")
-
-            if (!privKey)
-                this.privateKey = await this.generateEncryptionKeys();
-            else
-                this.privateKey = privKey;
-
-            metadata.publicKey = this.privateKey;
-
-            let initData: HashConnectTypes.InitilizationData = {
-                privKey: this.privateKey
-            }
 
             if (window)
                 this.metadata.url = window.location.origin;
@@ -83,29 +91,85 @@ export class HashConnect implements IHashConnect {
 
             if (this.debug) console.log("hashconnect - Initialized")
 
+            if (!this.loadLocalData()) {
+                if (this.debug) console.log("hashconnect - No local data found, initializing");
+
+                //first init, store the private key in localstorage
+                this.hcData.encryptionKey = await this.generateEncryptionKeys();
+                this.metadata.encryptionKey = this.hcData.encryptionKey;
+                // this.metadata.publicKey = this.hcData.encryptionKey; //todo: remove as depracted
+                initData.encryptionKey = this.hcData.encryptionKey;
+
+                //then connect, storing the new topic in localstorage
+                const topic = await this.connect();
+                if (this.debug) console.log("hashconnect - Received state", topic);
+
+                this.hcData.topic = topic;
+                initData.topic = topic;
+
+                //generate a pairing string, which you can display and generate a QR code from
+                this.hcData.pairingString = this.generatePairingString(topic, network, !singleAccount);
+                initData.pairingString = this.hcData.pairingString;
+
+                this.saveDataInLocalstorage();
+
+                this.status = HashConnectConnectionState.Connected;
+                this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
+            }
+            else {
+                if (this.debug) console.log("hashconnect - Found saved local data", this.hcData);
+
+                // this.metadata.publicKey = this.hcData.encryptionKey;
+                this.metadata.encryptionKey = this.hcData.encryptionKey;
+
+                this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connecting);
+                
+                initData.pairingString = this.hcData.pairingString;
+                initData.topic = this.hcData.topic;
+                initData.encryptionKey = this.hcData.encryptionKey;
+                initData.savedPairings = this.hcData.pairingData;
+
+                for (let pairing of this.hcData.pairingData) {
+                    await this.connect(pairing.topic, pairing.metadata, pairing.encryptionKey);
+                }
+
+                this.status = HashConnectConnectionState.Paired;
+                this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Paired);
+            }
+            
+            if (this.debug) console.log("hashconnect - init data", initData);
+
+            this.findLocalWallets();
+
             resolve(initData);
         });
     }
 
 
-    async connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata): Promise<HashConnectTypes.ConnectionState> {
+    async connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, encryptionKey?: string): Promise<string> {
+
         if (!topic) {
             topic = this.messages.createRandomTopicId();
-            this.publicKeys[topic] = this.privateKey;
+            this.encryptionKeys[topic] = this.hcData.encryptionKey;
             if (this.debug) console.log("hashconnect - Created new topic id - " + topic);
         }
 
-        if (metadataToConnect)
-            this.publicKeys[topic] = metadataToConnect.publicKey as string;
-
-        let state: HashConnectTypes.ConnectionState = {
-            topic: topic,
-            expires: 0
+        if (metadataToConnect){
+            this.encryptionKeys[topic] = encryptionKey as string;
         }
 
-        await this.relay.subscribe(state.topic);
+        await this.relay.subscribe(topic);
 
-        return state;
+        return topic;
+    }
+
+    async disconnect(topic: string) {
+        await this.relay.unsubscribe(topic);
+
+        let index = this.hcData.pairingData.findIndex(pairing => pairing.topic == topic);
+        this.hcData.pairingData.splice(index, 1);
+
+        this.saveDataInLocalstorage();
     }
 
     /**
@@ -122,6 +186,54 @@ export class HashConnect implements IHashConnect {
 
             await this.messageParser.onPayload(message, this);
         })
+
+        this.pairingEvent.on((pairingEvent) => {
+            this.hcData.pairingData.push(pairingEvent.pairingData!);
+
+            this.saveDataInLocalstorage();
+        })
+
+        this.foundIframeEvent.on(walletMetadata => {
+            if (this.debug) console.log("hashconnect - Found iframe wallet", walletMetadata);
+
+            this.connectToIframeParent();
+        })
+    }
+
+    /**
+     * Local data management
+     */
+    saveDataInLocalstorage() {
+        if (!window || !localStorage) return;
+
+        let data = JSON.stringify(this.hcData);
+        
+        if (this.debug) console.log("hashconnect - saving local data", this.hcData);
+
+        localStorage.setItem("hashconnectData", data);
+    }
+
+    loadLocalData(): boolean {
+        if (!window || !localStorage) return false;
+
+        let foundData = localStorage.getItem("hashconnectData");
+
+        if (foundData) {
+            this.hcData = JSON.parse(foundData);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    clearConnectionsAndData() {
+        // this.pair = [];
+        // this.hcData.pairedWalletData = undefined;
+        if (this.debug) console.log("hashconnect - clearing local data");
+
+        localStorage.removeItem("hashconnectData");
+        this.status = HashConnectConnectionState.Connected;
+        this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
     }
 
 
@@ -132,7 +244,7 @@ export class HashConnect implements IHashConnect {
         transaction.byteArray = Buffer.from(transaction.byteArray).toString("base64");
 
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction, topic, this);
-        await this.relay.publish(topic, msg, this.publicKeys[topic]);
+        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
         this.sendEncryptedLocalTransaction(msg);
 
         return await new Promise<MessageTypes.TransactionResponse>(resolve => this.transactionResolver = resolve)
@@ -141,8 +253,8 @@ export class HashConnect implements IHashConnect {
     async requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<MessageTypes.AdditionalAccountResponse> {
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountRequest, message, topic, this);
 
-        await this.relay.publish(topic, msg, this.publicKeys[topic]);
-        
+        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
+
         return await new Promise<MessageTypes.AdditionalAccountResponse>(resolve => this.additionalAccountResolver = resolve)
 
     }
@@ -152,7 +264,7 @@ export class HashConnect implements IHashConnect {
 
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountResponse, message, topic, this);
 
-        await this.relay.publish(topic, msg, this.publicKeys[topic]);
+        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
 
         return message.id!;
     }
@@ -161,15 +273,14 @@ export class HashConnect implements IHashConnect {
         if (message.receipt) message.receipt = Buffer.from(message.receipt).toString("base64");
         if (message.signedTransaction) message.signedTransaction = Buffer.from(message.signedTransaction).toString("base64");
 
-
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.TransactionResponse, message, topic, this);
 
-        await this.relay.publish(topic, msg, this.publicKeys[topic]);
+        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
 
         return message.id!;
     }
 
-    async pair(pairingData: HashConnectTypes.PairingData, accounts: string[], network: string): Promise<HashConnectTypes.ConnectionState> {
+    async pair(pairingData: HashConnectTypes.PairingStringData, accounts: string[], network: string): Promise<HashConnectTypes.SavedPairingData> {
         if (this.debug) console.log("hashconnect - Pairing to " + pairingData.metadata.name);
         let state = await this.connect(pairingData.topic);
 
@@ -180,20 +291,45 @@ export class HashConnect implements IHashConnect {
             network: network
         }
 
+        let newPairingData: HashConnectTypes.SavedPairingData = {
+            accountIds: msg.accountIds,
+            metadata: pairingData.metadata,
+            network: msg.network,
+            topic: msg.topic,
+            origin: msg.origin,
+            lastUsed: new Date().getTime(),
+            encryptionKey: pairingData.metadata.encryptionKey || pairingData.metadata.publicKey!,
+        }
+
+        this.hcData.pairingData.push(newPairingData);
+        this.saveDataInLocalstorage();
+
+
+        //todo: remove as backwards compatibility
+        if(newPairingData.metadata.publicKey) { //this is a old version of hashconnect trying to connect, do some trickery for backwards compatibility
+            msg.metadata.publicKey = newPairingData.metadata.publicKey;
+        }
+
+        //clean up pairing data
         msg.metadata.description = this.sanitizeString(msg.metadata.description);
         msg.metadata.name = this.sanitizeString(msg.metadata.name);
-        msg.metadata.publicKey = pairingData.metadata.publicKey;
         msg.network = this.sanitizeString(msg.network);
         msg.metadata.url = this.sanitizeString(msg.metadata.url!);
         msg.accountIds = msg.accountIds.map(id => { return id });
 
-        this.publicKeys[pairingData.topic] = pairingData.metadata.publicKey as string;
+        //todo: remove as backwards compatibility (if statement only)
+        if(pairingData.metadata.encryptionKey) msg.metadata.encryptionKey = pairingData.metadata.encryptionKey; 
 
+        //set topic/key mapping
+        this.encryptionKeys[pairingData.topic] = pairingData.metadata.encryptionKey as string;
+        if(pairingData.metadata.publicKey) this.encryptionKeys[pairingData.topic] = pairingData.metadata.publicKey as string; //todo: remove as backwards compatibility
+
+        //send pairing approval
         const payload = await this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, msg, msg.topic, this)
 
-        this.relay.publish(pairingData.topic, payload, this.publicKeys[pairingData.topic])
+        this.relay.publish(pairingData.topic, payload, this.encryptionKeys[pairingData.topic])
 
-        return state;
+        return newPairingData;
     }
 
     async reject(topic: string, reason: string, msg_id: string) {
@@ -209,7 +345,7 @@ export class HashConnect implements IHashConnect {
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.RejectPairing, reject, topic, this)
 
         // Publish the rejection
-        await this.relay.publish(topic, msg, this.publicKeys[topic]);
+        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
     }
 
     async acknowledge(topic: string, pubKey: string, msg_id: string) {
@@ -224,7 +360,7 @@ export class HashConnect implements IHashConnect {
     }
 
 
-    async authenticate(topic: string, account_id: string, server_signing_account: string, serverSignature: Uint8Array, payload: {url: string, data: any }): Promise<MessageTypes.AuthenticationResponse> {
+    async authenticate(topic: string, account_id: string, server_signing_account: string, serverSignature: Uint8Array, payload: { url: string, data: any }): Promise<MessageTypes.AuthenticationResponse> {
         let message: MessageTypes.AuthenticationRequest = {
             topic: topic,
             accountToSign: account_id,
@@ -236,7 +372,7 @@ export class HashConnect implements IHashConnect {
         message.serverSignature = Buffer.from(message.serverSignature).toString("base64")
         console.log(message.serverSignature)
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AuthenticationRequest, message, topic, this);
-        await this.relay.publish(topic, msg, this.publicKeys[topic]);
+        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
         this.sendEncryptedLocalTransaction(msg);
 
         return await new Promise<MessageTypes.AuthenticationResponse>(resolve => this.authResolver = resolve)
@@ -248,7 +384,7 @@ export class HashConnect implements IHashConnect {
 
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AuthenticationResponse, message, topic, this);
 
-        await this.relay.publish(topic, msg, this.publicKeys[topic]);
+        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
 
         return message.id!;
     }
@@ -258,14 +394,14 @@ export class HashConnect implements IHashConnect {
      * Helpers
      */
 
-    generatePairingString(state: HashConnectTypes.ConnectionState, network: string, multiAccount: boolean): string {
+    generatePairingString(topic: string, network: string, multiAccount: boolean): string {
         if (this.debug) console.log("hashconnect - Generating pairing string");
 
-        let data: HashConnectTypes.PairingData = {
+        let data: HashConnectTypes.PairingStringData = {
             metadata: this.metadata,
-            topic: state.topic,
+            topic: topic,
             network: network,
-            multiAccount: multiAccount
+            multiAccount: multiAccount,
         }
 
         data.metadata.description = this.sanitizeString(data.metadata.description);
@@ -280,17 +416,16 @@ export class HashConnect implements IHashConnect {
 
     decodePairingString(pairingString: string) {
         let json_string: string = Buffer.from(pairingString, 'base64').toString();
-        let data: HashConnectTypes.PairingData = JSON.parse(json_string);
-        // data.metadata.publicKey = Buffer.from(data.metadata.publicKey as string, 'base64');
-        
+        let data: HashConnectTypes.PairingStringData = JSON.parse(json_string);
+
         return data;
     }
 
     private async generateEncryptionKeys(): Promise<string> { //https://github.com/diafygi/webcrypto-examples/#rsa-oaep---encrypt
         let key = this.messages.createRandomTopicId()
-        
+
         if (this.debug) console.log("hashconnect - Generated new encryption key - " + key);
-        
+
         return key;
     }
 
@@ -306,6 +441,11 @@ export class HashConnect implements IHashConnect {
      */
 
     findLocalWallets() {
+        if (!window) {
+            if (this.debug) console.log("hashconnect - Cancel findLocalWallets - no window object")
+            return;
+        }
+
         if (this.debug) console.log("hashconnect - Finding local wallets");
         window.addEventListener("message", (event) => {
             if (event.data.type && (event.data.type == "hashconnect-query-extension-response")) {
@@ -314,52 +454,79 @@ export class HashConnect implements IHashConnect {
                     this.foundExtensionEvent.emit(event.data.metadata);
             }
 
-            if(event.data.type && event.data.type == "hashconnect-iframe-response"){
-                if(this.debug) console.log("hashconnect - iFrame wallet metadata recieved", event.data);
+            if (event.data.type && event.data.type == "hashconnect-iframe-response") {
+                if (this.debug) console.log("hashconnect - iFrame wallet metadata recieved", event.data);
 
-                if(event.data.metadata)
+                if (event.data.metadata)
                     this.foundIframeEvent.emit(event.data.metadata);
             }
         }, false);
 
         setTimeout(() => {
             window.postMessage({ type: "hashconnect-query-extension" }, "*");
-            if(window.parent) window.parent.postMessage({type: "hashconnect-iframe-query"}, '*');
+            if (window.parent) window.parent.postMessage({ type: "hashconnect-iframe-query" }, '*');
         }, 50);
     }
 
-    connectToIframeParent(pairingString: string) {
-        window.parent.postMessage({type: "hashconnect-iframe-pairing", pairingString: pairingString }, '*');
+    connectToIframeParent() {
+        if (!window) {
+            if (this.debug) console.log("hashconnect - Cancel iframe connection - no window object")
+            return;
+        }
+
+        if (this.debug) console.log("hashconnect - Connecting to iframe parent wallet")
+
+        window.parent.postMessage({ type: "hashconnect-iframe-pairing", pairingString: this.hcData.pairingString }, '*');
     }
 
-    connectToLocalWallet(pairingString: string) {
+    connectToLocalWallet() {
+        if (!window) {
+            if (this.debug) console.log("hashconnect - Cancel connect to local wallet - no window object")
+            return;
+        }
+
         if (this.debug) console.log("hashconnect - Connecting to local wallet")
         //todo: add extension metadata support
-        window.postMessage({ type: "hashconnect-connect-extension", pairingString: pairingString }, "*")
+        window.postMessage({ type: "hashconnect-connect-extension", pairingString: this.hcData.pairingString }, "*")
     }
 
     sendEncryptedLocalTransaction(message: string) {
-        if (this.debug) console.log("hashconnect - sending local transaction", message);        
+        if (!window) {
+            if (this.debug) console.log("hashconnect - Cancel send local transaction - no window object")
+            return;
+        }
+
+        if (this.debug) console.log("hashconnect - sending local transaction", message);
         window.postMessage({ type: "hashconnect-send-local-transaction", message: message }, "*")
     }
 
-    async decodeLocalTransaction(message: string){
+    async decodeLocalTransaction(message: string) {
         const local_message: RelayMessage = await this.messages.decode(message, this);
 
         return local_message;
     }
 
-
-
     /**
      * Provider stuff
      */
-    
-    getProvider(network:string, topicId: string, accountToSign: string): HashConnectProvider {
+
+    getProvider(network: string, topicId: string, accountToSign: string): HashConnectProvider {
         return new HashConnectProvider(network, this, topicId, accountToSign);
     }
 
     getSigner(provider: HashConnectProvider): HashConnectSigner {
         return new HashConnectSigner(this, provider, provider.accountToSign, provider.topicId);
+    }
+
+    getPairingByTopic(topic: string) {
+        let pairingData: HashConnectTypes.SavedPairingData | undefined = this.hcData.pairingData.find(pairing => {
+            return pairing.topic == topic;
+        })
+
+        if(!pairingData) {
+            return null;
+        }
+
+        return pairingData;
     }
 }

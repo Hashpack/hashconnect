@@ -36,7 +36,7 @@ export class PairingComponent implements OnInit {
         })
 
         new AwesomeQR({
-            text: this.HashconnectService.saveData.pairingString,
+            text: this.HashconnectService.pairingString,
             size: 400,
             margin: 16,
             maskPattern: 110,

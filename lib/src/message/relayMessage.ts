@@ -36,7 +36,9 @@ export declare namespace MessageTypes {
         origin?: string;
     }    
 
+    //todo: this is kind of redundant, should only be saved pairing data?
     export interface ApprovePairing extends BaseMessage {
+        pairingData?: HashConnectTypes.SavedPairingData;
         metadata: HashConnectTypes.WalletMetadata;
         accountIds: string[];
         network: string;
@@ -70,7 +72,7 @@ export declare namespace MessageTypes {
     export class TransactionMetadata {
         accountToSign: string;
         returnTransaction: boolean;
-        nftPreviewUrl?: string;
+        hideNft?: boolean;
         getRecord?: boolean;
     }
 

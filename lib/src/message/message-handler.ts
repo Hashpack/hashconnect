@@ -1,4 +1,4 @@
-import { IHashConnect } from "../types";
+import { HashConnectConnectionState, HashConnectTypes, IHashConnect } from "../types";
 import { MessageTypes, RelayMessage, RelayMessageType } from ".";
 
 export interface IMessageHandler {
@@ -26,9 +26,22 @@ export class MessageHandler implements IMessageHandler {
                 if(hc.debug) console.log("hashconnect - approved", message.data);
                 let approval_data: MessageTypes.ApprovePairing = message.data;
                 
+                let newPairingData: HashConnectTypes.SavedPairingData = {
+                    accountIds: approval_data.accountIds,
+                    metadata: approval_data.metadata,
+                    network: approval_data.network,
+                    topic: approval_data.topic,
+                    origin: approval_data.origin,
+                    encryptionKey: hc.hcData.encryptionKey,
+                    lastUsed: new Date().getTime()
+                }
+
+                approval_data.pairingData = newPairingData;
+                
                 hc.pairingEvent.emit(approval_data);
+                hc.connectionStatusChangeEvent.emit(HashConnectConnectionState.Paired);
             
-                await hc.acknowledge(parsedData.topic, hc.publicKeys[approval_data.topic], approval_data.id!);
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[approval_data.topic], approval_data.id!);
             break;
             case RelayMessageType.Acknowledge:
                 let ack_data: MessageTypes.Acknowledge = message.data;
@@ -45,7 +58,7 @@ export class MessageHandler implements IMessageHandler {
                 
                 hc.transactionEvent.emit(transaction_data);
 
-                await hc.acknowledge(parsedData.topic, hc.publicKeys[transaction_data.topic], transaction_data.id!);
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[transaction_data.topic], transaction_data.id!);
             break;
             case RelayMessageType.TransactionResponse:
                 if(hc.debug) console.log("hashconnect - Got transaction response", message)
@@ -63,7 +76,7 @@ export class MessageHandler implements IMessageHandler {
                     
                 hc.transactionResolver(transaction_response_data);
 
-                await hc.acknowledge(parsedData.topic, hc.publicKeys[transaction_response_data.topic], transaction_response_data.id!);
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[transaction_response_data.topic], transaction_response_data.id!);
             break;
             case RelayMessageType.AdditionalAccountRequest:
                 if(hc.debug) console.log("hashconnect - Got account info request", message);
@@ -72,7 +85,7 @@ export class MessageHandler implements IMessageHandler {
 
                 hc.additionalAccountRequestEvent.emit(request_data);
 
-                await hc.acknowledge(parsedData.topic, hc.publicKeys[request_data.topic], request_data.id!);
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[request_data.topic], request_data.id!);
             break;
             case RelayMessageType.AdditionalAccountResponse:
                 if(hc.debug) console.log("hashconnect - Got account info response", message);
@@ -81,7 +94,7 @@ export class MessageHandler implements IMessageHandler {
 
                 hc.additionalAccountResolver(response_data);
 
-                await hc.acknowledge(parsedData.topic, hc.publicKeys[response_data.topic], response_data.id!);
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[response_data.topic], response_data.id!);
             break;
             case RelayMessageType.AuthenticationRequest:
                 if(hc.debug) console.log("hashconnect - Got auth request", message);
@@ -91,7 +104,7 @@ export class MessageHandler implements IMessageHandler {
 
                 hc.authRequestEvent.emit(auth_request_data);
 
-                await hc.acknowledge(parsedData.topic, hc.publicKeys[auth_request_data.topic], auth_request_data.id!);
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[auth_request_data.topic], auth_request_data.id!);
             break;
             case RelayMessageType.AuthenticationResponse:
                 if(hc.debug) console.log("hashconnect - Got auth response", message);
@@ -106,7 +119,7 @@ export class MessageHandler implements IMessageHandler {
                 
                 hc.authResolver(auth_response_data);
 
-                await hc.acknowledge(parsedData.topic, hc.publicKeys[auth_response_data.topic], auth_response_data.id!);
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[auth_response_data.topic], auth_response_data.id!);
             break;
             default:
                 break;

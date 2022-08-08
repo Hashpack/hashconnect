@@ -6,7 +6,7 @@
 
     <p>From:
         <select [(ngModel)]="signingAcct">
-            <option *ngFor="let acc of HashconnectService.saveData.pairedAccounts" [value]="acc" [selected]="signingAcct == acc">
+            <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
                 {{acc}}</option>
         </select>
     </p>
@@ -53,6 +53,11 @@
         </div>
 
         <button class="outline" (click)="addNFTTransfer()">Add NFT Transfer</button>
+
+        <div>
+            <input type="checkbox" name="" id="" [(ngModel)]="data.transfer.hideNfts">
+            Hide NFT Info
+        </div>
     </div>
     
     <hr>

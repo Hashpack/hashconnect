@@ -40,6 +40,7 @@ export class SendTransactionComponent implements OnInit {
                 }
             ],
             include_nft: false,
+            hideNfts: false,
             nftTransfers: [
                 {
                     tokenId: "0.0.14658561",
@@ -95,7 +96,7 @@ export class SendTransactionComponent implements OnInit {
 
         let transactionBytes: Uint8Array = await this.SigningService.signAndMakeBytes(trans, this.signingAcct);
 
-        let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, this.data.transfer.return_transaction);
+        let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, this.data.transfer.return_transaction, this.data.transfer.hideNfts);
         
         //handle response
         let responseData: any = {

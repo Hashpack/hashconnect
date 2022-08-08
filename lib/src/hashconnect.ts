@@ -219,7 +219,14 @@ export class HashConnect implements IHashConnect {
         let foundData = localStorage.getItem("hashconnectData");
 
         if (foundData) {
-            this.hcData = JSON.parse(foundData);
+            let data = JSON.parse(foundData);
+            
+            if(!data.pairingData || !data.encryptionKey) {
+                if (this.debug) console.log("hashconnect - legacy save data found, creating new data");
+                return false;
+            }
+
+            this.hcData = data;
             return true;
         }
         else

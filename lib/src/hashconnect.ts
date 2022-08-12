@@ -84,8 +84,11 @@ export class HashConnect implements IHashConnect {
 
             if (this.debug) console.log("hashconnect - Initializing")
 
-            if (window)
+            if (typeof window !== "undefined") {
                 this.metadata.url = window.location.origin;
+            } else if (!metadata.url) {
+                throw new Error("metadata.url must be defined if not running hashconnect within a browser");
+            }
 
             await this.relay.init();
 
@@ -204,7 +207,7 @@ export class HashConnect implements IHashConnect {
      * Local data management
      */
     saveDataInLocalstorage() {
-        if (!window || !localStorage) return;
+        if (typeof window === "undefined" || typeof localStorage === "undefined") return;
 
         let data = JSON.stringify(this.hcData);
         
@@ -214,7 +217,7 @@ export class HashConnect implements IHashConnect {
     }
 
     loadLocalData(): boolean {
-        if (!window || !localStorage) return false;
+        if (typeof window === "undefined" || typeof localStorage === "undefined") return false;
 
         let foundData = localStorage.getItem("hashconnectData");
 
@@ -447,8 +450,8 @@ export class HashConnect implements IHashConnect {
      * Local wallet stuff
      */
 
-    findLocalWallets() {
-        if (!window) {
+     findLocalWallets() {
+        if (typeof window === "undefined") {
             if (this.debug) console.log("hashconnect - Cancel findLocalWallets - no window object")
             return;
         }
@@ -476,7 +479,7 @@ export class HashConnect implements IHashConnect {
     }
 
     connectToIframeParent() {
-        if (!window) {
+        if (typeof window === "undefined") {
             if (this.debug) console.log("hashconnect - Cancel iframe connection - no window object")
             return;
         }
@@ -487,7 +490,7 @@ export class HashConnect implements IHashConnect {
     }
 
     connectToLocalWallet() {
-        if (!window) {
+        if (typeof window === "undefined") {
             if (this.debug) console.log("hashconnect - Cancel connect to local wallet - no window object")
             return;
         }
@@ -498,7 +501,7 @@ export class HashConnect implements IHashConnect {
     }
 
     sendEncryptedLocalTransaction(message: string) {
-        if (!window) {
+        if (typeof window === "undefined") {
             if (this.debug) console.log("hashconnect - Cancel send local transaction - no window object")
             return;
         }

@@ -70,6 +70,29 @@ We recommend getting familiar with how [async/await](https://developer.mozilla.o
 npm i hashconnect --save
 ```
 
+#### Additional Steps to run Server-side
+
+> To enable running hashconnect running in a console app instead of a webapp, WebSocket and localStorage polyfills must be provided.
+
+1. Install polyfills
+```
+npm i websocket-polyfill --save
+npm i localstorage-polyfill --save
+```
+1. Import polyfills before using hashconnect
+```js
+import "websocket-polyfill";
+import 'localstorage-polyfill';
+```
+1. When calling HashConnect.init(), a url must be defined in your app's metadata
+```js
+const appMetadata = {
+    ...,
+    url: "https://yourwebsite.com"
+}
+let initData = await this.hashconnect.init(appMetadata, "testnet", false);
+```
+
 ### Initialization
 
 Import the library like you would any npm package

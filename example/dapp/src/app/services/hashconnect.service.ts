@@ -51,6 +51,7 @@ export class HashconnectService {
     setUpHashConnectEvents() {
         //This is fired when a extension is found
         this.hashconnect.foundExtensionEvent.on((data) => {
+            debugger
             console.log("Found extension", data);
             this.availableExtension = data;
         })

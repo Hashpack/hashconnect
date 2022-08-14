@@ -119,7 +119,6 @@ export class HashConnect implements IHashConnect {
             else {
                 if (this.debug) console.log("hashconnect - Found saved local data", this.hcData);
 
-                // this.metadata.publicKey = this.hcData.encryptionKey;
                 this.metadata.encryptionKey = this.hcData.encryptionKey;
 
                 this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connecting);
@@ -129,12 +128,16 @@ export class HashConnect implements IHashConnect {
                 initData.encryptionKey = this.hcData.encryptionKey;
                 initData.savedPairings = this.hcData.pairingData;
 
+                this.connect(initData.topic, this.metadata, initData.encryptionKey);
+
                 for (let pairing of this.hcData.pairingData) {
                     await this.connect(pairing.topic, pairing.metadata, pairing.encryptionKey);
                 }
 
-                this.status = HashConnectConnectionState.Paired;
-                this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Paired);
+                if(this.hcData.pairingData.length > 0){
+                    this.status = HashConnectConnectionState.Paired;
+                    this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Paired);
+                }
             }
             
             if (this.debug) console.log("hashconnect - init data", initData);
@@ -188,6 +191,7 @@ export class HashConnect implements IHashConnect {
         })
 
         this.pairingEvent.on((pairingEvent) => {
+            debugger
             this.hcData.pairingData.push(pairingEvent.pairingData!);
 
             this.saveDataInLocalstorage();
@@ -233,10 +237,14 @@ export class HashConnect implements IHashConnect {
             return false;
     }
 
-    clearConnectionsAndData() {
-        // this.pair = [];
-        // this.hcData.pairedWalletData = undefined;
-        if (this.debug) console.log("hashconnect - clearing local data");
+    async clearConnectionsAndData() {
+        if (this.debug) console.log("hashconnect - clearing local data - you will need to run init() again");
+
+        for (let pairing of this.hcData.pairingData) {
+            await this.relay.unsubscribe(pairing.topic);
+        }
+
+        this.hcData.pairingData = [];
 
         localStorage.removeItem("hashconnectData");
         this.status = HashConnectConnectionState.Connected;
@@ -437,6 +445,8 @@ export class HashConnect implements IHashConnect {
     }
 
     private sanitizeString(str: string) {
+        if(!str) return "";
+        
         return str.replace(/[^\w. ]/gi, function (c) {
             if (c == ".") return ".";
             return '&#' + c.charCodeAt(0) + ';';

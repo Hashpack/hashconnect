@@ -1,3 +1,7 @@
+## v0.2.2
+- Fixed false pairing event when refreshing with no pairings
+- Fixed not subscribing to topic on second refresh when no pairings
+
 ## v0.2.1
 - Fixed issue initializing with legacy hashconnect data
 

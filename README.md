@@ -85,8 +85,13 @@ let initData = await this.hashconnect.init(appMetadata, "testnet", false);
 
 Import the library like you would any npm package
 
+> ESM
 ```js
 import { HashConnect } from 'hashconnect';
+```
+> CommonJS
+```js
+import { HashConnect } from 'hashconnect/dist/cjs/main';
 ```
 
 Create a variable to hold an instance of Hashconnect, pass `true` to this to enable debug mode.

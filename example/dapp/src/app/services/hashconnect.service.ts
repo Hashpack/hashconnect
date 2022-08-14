@@ -100,6 +100,11 @@ export class HashconnectService {
         await this.hashconnect.requestAdditionalAccounts(this.topic, request);
     }
 
+    disconnect() {
+        this.hashconnect.disconnect(this.pairingData!.topic)
+        this.pairingData = null;
+    }
+
     clearPairings() {
         this.hashconnect.clearConnectionsAndData();
         this.pairingData = null;

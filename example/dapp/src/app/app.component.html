@@ -1,13 +1,21 @@
-<div>
-    <h1>{{title}}</h1>
-    <h2>Status: {{HashConnectService.state}}</h2>
 
-    <h3>Connected accounts: {{ HashConnectService.pairingData?.accountIds | json}}</h3>
+    <div class="top">
+        <h1>{{title}}</h1>
+        <h2>Status: {{HashConnectService.state}}</h2>
+        
+        <h3>Connected accounts: {{ HashConnectService.pairingData?.accountIds | json}}</h3>
+    </div>
+
+    
 
     <div class="buttons">
-        <button class="primary" (click)="pair()" [disabled]="HashConnectService.state == 'Paired'">Pair</button>
-        <button class="primary" (click)="HashConnectService.clearPairings()" [disabled]="HashConnectService.state != 'Paired'">Clear Pairings</button>
-        <button class="primary" (click)="HashConnectService.requestAccountInfo()" [disabled]="HashConnectService.state != 'Paired'">Request Additional Accounts</button>
+        <div>
+            <input type="checkbox" [(ngModel)]="viewData"> View HashConnect Data
+        </div>
+        <button class="primary" (click)="pair()" [disabled]="HashConnectService.state == 'Paired' || HashConnectService.state == 'Disconnected'">Pair</button>
+        <button class="primary" (click)="HashConnectService.clearPairings()">Clear HashConnect Data - will need to refresh</button>
+        <button class="primary" (click)="HashConnectService.disconnect()" [disabled]="HashConnectService.state != 'Paired'">Disconnect</button>
+        <!-- <button class="primary" (click)="HashConnectService.requestAccountInfo()" [disabled]="HashConnectService.state != 'Paired'">Request Additional Accounts</button> -->
         <button class="primary" (click)="auth()" [disabled]="HashConnectService.state != 'Paired'">Authenticate</button>
         <button class="primary" (click)="sendTransaction()" [disabled]="HashConnectService.state != 'Paired'">Create basic transaction</button>
         
@@ -40,6 +48,10 @@
         <button class="primary" (click)="hcsUpdateTopic()" [disabled]="HashConnectService.state != 'Paired'">Update Topic</button>
         <button class="primary" (click)="hcsSubmitMessage()" [disabled]="HashConnectService.state != 'Paired'">Submit Message</button>
     </div>
-</div>
+
+    <pre class="data" *ngIf="viewData">
+        {{ HashConnectService.hashconnect.hcData | json }}
+    </pre>
+
 
 <router-outlet></router-outlet>

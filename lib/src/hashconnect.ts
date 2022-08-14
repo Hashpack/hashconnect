@@ -36,7 +36,7 @@ export class HashConnect implements IHashConnect {
     encryptionKeys: Record<string, string> = {}; //enc keys with topic id as the key
 
     debug: boolean = false;
-    status: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
+    status: HashConnectConnectionState = HashConnectConnectionState.Disconnected; //do we even need this?
 
     hcData: {
         topic: string;
@@ -121,6 +121,7 @@ export class HashConnect implements IHashConnect {
 
                 this.metadata.encryptionKey = this.hcData.encryptionKey;
 
+                this.status = HashConnectConnectionState.Connecting;
                 this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connecting);
                 
                 initData.pairingString = this.hcData.pairingString;
@@ -129,6 +130,9 @@ export class HashConnect implements IHashConnect {
                 initData.savedPairings = this.hcData.pairingData;
 
                 this.connect(initData.topic, this.metadata, initData.encryptionKey);
+
+                this.status = HashConnectConnectionState.Connected;
+                this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
 
                 for (let pairing of this.hcData.pairingData) {
                     await this.connect(pairing.topic, pairing.metadata, pairing.encryptionKey);
@@ -150,7 +154,6 @@ export class HashConnect implements IHashConnect {
 
 
     async connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, encryptionKey?: string): Promise<string> {
-
         if (!topic) {
             topic = this.messages.createRandomTopicId();
             this.encryptionKeys[topic] = this.hcData.encryptionKey;
@@ -167,10 +170,16 @@ export class HashConnect implements IHashConnect {
     }
 
     async disconnect(topic: string) {
-        await this.relay.unsubscribe(topic);
+        if(topic != this.hcData.topic) //only unsub from topic if not dapp
+            await this.relay.unsubscribe(topic);
 
         let index = this.hcData.pairingData.findIndex(pairing => pairing.topic == topic);
         this.hcData.pairingData.splice(index, 1);
+
+        if(this.hcData.pairingData.length == 0){
+            this.status = HashConnectConnectionState.Connected;
+            this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
+        }
 
         this.saveDataInLocalstorage();
     }
@@ -243,11 +252,17 @@ export class HashConnect implements IHashConnect {
             await this.relay.unsubscribe(pairing.topic);
         }
 
-        this.hcData.pairingData = [];
+        this.hcData = {
+            topic: "",
+            pairingString: "",
+            encryptionKey: "",
+            pairingData: [],
+        };
 
         localStorage.removeItem("hashconnectData");
-        this.status = HashConnectConnectionState.Connected;
-        this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
+        
+        this.status = HashConnectConnectionState.Disconnected;
+        this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Disconnected);
     }
 
 

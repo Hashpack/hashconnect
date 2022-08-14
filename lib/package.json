@@ -11,8 +11,8 @@
     "wallet",
     "crypto"
   ],
-  "main": "./dist/main.js",
-  "types": "./dist/main.d.ts",
+  "main": "./dist/esm/main.js",
+  "types": "./dist/esm/main.d.ts",
   "files": [
     "dist/"
   ],
@@ -24,7 +24,7 @@
     "clean": "rm -rf dist build package",
     "ts-node": "ts-node",
     "docs": "typedoc --entryPoints src/main.ts",
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
     "build-watch": "tsc -w -p tsconfig.json",
     "build-all": "yarn clean && yarn build",
     "copy-readme": "cp ../README.md README.md",

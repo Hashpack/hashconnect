@@ -426,6 +426,8 @@ export class HashConnect implements IHashConnect {
 
         let pairingString: string = Buffer.from(JSON.stringify(data)).toString("base64")
 
+        this.hcData.pairingString = pairingString;
+
         return pairingString;
     }
 

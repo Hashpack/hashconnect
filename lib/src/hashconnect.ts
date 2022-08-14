@@ -191,7 +191,6 @@ export class HashConnect implements IHashConnect {
         })
 
         this.pairingEvent.on((pairingEvent) => {
-            debugger
             this.hcData.pairingData.push(pairingEvent.pairingData!);
 
             this.saveDataInLocalstorage();

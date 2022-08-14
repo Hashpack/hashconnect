@@ -36,6 +36,7 @@
     "@types/node": "^15.0.1",
     "@types/secp256k1": "^4.0.3",
     "@types/uuid": "^8.3.1",
+    "@types/ws": "^8.5.3",
     "@typescript-eslint/eslint-plugin": "^4.19.0",
     "@typescript-eslint/parser": "^4.19.0",
     "esbuild": "^0.13.12",
@@ -53,10 +54,11 @@
     "crypto-es": "^1.2.7",
     "crypto-js": "^4.1.1",
     "i": "^0.3.7",
+    "isomorphic-ws": "^5.0.0",
     "protons": "^2.0.3",
     "simple-crypto-js": "^3.0.1",
     "ts-typed-events": "3.0.0",
     "uuid": "^8.3.2",
-    "ws": "^8.5.0"
+    "ws": "^8.8.1"
   }
 }

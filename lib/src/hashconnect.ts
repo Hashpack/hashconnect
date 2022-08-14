@@ -240,8 +240,10 @@ export class HashConnect implements IHashConnect {
         // this.pair = [];
         // this.hcData.pairedWalletData = undefined;
         if (this.debug) console.log("hashconnect - clearing local data");
-
-        localStorage.removeItem("hashconnectData");
+        
+        if (typeof localStorage !== "undefined") {
+            localStorage.removeItem("hashconnectData");
+        }
         this.status = HashConnectConnectionState.Connected;
         this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
     }

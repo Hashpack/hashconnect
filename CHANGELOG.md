@@ -1,3 +1,10 @@
+## v0.2.2
+- Fixed false pairing event when refreshing with no pairings
+- Fixed not subscribing to topic on second refresh when no pairings
+- Manually calling generatePairingString() now updates the pairing string in hcData
+- Fixed disconnect unsubscribing from dapp topics, was only useful for wallets
+  - Note, we reccommend dapps using disconnect() rather than clearConnectionsAndData(), the latter should be used for testing and resetting the state
+   
 ## v0.2.1
 - Fixed issue initializing with legacy hashconnect data
 

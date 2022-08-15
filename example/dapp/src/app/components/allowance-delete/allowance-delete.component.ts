@@ -50,8 +50,6 @@ export class AllowanceDeleteComponent implements OnInit {
 
         let trans2 = Transaction.fromBytes(transBytes);
 
-        debugger
-
         let res = await this.HashconnectService.sendTransaction(transBytes, this.signingAcct);
 
         //handle response

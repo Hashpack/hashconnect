@@ -33,7 +33,8 @@ import { SigningService } from './services/signing.service';
 })
 export class AppComponent {
     title = 'dapp | proposer';
-
+    viewData = false;
+    
     constructor(
         public HashConnectService: HashconnectService,
         private SigningService: SigningService

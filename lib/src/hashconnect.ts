@@ -1,9 +1,11 @@
 import { Event } from "ts-typed-events";
 import { IRelay, WebSocketRelay } from "./types/relay";
 import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
-import { HashConnectTypes, IHashConnect, HashConnectConnectionState } from "./types/hashconnect";
+import { HashConnectTypes, IHashConnect, HashConnectConnectionState, NetworkType } from "./types/hashconnect";
 import { HashConnectProvider } from "./provider/provider";
 import { HashConnectSigner } from "./provider/signer";
+import { MirrorNodeClient } from "./hashgraph/mirror-node-client";
+import { PublicKey } from "@hashgraph/sdk";
 
 global.Buffer = global.Buffer || require('buffer').Buffer;
 
@@ -543,12 +545,19 @@ export class HashConnect implements IHashConnect {
      * Provider stuff
      */
 
-    getProvider(network: string, topicId: string, accountToSign: string): HashConnectProvider {
+    getProvider(network: NetworkType, topicId: string, accountToSign: string): HashConnectProvider {
         return new HashConnectProvider(network, this, topicId, accountToSign);
     }
 
     getSigner(provider: HashConnectProvider): HashConnectSigner {
         return new HashConnectSigner(this, provider, provider.accountToSign, provider.topicId);
+    }
+
+    async getSignerWithAccountKey(provider: HashConnectProvider): Promise<HashConnectSigner> {
+        const client = new MirrorNodeClient(provider.network);
+        const accountInfo = await client.getAccountInfo(provider.accountToSign);
+        const publicKey = PublicKey.fromString(accountInfo.key.key)
+        return new HashConnectSigner(this, provider, provider.accountToSign, provider.topicId, publicKey);
     }
 
     getPairingByTopic(topic: string) {

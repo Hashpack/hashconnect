@@ -6,15 +6,16 @@ import {
 } from '@hashgraph/sdk';
 import Executable from '@hashgraph/sdk/lib/Executable';
 import { HashConnect } from '../main';
+import { NetworkType } from '../types';
 
 export class HashConnectProvider implements Provider {
     client: Client;
     private hashconnect: HashConnect;
-    network: string;
+    network: NetworkType;
     topicId: string;
     accountToSign: string;
 
-    public constructor(networkName: string, hashconnect: HashConnect, topicId: string, accountToSign: string) {
+    public constructor(networkName: NetworkType, hashconnect: HashConnect, topicId: string, accountToSign: string) {
         this.hashconnect = hashconnect;
         this.network = networkName;
         this.client = Client.forName(networkName);

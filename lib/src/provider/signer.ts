@@ -1,4 +1,4 @@
-import { LedgerId, AccountId, SignerSignature, AccountBalance, AccountInfo, TransactionRecord, Executable, Query, TransactionResponse, TransactionId, AccountBalanceQuery, AccountInfoQuery, AccountRecordsQuery } from "@hashgraph/sdk";
+import { LedgerId, AccountId, SignerSignature, AccountBalance, AccountInfo, TransactionRecord, Executable, Query, TransactionResponse, TransactionId, AccountBalanceQuery, AccountInfoQuery, AccountRecordsQuery, Key } from "@hashgraph/sdk";
 import { Signer, Transaction } from "@hashgraph/sdk/lib/Signer";
 import { HashConnect } from "../main";
 import { HashConnectProvider } from "./provider";
@@ -9,12 +9,17 @@ export class HashConnectSigner implements Signer {
     private provider: HashConnectProvider;
     private topicId: string;
     private accountToSign: string;
+    getAccountKey?: () => Key;
 
-    constructor(hashconnect: HashConnect, provider: HashConnectProvider, accountToSign: string, topic: string) {
+    constructor(hashconnect: HashConnect, provider: HashConnectProvider, accountToSign: string, topic: string, key?: Key | null) {
         this.hashconnect = hashconnect;
         this.provider = provider;
         this.accountToSign = accountToSign;
         this.topicId = topic;
+
+        if (key) {
+            this.getAccountKey = () => key;
+        }
     }
 
     getLedgerId(): LedgerId | null {

@@ -5,6 +5,8 @@ import { MessageHandler } from "../message/message-handler";
 import { HashConnectProvider } from "../provider/provider";
 import { HashConnectSigner } from "../provider/signer";
 
+export type NetworkType = "testnet" | "mainnet" | "previewnet";
+
 export interface IHashConnect {
     
     /** Relay */
@@ -44,7 +46,7 @@ export interface IHashConnect {
     /**
      * Initialize the client
      */
-     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet"|"mainnet"|"previewnet", singleAccount: boolean): Promise<HashConnectTypes.InitilizationData>
+     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: NetworkType, singleAccount: boolean): Promise<HashConnectTypes.InitilizationData>
 
     /**
      * Connect to a topic and produce a topic ID for a peer
@@ -109,6 +111,7 @@ export interface IHashConnect {
 
     getProvider(network:string, topicId: string, accountToSign: string): HashConnectProvider;
     getSigner(provider: HashConnectProvider): HashConnectSigner;
+    getSignerWithAccountKey(provider: HashConnectProvider): Promise<HashConnectSigner>;
     getPairingByTopic(topic: string): HashConnectTypes.SavedPairingData | null;
 }
 

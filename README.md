@@ -331,7 +331,13 @@ let balance = await provider.getAccountBalance(accountId);
 Pass the provider into this method to get a signer back, this allows you to interact with HashConnect using a simpler API.
 
 ```js
-signer = hashconnect.getSigner(provider);
+const signer = hashconnect.getSigner(provider);
+```
+
+-- or --
+
+```js
+const signer = await hashconnect.getSignerWithAccountKey(provider);
 ```
 
 ##### Usage

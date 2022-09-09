@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { CustomFee, CustomFixedFee, CustomFractionalFee, CustomRoyaltyFee, Hbar, HbarUnit, PublicKey, TokenCreateTransaction, TokenSupplyType, TokenType, TransactionReceipt } from '@hashgraph/sdk';
+import { CustomFee, CustomFixedFee, CustomFractionalFee, CustomRoyaltyFee, Hbar, HbarUnit, PublicKey, TokenCreateTransaction, TokenSupplyType, TokenType, TransactionReceipt, Timestamp } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -149,6 +149,17 @@ export class CreateTokenComponent implements OnInit {
         }
         
         trans.setCustomFees(customFees);
+
+        // Set expiry in 90 days
+
+        const ninetyDaysSeconds = 60*60*24*90
+        const secondsNow = Math.round(Date.now() / 1000)
+        const timestamp = secondsNow + ninetyDaysSeconds
+        const timestampObj = new Timestamp(timestamp, 0)
+        console.log({timestamp})
+        console.log({timestampObj})
+        trans.setExpirationTime(timestampObj)
+        trans.setAutoRenewPeriod(ninetyDaysSeconds)
 
         let transBytes:Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
 

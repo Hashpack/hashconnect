@@ -1,6 +1,7 @@
 import { Event } from "ts-typed-events"
 import { HashConnectConnectionState } from ".";
 import { HashConnect } from "../main";
+import WebSocket from 'isomorphic-ws';
 
 /**
  * Relay interface
@@ -52,9 +53,15 @@ export class WebSocketRelay implements IRelay {
     subscribedTopics: string[] = [];
 
     // TODO: is there a better way to do this?
-    private processMessage(e: MessageEvent<any>) {
+    private processMessage(e: WebSocket.MessageEvent) {
         if (this.hc.debug) console.log("hashconnect - emitting payload");
-        this.payload.emit(JSON.parse(e.data))
+        let dataStr = "";
+        if (typeof e.data === "string") {
+            dataStr = e.data;
+        } else {
+            dataStr = e.data.toString();
+        }
+        this.payload.emit(JSON.parse(dataStr));
     }
 
     constructor(hc: HashConnect) {
@@ -112,7 +119,7 @@ export class WebSocketRelay implements IRelay {
 
         this.socket.send(JSON.stringify({ action: 'sub', topic: topic }));
 
-        this.socket.onmessage = (e) => {
+        this.socket.onmessage = (e: WebSocket.MessageEvent) => {
             console.log("process", e)
             this.processMessage(e);
         };

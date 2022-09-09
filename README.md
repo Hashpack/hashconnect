@@ -70,12 +70,28 @@ We recommend getting familiar with how [async/await](https://developer.mozilla.o
 npm i hashconnect --save
 ```
 
+#### Additional Steps to run Server-side
+
+1. When calling HashConnect.init(), a url must be defined in your app's metadata
+```js
+const appMetadata = {
+    ...,
+    url: "https://yourwebsite.com"
+}
+let initData = await this.hashconnect.init(appMetadata, "testnet", false);
+```
+
 ### Initialization
 
 Import the library like you would any npm package
 
+> ESM
 ```js
 import { HashConnect } from 'hashconnect';
+```
+> CommonJS
+```js
+import { HashConnect } from 'hashconnect/dist/cjs/main';
 ```
 
 Create a variable to hold an instance of Hashconnect, pass `true` to this to enable debug mode.

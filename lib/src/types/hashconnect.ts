@@ -6,7 +6,7 @@ import { HashConnectProvider } from "../provider/provider";
 import { HashConnectSigner } from "../provider/signer";
 
 export interface IHashConnect {
-    
+
     /** Relay */
     relay: IRelay;
 
@@ -19,11 +19,13 @@ export interface IHashConnect {
     additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
     connectionStatusChangeEvent: Event<HashConnectConnectionState>;
     authRequestEvent: Event<MessageTypes.AuthenticationRequest>;
+    signRequestEvent: Event<MessageTypes.SigningRequest>;
 
     //promises
     transactionResolver: (value: MessageTypes.TransactionResponse | PromiseLike<MessageTypes.TransactionResponse>) => void;
     additionalAccountResolver: (value: MessageTypes.AdditionalAccountResponse | PromiseLike<MessageTypes.AdditionalAccountResponse>) => void;
     authResolver: (value: MessageTypes.AuthenticationResponse | PromiseLike<MessageTypes.AuthenticationResponse>) => void;
+    signResolver: (value: MessageTypes.SigningResponse | PromiseLike<MessageTypes.SigningResponse>) => void;
 
     /** Messages util for protobufs */
     messages: MessageUtil;
@@ -40,11 +42,11 @@ export interface IHashConnect {
     }
 
     debug: boolean;
-    
+
     /**
      * Initialize the client
      */
-     init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet"|"mainnet"|"previewnet", singleAccount: boolean): Promise<HashConnectTypes.InitilizationData>
+    init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet" | "mainnet" | "previewnet", singleAccount: boolean): Promise<HashConnectTypes.InitilizationData>
 
     /**
      * Connect to a topic and produce a topic ID for a peer
@@ -71,13 +73,13 @@ export interface IHashConnect {
      * @param transaction transaction to send
      */
     sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<MessageTypes.TransactionResponse>;
-    
+
     requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<MessageTypes.AdditionalAccountResponse>;
-    
+
     sendAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountResponse): Promise<string>;
-    
+
     sendTransactionResponse(topic: string, message: MessageTypes.TransactionResponse): Promise<string>;
-    
+
     reject(topic: string, reason: string, msg_id: string): Promise<void>;
 
     decodeLocalTransaction(message: string): Promise<RelayMessage>;
@@ -85,12 +87,19 @@ export interface IHashConnect {
     connectToIframeParent(): void;
 
     connectToLocalWallet(): void;
-    
+
     clearConnectionsAndData(): void;
-    
-    authenticate(topic: string, account_id: string, server_signing_account: string, signature: Uint8Array, payload: {url: string, data: any }): Promise<MessageTypes.AuthenticationResponse>;
-    
+
+    //authentication
+
+    authenticate(topic: string, account_id: string, server_signing_account: string, signature: Uint8Array, payload: { url: string, data: any }): Promise<MessageTypes.AuthenticationResponse>;
+
     sendAuthenticationResponse(topic: string, message: MessageTypes.AuthenticationResponse): Promise<string>
+
+    //generic signature
+    sign(topic: string, account_id: string, payload: any): Promise<MessageTypes.SigningResponse>;
+
+    sendSigningResponse(topic: string, message: MessageTypes.SigningResponse): Promise<string>
 
     /**
      * Send an acknowledgement of receipt
@@ -107,12 +116,12 @@ export interface IHashConnect {
      */
     generatePairingString(topic: string, network: string, multiAccount: boolean): string;
 
-    getProvider(network:string, topicId: string, accountToSign: string): HashConnectProvider;
+    getProvider(network: string, topicId: string, accountToSign: string): HashConnectProvider;
     getSigner(provider: HashConnectProvider): HashConnectSigner;
     getPairingByTopic(topic: string): HashConnectTypes.SavedPairingData | null;
 }
 
-export declare namespace HashConnectTypes {    
+export declare namespace HashConnectTypes {
     export interface AppMetadata {
         name: string;
         description: string;
@@ -158,8 +167,8 @@ export declare namespace HashConnectTypes {
 }
 
 export enum HashConnectConnectionState {
-    Connecting="Connecting",
-    Connected="Connected",
-    Disconnected="Disconnected",
-    Paired="Paired"
+    Connecting = "Connecting",
+    Connected = "Connected",
+    Disconnected = "Disconnected",
+    Paired = "Paired"
 }

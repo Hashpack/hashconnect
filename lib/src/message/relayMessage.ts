@@ -25,7 +25,9 @@ export enum RelayMessageType {
     AdditionalAccountRequest="AdditionalAccountRequest",
     AdditionalAccountResponse="AdditionalAccountResponse",
     AuthenticationRequest="AuthenticationRequest",
-    AuthenticationResponse="AuthenticationResponse"
+    AuthenticationResponse="AuthenticationResponse",
+    SigningRequest="SigningRequest",
+    SigningResponse="SigningResponse"
 }
 
 export declare namespace MessageTypes {
@@ -106,6 +108,18 @@ export declare namespace MessageTypes {
                 data: any
             }
         }
+    }
+
+    export interface SigningRequest extends BaseMessage {
+        accountToSign: string;
+        payload: any
+    }
+
+    export interface SigningResponse extends BaseMessage {
+        success: boolean;
+        error?: string;
+        userSignature?: Uint8Array | string;
+        signedPayload?: any
     }
 }
 

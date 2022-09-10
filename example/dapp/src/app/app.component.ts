@@ -18,6 +18,7 @@ import { HcsUpdateTopicComponent } from './components/hcs-update-topic/hcs-updat
 import { MintTokenComponent } from './components/mint-token/mint-token.component';
 import { PairingComponent } from './components/pairing/pairing.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';
+import { SignComponent } from './components/sign/sign.component';
 import { SmartcontractCallComponent } from './components/smartcontract-call/smartcontract-call.component';
 import { SmartcontractCreateComponent } from './components/smartcontract-create/smartcontract-create.component';
 import { SmartcontractDeleteComponent } from './components/smartcontract-delete/smartcontract-delete.component';
@@ -62,6 +63,11 @@ export class AppComponent {
 
     auth() {
         const dialogPopup = new DialogInitializer(AuthenticateComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
+    sign() {
+        const dialogPopup = new DialogInitializer(SignComponent);
         this.doPopupStuff(dialogPopup);
     }
 

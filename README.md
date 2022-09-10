@@ -13,6 +13,7 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
   - [Usage](#usage)
     - [Installation](#installation)
     - [Initialization](#initialization)
+      - [Additional Steps to run Server-side](#additional-steps-to-run-server-side)
     - [Metadata](#metadata)
     - [Setup](#setup)
     - [Events](#events)
@@ -70,17 +71,6 @@ We recommend getting familiar with how [async/await](https://developer.mozilla.o
 npm i hashconnect --save
 ```
 
-#### Additional Steps to run Server-side
-
-1. When calling HashConnect.init(), a url must be defined in your app's metadata
-```js
-const appMetadata = {
-    ...,
-    url: "https://yourwebsite.com"
-}
-let initData = await this.hashconnect.init(appMetadata, "testnet", false);
-```
-
 ### Initialization
 
 Import the library like you would any npm package
@@ -98,6 +88,17 @@ Create a variable to hold an instance of Hashconnect, pass `true` to this to ena
 
 ```js
 let hashconnect = new HashConnect();
+```
+
+#### Additional Steps to run Server-side
+
+1. When calling HashConnect.init(), a url must be defined in your app's metadata
+```js
+const appMetadata = {
+    ...,
+    url: "https://yourwebsite.com"
+}
+let initData = await this.hashconnect.init(appMetadata, "testnet", false);
 ```
 
 ### Metadata

@@ -28,6 +28,7 @@ import { AuthenticateComponent } from './components/authenticate/authenticate.co
 import { AccountUpdateComponent } from './components/account-update/account-update.component';
 import { AllowanceApproveComponent } from './components/allowance-approve/allowance-approve.component';
 import { AllowanceDeleteComponent } from './components/allowance-delete/allowance-delete.component';
+import { SignComponent } from './components/sign/sign.component';
 
 @NgModule({
   declarations: [
@@ -55,7 +56,8 @@ import { AllowanceDeleteComponent } from './components/allowance-delete/allowanc
     AuthenticateComponent,
     AccountUpdateComponent,
     AllowanceApproveComponent,
-    AllowanceDeleteComponent
+    AllowanceDeleteComponent,
+    SignComponent
   ],
   imports: [
     BrowserModule,

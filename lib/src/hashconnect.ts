@@ -23,10 +23,12 @@ export class HashConnect implements IHashConnect {
     additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
     connectionStatusChangeEvent: Event<HashConnectConnectionState>;
     authRequestEvent: Event<MessageTypes.AuthenticationRequest>;
+    signRequestEvent: Event<MessageTypes.SigningRequest>;
 
     transactionResolver: (value: MessageTypes.TransactionResponse | PromiseLike<MessageTypes.TransactionResponse>) => void;
     additionalAccountResolver: (value: MessageTypes.AdditionalAccountResponse | PromiseLike<MessageTypes.AdditionalAccountResponse>) => void;
     authResolver: (value: MessageTypes.AuthenticationResponse | PromiseLike<MessageTypes.AuthenticationResponse>) => void;
+    signResolver: (value: MessageTypes.SigningResponse | PromiseLike<MessageTypes.SigningResponse>) => void;
 
     // messages util
     messageParser: MessageHandler;
@@ -61,6 +63,7 @@ export class HashConnect implements IHashConnect {
         this.additionalAccountRequestEvent = new Event<MessageTypes.AdditionalAccountRequest>();
         this.connectionStatusChangeEvent = new Event<HashConnectConnectionState>();
         this.authRequestEvent = new Event<MessageTypes.AuthenticationRequest>();
+        this.signRequestEvent = new Event<MessageTypes.SigningRequest>();
 
         this.messages = new MessageUtil();
         this.messageParser = new MessageHandler();
@@ -394,6 +397,10 @@ export class HashConnect implements IHashConnect {
     }
 
 
+    /**
+     * Authenticate
+     */
+
     async authenticate(topic: string, account_id: string, server_signing_account: string, serverSignature: Uint8Array, payload: { url: string, data: any }): Promise<MessageTypes.AuthenticationResponse> {
         let message: MessageTypes.AuthenticationRequest = {
             topic: topic,
@@ -417,6 +424,34 @@ export class HashConnect implements IHashConnect {
         if (message.signedPayload) message.signedPayload.serverSignature = Buffer.from(message.signedPayload.serverSignature).toString("base64");
 
         const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AuthenticationResponse, message, topic, this);
+
+        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
+
+        return message.id!;
+    }
+ 
+    /**
+     * Generic Signing
+     */
+
+    async sign(topic: string, account_id: string, payload: any): Promise<MessageTypes.SigningResponse> {
+        let message: MessageTypes.SigningRequest = {
+            topic: topic,
+            accountToSign: account_id,
+            payload: payload
+        }
+
+        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.SigningRequest, message, topic, this);
+        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
+        this.sendEncryptedLocalTransaction(msg);
+
+        return await new Promise<MessageTypes.SigningResponse>(resolve => this.signResolver = resolve)
+    }
+
+    async sendSigningResponse(topic: string, message: MessageTypes.SigningResponse): Promise<string> {
+        if (message.userSignature) message.userSignature = Buffer.from(message.userSignature).toString("base64");
+
+        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.SigningResponse, message, topic, this);
 
         await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
 

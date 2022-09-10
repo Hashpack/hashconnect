@@ -28,6 +28,7 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
       - [Send Transaction](#send-transaction)
+      - [Sign](#sign)
       - [Request Additional Accounts](#request-additional-accounts)
       - [Authenticate](#authenticate)
     - [Provider/Signer](#providersigner)
@@ -53,6 +54,8 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
         - [MessageTypes.TransactionResponse](#messagetypestransactionresponse)
         - [MessageTypes.AuthenticationRequest](#messagetypesauthenticationrequest)
         - [MessageTypes.AuthenticationResponse](#messagetypesauthenticationresponse)
+        - [MessageTypes.SigningRequest](#messagetypessigningrequest)
+        - [MessageTypes.SigningResponse](#messagetypessigningresponse)
 
 ## Concepts
 
@@ -218,7 +221,7 @@ Call `hashconnect.disconnect(topic)` to disconnect a pairing. You can then acces
 This request takes two parameters, **topicID** and [Transaction](#messagetypestransaction).
 
 ```js
-await hashconnect.sendTransaction(saveData.topic, transaction);
+await hashconnect.sendTransaction(initData.topic, transaction);
 ```
 
 **Example Implementation:**
@@ -228,7 +231,7 @@ async sendTransaction(trans: Transaction, acctToSign: string) {
     let transactionBytes: Uint8Array = await SigningService.signAndMakeBytes(trans);
 
     const transaction: MessageTypes.Transaction = {
-        topic: saveData.topic,
+        topic: initData.topic,
         byteArray: transactionBytes,
         metadata: {
             accountToSign: acctToSign,
@@ -237,9 +240,20 @@ async sendTransaction(trans: Transaction, acctToSign: string) {
         }
     }
 
-    let response = await hashconnect.sendTransaction(saveData.topic, transaction)
+    let response = await hashconnect.sendTransaction(initData.topic, transaction)
 }
 ```
+
+#### Sign
+
+This request allows you to get a signature on a generic piece of data. You can send a string or object.
+
+```js
+await hashconnect.sign(initData.topic, signingAcct, dataToSign);
+```
+
+It will return a [SigningResponse](#messagetypessigningresponse)
+
 
 #### Request Additional Accounts
 
@@ -247,7 +261,7 @@ This request takes two parameters, **topicID** and [AdditionalAccountRequest](#m
 ). It is used to request additional accounts *after* the initial pairing.
 
 ```js
-await hashconnect.requestAdditionalAccounts(saveData.topic, request);
+await hashconnect.requestAdditionalAccounts(initData.topic, request);
 ```
 
 **Example Implementation:**
@@ -255,11 +269,11 @@ await hashconnect.requestAdditionalAccounts(saveData.topic, request);
 ```js
 async requestAdditionalAccounts(network: string) {
     let request:MessageTypes.AdditionalAccountRequest = {
-        topic: saveData.topic,
+        topic: initData.topic,
         network: network
     } 
 
-    let response = await hashconnect.requestAdditionalAccounts(saveData.topic, request);
+    let response = await hashconnect.requestAdditionalAccounts(initData.topic, request);
 }
 ```
 
@@ -292,7 +306,7 @@ async send() {
     let signing_data = this.SigningService.signData(payload);
 
     //this line you should do client side, after generating the signed payload on the server
-    let res = await this.HashconnectService.hashconnect.authenticate(this.HashconnectService.saveData.topic, this.signingAcct, signing_data.serverSigningAccount, signing_data.signature, payload);
+    let res = await this.HashconnectService.hashconnect.authenticate(this.HashconnectService.initData.topic, this.signingAcct, signing_data.serverSigningAccount, signing_data.signature, payload);
     //send res to backend for validation
     
     //THE FOLLOWING IS SERVER SIDE ONLY
@@ -543,5 +557,24 @@ export interface AuthenticationResponse extends BaseMessage {
             data: any
         }
     }
+}
+```
+
+##### MessageTypes.SigningRequest
+```js
+export interface SigningRequest extends BaseMessage {
+    accountToSign: string;
+    payload: string | object
+}
+```
+
+##### MessageTypes.SigningResponse
+
+```js
+export interface SigningResponse extends BaseMessage {
+    success: boolean;
+    error?: string;
+    userSignature?: Uint8Array | string;
+    signedPayload?: string | object
 }
 ```

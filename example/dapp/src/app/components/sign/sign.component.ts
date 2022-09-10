@@ -36,7 +36,7 @@ export class SignComponent implements OnInit {
     }
 
     async send() {
-        let res = await this.HashconnectService.hashconnect.sign(this.HashconnectService.topic, this.signingAcct, "ABC");
+        let res = await this.HashconnectService.hashconnect.sign(this.HashconnectService.topic, this.signingAcct, { test: "ABC" });
         
         this.HashconnectService.showResultOverlay(res);
     }

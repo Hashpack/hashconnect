@@ -112,14 +112,14 @@ export declare namespace MessageTypes {
 
     export interface SigningRequest extends BaseMessage {
         accountToSign: string;
-        payload: any
+        payload: string | object
     }
 
     export interface SigningResponse extends BaseMessage {
         success: boolean;
         error?: string;
         userSignature?: Uint8Array | string;
-        signedPayload?: any
+        signedPayload?: string | object
     }
 }
 

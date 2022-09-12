@@ -17,6 +17,8 @@
         <button class="primary" (click)="HashConnectService.disconnect()" [disabled]="HashConnectService.state != 'Paired'">Disconnect</button>
         <!-- <button class="primary" (click)="HashConnectService.requestAccountInfo()" [disabled]="HashConnectService.state != 'Paired'">Request Additional Accounts</button> -->
         <button class="primary" (click)="auth()" [disabled]="HashConnectService.state != 'Paired'">Authenticate</button>
+        <button class="primary" (click)="sign()" [disabled]="HashConnectService.state != 'Paired'">Sign</button>
+
         <button class="primary" (click)="sendTransaction()" [disabled]="HashConnectService.state != 'Paired'">Create basic transaction</button>
         
         <h3>Account</h3>

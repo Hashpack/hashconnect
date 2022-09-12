@@ -1,6 +1,6 @@
 {
   "name": "hashconnect",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "hashconnect interoperability library",
   "author": "Tyler Coté <tyler@hashpack.app>, Nick Hanna <nick@hashpack.app>",
   "repository": "https://github.com/Hashpack/hashconnect",
@@ -25,7 +25,7 @@
     "ts-node": "ts-node",
     "docs": "typedoc --entryPoints src/main.ts",
     "build": "tsc -p tsconfig.json && tsc -p tsconfig-cjs.json",
-    "build-watch": "tsc -w -p tsconfig.json",
+    "build-watch": "tsc -w -p tsconfig.json && tsc -w -p tsconfig-cjs.json",
     "build-all": "yarn clean && yarn build",
     "copy-readme": "cp ../README.md README.md",
     "copy-changelog": "cp ../CHANGELOG.md CHANGELOG.md",

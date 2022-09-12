@@ -96,6 +96,7 @@ export class MessageHandler implements IMessageHandler {
 
                 await hc.acknowledge(parsedData.topic, hc.encryptionKeys[response_data.topic], response_data.id!);
             break;
+            //auth
             case RelayMessageType.AuthenticationRequest:
                 if(hc.debug) console.log("hashconnect - Got auth request", message);
 
@@ -120,6 +121,28 @@ export class MessageHandler implements IMessageHandler {
                 hc.authResolver(auth_response_data);
 
                 await hc.acknowledge(parsedData.topic, hc.encryptionKeys[auth_response_data.topic], auth_response_data.id!);
+            break;
+            //signing
+            case RelayMessageType.SigningRequest:
+                if(hc.debug) console.log("hashconnect - Got sign request", message);
+
+                let sign_request_data: MessageTypes.SigningRequest = message.data;
+
+                hc.signRequestEvent.emit(sign_request_data);
+
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[sign_request_data.topic], sign_request_data.id!);
+            break;
+            case RelayMessageType.SigningResponse:
+                if(hc.debug) console.log("hashconnect - Got sign response", message);
+
+                let sign_response_data: MessageTypes.SigningResponse = message.data;
+                
+                if(sign_response_data.userSignature)
+                    sign_response_data.userSignature = new Uint8Array(Buffer.from(sign_response_data.userSignature as string,'base64'));
+
+                hc.signResolver(sign_response_data);
+
+                await hc.acknowledge(parsedData.topic, hc.encryptionKeys[sign_response_data.topic], sign_response_data.id!);
             break;
             default:
                 break;

@@ -34,8 +34,8 @@
               "src/styles.scss"
             ],
             "scripts": [],
-            "baseHref" : "/hashconnect/dapp/",
-            "deployUrl": "/hashconnect/dapp/"
+            "baseHref" : "/hashconnect/",
+            "deployUrl": "/hashconnect/"
           },
           "configurations": {
             "production": {

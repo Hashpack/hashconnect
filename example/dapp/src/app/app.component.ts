@@ -18,6 +18,7 @@ import { HcsUpdateTopicComponent } from './components/hcs-update-topic/hcs-updat
 import { MintTokenComponent } from './components/mint-token/mint-token.component';
 import { PairingComponent } from './components/pairing/pairing.component';
 import { PauseTokenComponent } from './components/pause-token/pause-token.component';
+import { PrngTransactionComponent } from './components/prng-transaction/prng-transaction.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';
 import { SignComponent } from './components/sign/sign.component';
 import { SmartcontractCallComponent } from './components/smartcontract-call/smartcontract-call.component';
@@ -210,6 +211,11 @@ export class AppComponent {
 
     allowanceDelete() {
         const dialogPopup = new DialogInitializer(AllowanceDeleteComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
+    prngTrans() {
+        const dialogPopup = new DialogInitializer(PrngTransactionComponent);
         this.doPopupStuff(dialogPopup);
     }
 

@@ -20,6 +20,8 @@
         <button class="primary" (click)="sign()" [disabled]="HashConnectService.state != 'Paired'">Sign</button>
 
         <button class="primary" (click)="sendTransaction()" [disabled]="HashConnectService.state != 'Paired'">Create basic transaction</button>
+        <button class="primary" (click)="prngTrans()" [disabled]="HashConnectService.state != 'Paired'">prng</button>
+
         
         <h3>Account</h3>
         <button class="primary" (click)="accountUpdate()" [disabled]="HashConnectService.state != 'Paired'">Account Update</button>

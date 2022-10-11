@@ -36,6 +36,7 @@ import { TokenKycGrantComponent } from './components/token-kyc-grant/token-kyc-g
 import { TokenKycRevokeComponent } from './components/token-kyc-revoke/token-kyc-revoke.component';
 import { TokenFreezeAccountComponent } from './components/token-freeze-account/token-freeze-account.component';
 import { TokenUnfreezeAccountComponent } from './components/token-unfreeze-account/token-unfreeze-account.component';
+import { PrngTransactionComponent } from './components/prng-transaction/prng-transaction.component';
 
 @NgModule({
   declarations: [
@@ -71,7 +72,8 @@ import { TokenUnfreezeAccountComponent } from './components/token-unfreeze-accou
     TokenKycGrantComponent,
     TokenKycRevokeComponent,
     TokenFreezeAccountComponent,
-    TokenUnfreezeAccountComponent
+    TokenUnfreezeAccountComponent,
+    PrngTransactionComponent
   ],
   imports: [
     BrowserModule,

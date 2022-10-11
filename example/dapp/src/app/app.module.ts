@@ -29,6 +29,11 @@ import { AccountUpdateComponent } from './components/account-update/account-upda
 import { AllowanceApproveComponent } from './components/allowance-approve/allowance-approve.component';
 import { AllowanceDeleteComponent } from './components/allowance-delete/allowance-delete.component';
 import { SignComponent } from './components/sign/sign.component';
+import { PauseTokenComponent } from './components/pause-token/pause-token.component';
+import { UnpauseTokenComponent } from './components/unpause-token/unpause-token.component';
+import { WipeTokenComponent } from './components/wipe-token/wipe-token.component';
+import { TokenKycGrantComponent } from './components/token-kyc-grant/token-kyc-grant.component';
+import { TokenKycRevokeComponent } from './components/token-kyc-revoke/token-kyc-revoke.component';
 
 @NgModule({
   declarations: [
@@ -57,7 +62,12 @@ import { SignComponent } from './components/sign/sign.component';
     AccountUpdateComponent,
     AllowanceApproveComponent,
     AllowanceDeleteComponent,
-    SignComponent
+    SignComponent,
+    PauseTokenComponent,
+    UnpauseTokenComponent,
+    WipeTokenComponent,
+    TokenKycGrantComponent,
+    TokenKycRevokeComponent
   ],
   imports: [
     BrowserModule,

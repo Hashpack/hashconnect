@@ -23,6 +23,8 @@
         
         <h3>Account</h3>
         <button class="primary" (click)="accountUpdate()" [disabled]="HashConnectService.state != 'Paired'">Account Update</button>
+        <button class="primary" (click)="associateToken()" [disabled]="HashConnectService.state != 'Paired'">Associate Token</button>
+        <button class="primary" (click)="disassociateToken()" [disabled]="HashConnectService.state != 'Paired'">Disassociate Token</button>
         <button class="primary" (click)="allowanceApprove()" [disabled]="HashConnectService.state != 'Paired'">Allowance Approve</button>
         <button class="primary" (click)="allowanceDelete()" [disabled]="HashConnectService.state != 'Paired'">Allowance Delete</button>
 
@@ -31,8 +33,12 @@
         <button class="primary" (click)="deleteToken()" [disabled]="HashConnectService.state != 'Paired'">Delete Token</button>
         <button class="primary" (click)="mintToken()" [disabled]="HashConnectService.state != 'Paired'">Mint Token</button>
         <button class="primary" (click)="burnToken()" [disabled]="HashConnectService.state != 'Paired'">Burn Token</button>
-        <button class="primary" (click)="associateToken()" [disabled]="HashConnectService.state != 'Paired'">Associate Token</button>
-        <button class="primary" (click)="disassociateToken()" [disabled]="HashConnectService.state != 'Paired'">Disassociate Token</button>
+        <button class="primary" (click)="pauseToken()" [disabled]="HashConnectService.state != 'Paired'">Pause Token</button>
+        <button class="primary" (click)="unpauseToken()" [disabled]="HashConnectService.state != 'Paired'">Unpause Token</button>
+        <button class="primary" (click)="wipeToken()" [disabled]="HashConnectService.state != 'Paired'">Wipe Token</button>
+
+        <button class="primary" (click)="kycGrant()" [disabled]="HashConnectService.state != 'Paired'">Grant Token KYC</button>
+        <button class="primary" (click)="kycRevoke()" [disabled]="HashConnectService.state != 'Paired'">Revoke Token KYC</button>
         
         <h3>File Service</h3>
         <button class="primary" (click)="fileCreate()" [disabled]="HashConnectService.state != 'Paired'">File Create</button>

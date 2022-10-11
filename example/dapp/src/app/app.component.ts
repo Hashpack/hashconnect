@@ -24,8 +24,10 @@ import { SmartcontractCallComponent } from './components/smartcontract-call/smar
 import { SmartcontractCreateComponent } from './components/smartcontract-create/smartcontract-create.component';
 import { SmartcontractDeleteComponent } from './components/smartcontract-delete/smartcontract-delete.component';
 import { SmartcontractExecuteComponent } from './components/smartcontract-execute/smartcontract-execute.component';
+import { TokenFreezeAccountComponent } from './components/token-freeze-account/token-freeze-account.component';
 import { TokenKycGrantComponent } from './components/token-kyc-grant/token-kyc-grant.component';
 import { TokenKycRevokeComponent } from './components/token-kyc-revoke/token-kyc-revoke.component';
+import { TokenUnfreezeAccountComponent } from './components/token-unfreeze-account/token-unfreeze-account.component';
 import { UnpauseTokenComponent } from './components/unpause-token/unpause-token.component';
 import { WipeTokenComponent } from './components/wipe-token/wipe-token.component';
 
@@ -118,6 +120,16 @@ export class AppComponent {
 
     kycRevoke() {
         const dialogPopup = new DialogInitializer(TokenKycRevokeComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+    
+    freezeToken() {
+        const dialogPopup = new DialogInitializer(TokenFreezeAccountComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
+    unfreezeToken() {
+        const dialogPopup = new DialogInitializer(TokenUnfreezeAccountComponent);
         this.doPopupStuff(dialogPopup);
     }
     

@@ -40,6 +40,10 @@
         <button class="primary" (click)="kycGrant()" [disabled]="HashConnectService.state != 'Paired'">Grant Token KYC</button>
         <button class="primary" (click)="kycRevoke()" [disabled]="HashConnectService.state != 'Paired'">Revoke Token KYC</button>
         
+        <button class="primary" (click)="freezeToken()" [disabled]="HashConnectService.state != 'Paired'">Freeze Token</button>
+        <button class="primary" (click)="unfreezeToken()" [disabled]="HashConnectService.state != 'Paired'">UnFreeze Token</button>
+
+
         <h3>File Service</h3>
         <button class="primary" (click)="fileCreate()" [disabled]="HashConnectService.state != 'Paired'">File Create</button>
         <button class="primary" (click)="fileAppend()" [disabled]="HashConnectService.state != 'Paired'">File Append</button>

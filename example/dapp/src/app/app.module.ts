@@ -34,6 +34,8 @@ import { UnpauseTokenComponent } from './components/unpause-token/unpause-token.
 import { WipeTokenComponent } from './components/wipe-token/wipe-token.component';
 import { TokenKycGrantComponent } from './components/token-kyc-grant/token-kyc-grant.component';
 import { TokenKycRevokeComponent } from './components/token-kyc-revoke/token-kyc-revoke.component';
+import { TokenFreezeAccountComponent } from './components/token-freeze-account/token-freeze-account.component';
+import { TokenUnfreezeAccountComponent } from './components/token-unfreeze-account/token-unfreeze-account.component';
 
 @NgModule({
   declarations: [
@@ -67,7 +69,9 @@ import { TokenKycRevokeComponent } from './components/token-kyc-revoke/token-kyc
     UnpauseTokenComponent,
     WipeTokenComponent,
     TokenKycGrantComponent,
-    TokenKycRevokeComponent
+    TokenKycRevokeComponent,
+    TokenFreezeAccountComponent,
+    TokenUnfreezeAccountComponent
   ],
   imports: [
     BrowserModule,

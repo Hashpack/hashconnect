@@ -17,12 +17,20 @@ import { HcsSubmitMessageComponent } from './components/hcs-submit-message/hcs-s
 import { HcsUpdateTopicComponent } from './components/hcs-update-topic/hcs-update-topic.component';
 import { MintTokenComponent } from './components/mint-token/mint-token.component';
 import { PairingComponent } from './components/pairing/pairing.component';
+import { PauseTokenComponent } from './components/pause-token/pause-token.component';
+import { PrngTransactionComponent } from './components/prng-transaction/prng-transaction.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';
 import { SignComponent } from './components/sign/sign.component';
 import { SmartcontractCallComponent } from './components/smartcontract-call/smartcontract-call.component';
 import { SmartcontractCreateComponent } from './components/smartcontract-create/smartcontract-create.component';
 import { SmartcontractDeleteComponent } from './components/smartcontract-delete/smartcontract-delete.component';
 import { SmartcontractExecuteComponent } from './components/smartcontract-execute/smartcontract-execute.component';
+import { TokenFreezeAccountComponent } from './components/token-freeze-account/token-freeze-account.component';
+import { TokenKycGrantComponent } from './components/token-kyc-grant/token-kyc-grant.component';
+import { TokenKycRevokeComponent } from './components/token-kyc-revoke/token-kyc-revoke.component';
+import { TokenUnfreezeAccountComponent } from './components/token-unfreeze-account/token-unfreeze-account.component';
+import { UnpauseTokenComponent } from './components/unpause-token/unpause-token.component';
+import { WipeTokenComponent } from './components/wipe-token/wipe-token.component';
 
 import { HashconnectService } from './services/hashconnect.service';
 import { SigningService } from './services/signing.service';
@@ -88,6 +96,41 @@ export class AppComponent {
 
     mintToken() {
         const dialogPopup = new DialogInitializer(MintTokenComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
+    pauseToken() {
+        const dialogPopup = new DialogInitializer(PauseTokenComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
+    unpauseToken() {
+        const dialogPopup = new DialogInitializer(UnpauseTokenComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
+    wipeToken() {
+        const dialogPopup = new DialogInitializer(WipeTokenComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
+    kycGrant() {
+        const dialogPopup = new DialogInitializer(TokenKycGrantComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
+    kycRevoke() {
+        const dialogPopup = new DialogInitializer(TokenKycRevokeComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+    
+    freezeToken() {
+        const dialogPopup = new DialogInitializer(TokenFreezeAccountComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
+    unfreezeToken() {
+        const dialogPopup = new DialogInitializer(TokenUnfreezeAccountComponent);
         this.doPopupStuff(dialogPopup);
     }
     
@@ -168,6 +211,11 @@ export class AppComponent {
 
     allowanceDelete() {
         const dialogPopup = new DialogInitializer(AllowanceDeleteComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
+    prngTrans() {
+        const dialogPopup = new DialogInitializer(PrngTransactionComponent);
         this.doPopupStuff(dialogPopup);
     }
 

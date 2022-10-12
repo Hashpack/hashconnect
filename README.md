@@ -201,7 +201,7 @@ When initializing any supported wallets will return their metadata in a ```found
 You should then call:
 
 ```js
-hashconnect.connectToLocalWallet(pairingString, extensionMetadata);
+hashconnect.connectToLocalWallet();
 ```
 
 And it will pop up a modal in the extension allowing the user to pair. 

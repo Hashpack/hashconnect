@@ -20,9 +20,13 @@
         <button class="primary" (click)="sign()" [disabled]="HashConnectService.state != 'Paired'">Sign</button>
 
         <button class="primary" (click)="sendTransaction()" [disabled]="HashConnectService.state != 'Paired'">Create basic transaction</button>
+        <button class="primary" (click)="prngTrans()" [disabled]="HashConnectService.state != 'Paired'">prng</button>
+
         
         <h3>Account</h3>
         <button class="primary" (click)="accountUpdate()" [disabled]="HashConnectService.state != 'Paired'">Account Update</button>
+        <button class="primary" (click)="associateToken()" [disabled]="HashConnectService.state != 'Paired'">Associate Token</button>
+        <button class="primary" (click)="disassociateToken()" [disabled]="HashConnectService.state != 'Paired'">Disassociate Token</button>
         <button class="primary" (click)="allowanceApprove()" [disabled]="HashConnectService.state != 'Paired'">Allowance Approve</button>
         <button class="primary" (click)="allowanceDelete()" [disabled]="HashConnectService.state != 'Paired'">Allowance Delete</button>
 
@@ -31,9 +35,17 @@
         <button class="primary" (click)="deleteToken()" [disabled]="HashConnectService.state != 'Paired'">Delete Token</button>
         <button class="primary" (click)="mintToken()" [disabled]="HashConnectService.state != 'Paired'">Mint Token</button>
         <button class="primary" (click)="burnToken()" [disabled]="HashConnectService.state != 'Paired'">Burn Token</button>
-        <button class="primary" (click)="associateToken()" [disabled]="HashConnectService.state != 'Paired'">Associate Token</button>
-        <button class="primary" (click)="disassociateToken()" [disabled]="HashConnectService.state != 'Paired'">Disassociate Token</button>
+        <button class="primary" (click)="pauseToken()" [disabled]="HashConnectService.state != 'Paired'">Pause Token</button>
+        <button class="primary" (click)="unpauseToken()" [disabled]="HashConnectService.state != 'Paired'">Unpause Token</button>
+        <button class="primary" (click)="wipeToken()" [disabled]="HashConnectService.state != 'Paired'">Wipe Token</button>
+
+        <button class="primary" (click)="kycGrant()" [disabled]="HashConnectService.state != 'Paired'">Grant Token KYC</button>
+        <button class="primary" (click)="kycRevoke()" [disabled]="HashConnectService.state != 'Paired'">Revoke Token KYC</button>
         
+        <button class="primary" (click)="freezeToken()" [disabled]="HashConnectService.state != 'Paired'">Freeze Token</button>
+        <button class="primary" (click)="unfreezeToken()" [disabled]="HashConnectService.state != 'Paired'">UnFreeze Token</button>
+
+
         <h3>File Service</h3>
         <button class="primary" (click)="fileCreate()" [disabled]="HashConnectService.state != 'Paired'">File Create</button>
         <button class="primary" (click)="fileAppend()" [disabled]="HashConnectService.state != 'Paired'">File Append</button>

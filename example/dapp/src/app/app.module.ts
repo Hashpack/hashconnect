@@ -76,6 +76,7 @@ import { TokenFeeUpdateComponent } from './components/token-fee-update/token-fee
     TokenUnfreezeAccountComponent,
     PrngTransactionComponent,
     TokenFeeUpdateComponent
+
   ],
   imports: [
     BrowserModule,

@@ -225,6 +225,7 @@ export class AppComponent {
         this.doPopupStuff(dialogPopup);
     }
 
+
     doPopupStuff(dialogPopup: DialogInitializer) {
         dialogPopup.setConfig({
             Width: '500px',

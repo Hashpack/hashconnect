@@ -22,6 +22,7 @@ export class SmartcontractExecuteComponent implements OnInit {
     memo: string = "";
     signingAcct: string = "";
     contractId: string = "0.0.30863001";
+    getRecord: boolean = true;
 
     ngOnInit(): void {
         this.subscriptions.add(
@@ -50,7 +51,7 @@ export class SmartcontractExecuteComponent implements OnInit {
 
         let transactionBytes: Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
 
-        let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, false);
+        let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, false, false, this.getRecord);
 
         //handle response
         let responseData: any = {

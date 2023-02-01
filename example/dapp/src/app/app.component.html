@@ -44,7 +44,10 @@
         
         <button class="primary" (click)="freezeToken()" [disabled]="HashConnectService.state != 'Paired'">Freeze Token</button>
         <button class="primary" (click)="unfreezeToken()" [disabled]="HashConnectService.state != 'Paired'">UnFreeze Token</button>
-
+        
+        
+        <button class="primary" (click)="tokenFeeUpdate()" [disabled]="HashConnectService.state != 'Paired'">Token Fee Update</button>
+        
 
         <h3>File Service</h3>
         <button class="primary" (click)="fileCreate()" [disabled]="HashConnectService.state != 'Paired'">File Create</button>

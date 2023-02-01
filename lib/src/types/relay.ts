@@ -120,7 +120,9 @@ export class WebSocketRelay implements IRelay {
         this.socket.send(JSON.stringify({ action: 'sub', topic: topic }));
 
         this.socket.onmessage = (e: WebSocket.MessageEvent) => {
-            console.log("process", e)
+            if(this.hc.debug)
+                console.log("process", e)
+    
             this.processMessage(e);
         };
     }

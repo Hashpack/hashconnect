@@ -75,7 +75,7 @@ export class HashconnectService {
     }
 
 
-    async sendTransaction(trans: Uint8Array, acctToSign: string, return_trans: boolean = false, hideNfts: boolean = false) {
+    async sendTransaction(trans: Uint8Array, acctToSign: string, return_trans: boolean = false, hideNfts: boolean = false, getRecord: boolean = false) {
         const transaction: MessageTypes.Transaction = {
             topic: this.topic,
             byteArray: trans,
@@ -83,7 +83,8 @@ export class HashconnectService {
             metadata: {
                 accountToSign: acctToSign,
                 returnTransaction: return_trans,
-                hideNft: hideNfts
+                hideNft: hideNfts,
+                getRecord: getRecord
             }
         }
 

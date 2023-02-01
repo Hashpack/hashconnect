@@ -25,6 +25,7 @@ import { SmartcontractCallComponent } from './components/smartcontract-call/smar
 import { SmartcontractCreateComponent } from './components/smartcontract-create/smartcontract-create.component';
 import { SmartcontractDeleteComponent } from './components/smartcontract-delete/smartcontract-delete.component';
 import { SmartcontractExecuteComponent } from './components/smartcontract-execute/smartcontract-execute.component';
+import { TokenFeeUpdateComponent } from './components/token-fee-update/token-fee-update.component';
 import { TokenFreezeAccountComponent } from './components/token-freeze-account/token-freeze-account.component';
 import { TokenKycGrantComponent } from './components/token-kyc-grant/token-kyc-grant.component';
 import { TokenKycRevokeComponent } from './components/token-kyc-revoke/token-kyc-revoke.component';
@@ -218,6 +219,12 @@ export class AppComponent {
         const dialogPopup = new DialogInitializer(PrngTransactionComponent);
         this.doPopupStuff(dialogPopup);
     }
+
+    tokenFeeUpdate() {
+        const dialogPopup = new DialogInitializer(TokenFeeUpdateComponent);
+        this.doPopupStuff(dialogPopup);
+    }
+
 
     doPopupStuff(dialogPopup: DialogInitializer) {
         dialogPopup.setConfig({

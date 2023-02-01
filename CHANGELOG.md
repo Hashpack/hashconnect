@@ -1,3 +1,6 @@
+## v0.2.4
+- wrapped a console log in if(debug)
+
 ## v0.2.2
 - Fixed false pairing event when refreshing with no pairings
 - Fixed not subscribing to topic on second refresh when no pairings

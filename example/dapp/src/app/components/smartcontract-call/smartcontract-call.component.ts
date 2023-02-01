@@ -49,7 +49,7 @@ export class SmartcontractCallComponent implements OnInit {
 
         let transactionBytes: Uint8Array = await trans.toBytes();
 
-        let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, false);
+        let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, false, false, true);
 
         //handle response
         let responseData: any = {

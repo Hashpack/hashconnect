@@ -1,0 +1,66 @@
+{
+    "name": "hashconnect",
+    "version": "3.0.0",
+    "description": "hashconnect interoperability library",
+    "author": "Tyler Coté <tyler@hashpack.app>, Nick Hanna <nick@hashpack.app>",
+    "repository": "https://github.com/Hashpack/hashconnect",
+    "license": "MIT",
+    "keywords": [
+        "hashgraph",
+        "hedera",
+        "wallet",
+        "crypto"
+    ],
+    "main": "./dist/main.js",
+    "types": "./dist/main.d.ts",
+    "files": [
+        "dist/"
+    ],
+    "readme": "../README.md",
+    "scripts": {
+        "cli": "ts-node src/cli.ts",
+        "lint": "eslint src/ --ext .js,.jsx,.ts,.tsx",
+        "test": "jest",
+        "clean": "rm -rf dist build package",
+        "ts-node": "ts-node",
+        "docs": "typedoc --entryPoints src/main.ts",
+        "build": "tsc",
+        "build-watch": "tsc -w",
+        "build-all": "yarn clean && yarn build",
+        "copy-readme": "cp ../README.md README.md",
+        "copy-changelog": "cp ../CHANGELOG.md CHANGELOG.md",
+        "prepack": "npm run build && npm run copy-readme && npm run copy-changelog"
+    },
+    "devDependencies": {
+        "@types/crypto-js": "^4.1.1",
+        "@types/jest": "^29.5.0",
+        "@types/node": "^18.15.11",
+        "@types/secp256k1": "^4.0.3",
+        "@types/uuid": "^8.3.1",
+        "@types/ws": "^8.5.3",
+        "@typescript-eslint/eslint-plugin": "^4.19.0",
+        "@typescript-eslint/parser": "^4.19.0",
+        "esbuild": "^0.13.12",
+        "eslint": "^7.22.0",
+        "jest": "^29.5.0",
+        "ts-jest": "^29.1.0",
+        "ts-node": "^10.9.1",
+        "typedoc": "^0.23.28",
+        "typescript": "^5.0.3"
+    },
+    "dependencies": {
+        "@hashgraph/sdk": "2.19.1",
+        "@hashgraph/cryptography": "1.4.1",
+        "@hashgraph/hedera-wallet-connect": "0.1.0",
+        "buffer": "^6.0.3",
+        "crypto-es": "^1.2.7",
+        "crypto-js": "^4.1.1",
+        "i": "^0.3.7",
+        "isomorphic-ws": "^5.0.0",
+        "protons": "^2.0.3",
+        "simple-crypto-js": "^3.0.1",
+        "ts-typed-events": "3.0.0",
+        "uuid": "^8.3.2",
+        "ws": "^8.8.1"
+    }
+}

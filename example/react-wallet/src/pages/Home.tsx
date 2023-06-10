@@ -42,8 +42,8 @@ export const Home = () => {
     <Stack spacing={8}>
       <Stack spacing={1}>
         <Typography variant="h2">Pairings</Typography>
-        {pairingData.map((pd, index) => (
-          <Fragment key={index}>
+        {pairingData.map((pd) => (
+          <Fragment key={pd.topic}>
             <Typography variant="h4">{pd.metadata.name}</Typography>
             {pd.accountIds.map((accountId) => (
               <Typography

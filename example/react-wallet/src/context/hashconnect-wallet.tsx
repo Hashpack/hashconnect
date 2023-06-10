@@ -1,6 +1,12 @@
 import { Transaction } from "@hashgraph/sdk";
 import { HashConnect, HashConnectTypes, MessageTypes } from "hashconnect";
-import { createContext, useCallback, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 
 const env = "testnet";
 const walletMetadata: HashConnectTypes.WalletMetadata = {
@@ -128,20 +134,22 @@ export const HashConnectWalletProvider = ({
     [setTransactionRequests]
   );
 
+  const contextValue = useMemo(() => {
+    return {
+      hc,
+      pairingData,
+      transactionRequests,
+      helpers: {
+        sendAuthenticationResponse,
+        sendSigningResponse,
+        approvePairing,
+        sendTransactionResponse: sendTransactionResponseWrapped,
+      },
+    };
+  }, [pairingData, transactionRequests, sendTransactionResponseWrapped]);
+
   return (
-    <HashConnectWalletContext.Provider
-      value={{
-        hc,
-        pairingData,
-        transactionRequests,
-        helpers: {
-          sendAuthenticationResponse,
-          sendSigningResponse,
-          approvePairing,
-          sendTransactionResponse: sendTransactionResponseWrapped,
-        },
-      }}
-    >
+    <HashConnectWalletContext.Provider value={contextValue}>
       {children}
     </HashConnectWalletContext.Provider>
   );

@@ -53,7 +53,6 @@ export const HashconnectTransactionHandler = (props: {
 
       try {
         const txReceipt = await txResult.getReceipt(client);
-        // const txRecord = await txResult.getRecord(client); // record will cost the user more HBAR to query
 
         const response: MessageTypes.TransactionResponse = {
           success: true,

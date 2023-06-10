@@ -30,15 +30,18 @@ export const HashConnectPairingsButton = () => {
 
   const [open, setOpen] = useState(false);
 
-  const pairableAccountIds = useMemo(
-    () =>
-      pairingStringPairingData
-        ? pairingStringPairingData.network === "testnet"
-          ? testnetPrivateKeys.map((o) => o.accId)
-          : mainnetPrivateKeys.map((o) => o.accId)
-        : [],
-    [pairingStringPairingData, testnetPrivateKeys, mainnetPrivateKeys]
-  );
+  const pairableAccountIds = useMemo(() => {
+    if (!pairingStringPairingData) {
+      return [];
+    }
+
+    const isTestnet = pairingStringPairingData.network === "testnet";
+    if (isTestnet) {
+      return testnetPrivateKeys.map((o) => o.accId);
+    } else {
+      return mainnetPrivateKeys.map((o) => o.accId);
+    }
+  }, [pairingStringPairingData, testnetPrivateKeys, mainnetPrivateKeys]);
 
   const [selectedAccountIds, setSelectedAccountIds] = useState<string[]>([]);
   const selectedAccountIdsFiltered = selectedAccountIds.filter((id) =>

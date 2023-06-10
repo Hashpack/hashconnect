@@ -131,8 +131,16 @@ export const HashConnectConnectButton = () => {
                 <IconButton
                   color={"blurple" as any}
                   onClick={() => {
-                    navigator.clipboard.writeText(pairingString);
-                    setSnackbarOpen(true);
+                    navigator.clipboard
+                      .writeText(pairingString)
+                      .then(() => {
+                        setSnackbarOpen(true);
+                      })
+                      .catch((reason) => {
+                        console.error(
+                          `Failed to copy pairing string: ${reason}`
+                        );
+                      });
                   }}
                 >
                   <ContentCopy />

@@ -57,6 +57,15 @@ export const HashConnectConnectButton = () => {
 
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
+  let connectButtonText = "Connect";
+  if (isConnected) {
+    if (connectedAccountIds.length > 1) {
+      connectButtonText = `Disconnect Accounts`;
+    } else {
+      connectButtonText = `Disconnect Account`;
+    }
+  }
+
   return (
     <Box>
       <Button
@@ -76,9 +85,7 @@ export const HashConnectConnectButton = () => {
           }
         }}
       >
-        {isConnected
-          ? `Disconnect Account${connectedAccountIds.length > 1 ? "s" : ""}`
-          : "Connect"}
+        {connectButtonText}
       </Button>
 
       <Dialog

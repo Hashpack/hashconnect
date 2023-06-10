@@ -1,5 +1,4 @@
-import { configureStore } from "@reduxjs/toolkit";
-import { createSlice } from "@reduxjs/toolkit";
+import { configureStore, createSlice } from "@reduxjs/toolkit";
 
 const hashconnectSlice = createSlice({
   name: "hashconnectSlice",

@@ -7,6 +7,8 @@ import {
   Transaction,
 } from "@hashgraph/sdk";
 import { PrivateKeyResolver } from "./private-key-resolver";
+import { HashConnectWalletSignerInterceptor } from "./hashconnect-wallet-signer-interceptor";
+import { HashConnectTypes } from "../types";
 
 export class HashconnectWalletSignerFactory {
   private static readonly _dummyMainnetClient = Client.forMainnet();
@@ -14,8 +16,10 @@ export class HashconnectWalletSignerFactory {
   private static readonly _dummyPreviewClient = Client.forPreviewnet();
 
   static async createSigner(
+    dappMetadata: HashConnectTypes.AppMetadata,
     ledgerId: LedgerId,
     accountId: AccountId,
+    signerInterceptor: HashConnectWalletSignerInterceptor,
     pkResolver: PrivateKeyResolver,
     debug = false
   ): Promise<Signer> {
@@ -56,6 +60,22 @@ export class HashconnectWalletSignerFactory {
         if (debug) {
           console.log("hashconnect - Signer.sign executing", messages);
         }
+
+        const accountIdStr = accountId.toString();
+        const shouldSign = await signerInterceptor({
+          accountToSign: accountIdStr,
+          payload: messages,
+          topic: "",
+          metadata: {
+            accountToSign: accountIdStr,
+            returnTransaction: true,
+          },
+        });
+
+        if (!shouldSign) {
+          throw new Error("Signing request rejected by user");
+        }
+
         const response = messages.map(
           (message) =>
             new SignerSignature({
@@ -85,6 +105,20 @@ export class HashconnectWalletSignerFactory {
             request
           );
         }
+
+        const shouldSign = await signerInterceptor({
+          byteArray: request.toBytes(),
+          topic: "",
+          metadata: {
+            accountToSign: accountId.toString(),
+            returnTransaction: true,
+          },
+        });
+
+        if (!shouldSign) {
+          throw new Error("Signing request rejected by user");
+        }
+
         const response = (await request.sign(pk)) as T;
         if (debug) {
           console.log(
@@ -104,6 +138,20 @@ export class HashconnectWalletSignerFactory {
         if (debug) {
           console.log("hashconnect - Signer.call executing", request);
         }
+
+        const shouldSign = await signerInterceptor({
+          byteArray: request.toBytes(),
+          topic: "",
+          metadata: {
+            accountToSign: accountId.toString(),
+            returnTransaction: true,
+          },
+        });
+
+        if (!shouldSign) {
+          throw new Error("Signing request rejected by user");
+        }
+
         const client = Client.forName(ledgerId.toString().toLowerCase());
         client.setOperator(accountId.toString(), pk.toStringRaw());
         const response = await request.execute(client);

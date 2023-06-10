@@ -4,11 +4,12 @@ import {
   getLedgerIdByChainId,
 } from "@hashgraph/hedera-wallet-connect";
 import { AccountId, LedgerId } from "@hashgraph/sdk";
-import { SignClientTypes } from "@walletconnect/types";
+import { CoreTypes, SignClientTypes } from "@walletconnect/types";
 import { PrivateKeyResolver } from "./private-key-resolver";
 import { MessageTypes } from "../types";
 import { Event } from "ts-typed-events";
 import { HashconnectWalletSignerFactory } from "./hashconnect-wallet-signer-factory";
+import { HashConnectWalletSignerInterceptor } from "./hashconnect-wallet-signer-interceptor";
 
 global.Buffer = global.Buffer || require("buffer").Buffer;
 
@@ -19,6 +20,11 @@ export class HashConnectWallet {
     __: AccountId
   ) => {
     throw new Error("No private key resolver defined");
+  };
+  private _signerInterceptor: HashConnectWalletSignerInterceptor = async (
+    _
+  ) => {
+    throw new Error("No signer interceptor defined");
   };
 
   private readonly _proposals = new Map<
@@ -74,6 +80,10 @@ export class HashConnectWallet {
     this._pkResolver = pkResolver;
   }
 
+  setSignerInterceptor(signerInterceptor: HashConnectWalletSignerInterceptor) {
+    this._signerInterceptor = signerInterceptor;
+  }
+
   async initPairing(uri: string) {
     if (this._debug) {
       console.log("hashconnect - Pairing");
@@ -103,8 +113,10 @@ export class HashConnectWallet {
     for (const accountId of accountIds) {
       const ledgerId = getLedgerIdByChainId(chainId);
       const signer = await HashconnectWalletSignerFactory.createSigner(
+        this.metadata,
         LedgerId.fromString(ledgerId),
         accountId,
+        this._signerInterceptor,
         this._pkResolver,
         this._debug
       );

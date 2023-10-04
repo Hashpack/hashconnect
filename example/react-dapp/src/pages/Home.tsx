@@ -1,4 +1,9 @@
-import { Hbar, TransferTransaction } from "@hashgraph/sdk";
+import {
+  AccountId,
+  Hbar,
+  TransactionId,
+  TransferTransaction,
+} from "@hashgraph/sdk";
 import {
   Stack,
   Box,
@@ -10,7 +15,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { getSigner } from "../services/hashconnect";
+import { sendTransaction } from "../services/hashconnect";
 import { AppStore } from "../store";
 
 export const Home = () => {
@@ -76,11 +81,14 @@ export const Home = () => {
             onClick={async () => {
               const transferTransaction = new TransferTransaction()
                 .addHbarTransfer(fromAccountId, new Hbar(-1))
-                .addHbarTransfer(toAccountId, new Hbar(1));
-              const signer = await getSigner(fromAccountId);
-              const frozenTransaction =
-                await transferTransaction.freezeWithSigner(signer);
-              await frozenTransaction.executeWithSigner(signer);
+                .addHbarTransfer(toAccountId, new Hbar(1))
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(TransactionId.generate(fromAccountId));
+              const frozenTransaction = transferTransaction.freeze();
+              await sendTransaction(
+                AccountId.fromString(fromAccountId),
+                frozenTransaction
+              );
             }}
           >
             Send

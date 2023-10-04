@@ -1,4 +1,3 @@
-import { Signer } from "@hashgraph/sdk";
 import { MessageTypes } from "../types";
 
 /**

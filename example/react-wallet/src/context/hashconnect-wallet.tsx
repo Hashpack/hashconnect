@@ -5,13 +5,14 @@ import { useDispatch, useSelector } from "react-redux";
 import { AppStore, actions } from "../store";
 
 const env = "testnet";
+const projectId = "20b7ba9c31e88f674fca101479b6c898";
 const walletMetadata = {
   name: "Example Wallet",
   description: "An example HashConnect wallet",
   icons: [window.location.origin + "/favicon.ico"],
   url: "https://www.hashpack.app",
 };
-const hc = new HashConnectWallet(walletMetadata, true);
+const hc = new HashConnectWallet(projectId, walletMetadata, true);
 // const sendAuthenticationResponse = async (
 //   topic: string,
 //   response: MessageTypes.AuthenticationResponse
@@ -112,6 +113,7 @@ export const HashConnectWalletProvider = ({
   useEffect(() => {
     // initialize hashconnect
     hc.init();
+    hc.setSignerInterceptor(() => Promise.resolve(true));
 
     const pairingProposalCallback = (
       proposal: MessageTypes.PairingProposal

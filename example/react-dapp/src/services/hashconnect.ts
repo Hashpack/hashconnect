@@ -8,17 +8,13 @@ const appMetadata = {
   icons: [window.location.origin + "/favicon.ico"],
   url: window.location.origin,
 };
+const projectId = "bfa190dbe93fcf30377b932b31129d05";
 
-export const hc = new HashConnect(appMetadata, true);
+export const hc = new HashConnect(projectId, appMetadata, true);
 export const getConnectedAccountIds = () => {
   return hc.connectedAccountIds;
 };
 export const hcInitPromise = hc.init(LedgerId.fromString(env));
-
-export const getSigner = async (accId: string) => {
-  const signer = hc.getSigner(AccountId.fromString(accId));
-  return signer;
-};
 
 export const sendTransaction = async (
   accountIdForSigning: AccountId,

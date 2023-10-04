@@ -1,605 +1,440 @@
 import { Event } from "ts-typed-events";
-import { IRelay, WebSocketRelay } from "./types/relay";
-import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageType } from "./message"
-import { HashConnectTypes, IHashConnect, HashConnectConnectionState } from "./types/hashconnect";
-import { HashConnectProvider } from "./provider/provider";
-import { HashConnectSigner } from "./provider/signer";
+import {
+  AccountId,
+  LedgerId,
+  SignerSignature,
+  Transaction,
+  TransactionResponse,
+  Signer,
+  PublicKey,
+  RequestType,
+} from "@hashgraph/sdk";
+import { HashConnectConnectionState, MessageTypes } from "./types";
+import SignClient from "@walletconnect/sign-client";
+import { SignClientTypes } from "@walletconnect/types";
+import { getSdkError } from "@walletconnect/utils";
+import { HashConnectSigner } from "./signer";
+import { chainIdToLedgerId, getChainIdFromSession } from "./utils";
+import { HederaSessionRequest } from "@hgraph.io/hedera-walletconnect-utils";
 
-global.Buffer = global.Buffer || require('buffer').Buffer;
+global.Buffer = global.Buffer || require("buffer").Buffer;
 
 /**
  * Main interface with hashpack
  */
-export class HashConnect implements IHashConnect {
+export class HashConnect {
+  connectionStatusChangeEvent = new Event<HashConnectConnectionState>();
+  pairingEvent = new Event<MessageTypes.ApprovePairing>();
 
-    relay: IRelay;
+  private _signClient?: SignClient;
+  private _pairingString?: string;
+  get pairingString() {
+    return this._pairingString;
+  }
 
-    // events
-    foundExtensionEvent: Event<HashConnectTypes.WalletMetadata>;
-    foundIframeEvent: Event<HashConnectTypes.WalletMetadata>;
-    pairingEvent: Event<MessageTypes.ApprovePairing>;
-    transactionEvent: Event<MessageTypes.Transaction>;
-    acknowledgeMessageEvent: Event<MessageTypes.Acknowledge>;
-    additionalAccountRequestEvent: Event<MessageTypes.AdditionalAccountRequest>;
-    connectionStatusChangeEvent: Event<HashConnectConnectionState>;
-    authRequestEvent: Event<MessageTypes.AuthenticationRequest>;
-    signRequestEvent: Event<MessageTypes.SigningRequest>;
+  get connectedAccountIds(): AccountId[] {
+    const accountIds: AccountId[] = [];
 
-    transactionResolver: (value: MessageTypes.TransactionResponse | PromiseLike<MessageTypes.TransactionResponse>) => void;
-    additionalAccountResolver: (value: MessageTypes.AdditionalAccountResponse | PromiseLike<MessageTypes.AdditionalAccountResponse>) => void;
-    authResolver: (value: MessageTypes.AuthenticationResponse | PromiseLike<MessageTypes.AuthenticationResponse>) => void;
-    signResolver: (value: MessageTypes.SigningResponse | PromiseLike<MessageTypes.SigningResponse>) => void;
+    if (!this._signClient) {
+      return accountIds;
+    }
 
-    // messages util
-    messageParser: MessageHandler;
-    messages: MessageUtil;
-    private metadata!: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata;
-
-    encryptionKeys: Record<string, string> = {}; //enc keys with topic id as the key
-
-    debug: boolean = false;
-    status: HashConnectConnectionState = HashConnectConnectionState.Disconnected; //do we even need this?
-
-    hcData: {
-        topic: string;
-        pairingString: string;
-        encryptionKey: string;
-        pairingData: HashConnectTypes.SavedPairingData[];
-    } = {
-            topic: "",
-            pairingString: "",
-            encryptionKey: "",
-            pairingData: [],
+    const sessions = this._signClient.session.getAll();
+    for (let i = 0; i < sessions.length; i++) {
+      const session = sessions[i];
+      if (session.namespaces.hedera?.accounts?.length > 0) {
+        for (let j = 0; j < session.namespaces.hedera.accounts.length; j++) {
+          const accountStr = session.namespaces.hedera.accounts[j];
+          const accountStrParts = accountStr.split(":");
+          accountIds.push(
+            AccountId.fromString(accountStrParts[accountStrParts.length - 1])
+          );
         }
-
-    constructor(debug?: boolean) {
-        this.relay = new WebSocketRelay(this);
-
-        this.foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
-        this.foundIframeEvent = new Event<HashConnectTypes.WalletMetadata>();
-        this.pairingEvent = new Event<MessageTypes.ApprovePairing>();
-        this.transactionEvent = new Event<MessageTypes.Transaction>();
-        this.acknowledgeMessageEvent = new Event<MessageTypes.Acknowledge>();
-        this.additionalAccountRequestEvent = new Event<MessageTypes.AdditionalAccountRequest>();
-        this.connectionStatusChangeEvent = new Event<HashConnectConnectionState>();
-        this.authRequestEvent = new Event<MessageTypes.AuthenticationRequest>();
-        this.signRequestEvent = new Event<MessageTypes.SigningRequest>();
-
-        this.messages = new MessageUtil();
-        this.messageParser = new MessageHandler();
-
-        if (debug) this.debug = debug;
-
-        this.setupEvents();
+      }
     }
 
-    async init(metadata: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, network: "testnet" | "mainnet" | "previewnet", singleAccount: boolean = true): Promise<HashConnectTypes.InitilizationData> {
+    return accountIds;
+  }
 
-        return new Promise(async (resolve) => {
-            let initData: HashConnectTypes.InitilizationData = {
-                topic: "",
-                pairingString: "",
-                encryptionKey: "",
-                savedPairings: []
-            };
+  constructor(
+    private readonly projectId: string,
+    private readonly metadata: SignClientTypes.Metadata,
+    private readonly _debug: boolean = false
+  ) {}
 
-            this.metadata = metadata;
+  getSigner(accountId: AccountId): Signer {
+    const targetAccountIdStr = accountId.toString();
 
-            if (this.debug) console.log("hashconnect - Initializing")
-
-            if (typeof window !== "undefined") {
-                this.metadata.url = window.location.origin;
-            } else if (!metadata.url) {
-                throw new Error("metadata.url must be defined if not running hashconnect within a browser");
-            }
-
-            await this.relay.init();
-
-            if (this.debug) console.log("hashconnect - Initialized")
-
-            if (!this.loadLocalData()) {
-                if (this.debug) console.log("hashconnect - No local data found, initializing");
-
-                //first init, store the private key in localstorage
-                this.hcData.encryptionKey = await this.generateEncryptionKeys();
-                this.metadata.encryptionKey = this.hcData.encryptionKey;
-                // this.metadata.publicKey = this.hcData.encryptionKey; //todo: remove as depracted
-                initData.encryptionKey = this.hcData.encryptionKey;
-
-                //then connect, storing the new topic in localstorage
-                const topic = await this.connect();
-                if (this.debug) console.log("hashconnect - Received state", topic);
-
-                this.hcData.topic = topic;
-                initData.topic = topic;
-
-                //generate a pairing string, which you can display and generate a QR code from
-                this.hcData.pairingString = this.generatePairingString(topic, network, !singleAccount);
-                initData.pairingString = this.hcData.pairingString;
-
-                this.saveDataInLocalstorage();
-
-                this.status = HashConnectConnectionState.Connected;
-                this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
-            }
-            else {
-                if (this.debug) console.log("hashconnect - Found saved local data", this.hcData);
-
-                this.metadata.encryptionKey = this.hcData.encryptionKey;
-
-                this.status = HashConnectConnectionState.Connecting;
-                this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connecting);
-                
-                initData.pairingString = this.hcData.pairingString;
-                initData.topic = this.hcData.topic;
-                initData.encryptionKey = this.hcData.encryptionKey;
-                initData.savedPairings = this.hcData.pairingData;
-
-                this.connect(initData.topic, this.metadata, initData.encryptionKey);
-
-                this.status = HashConnectConnectionState.Connected;
-                this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
-
-                for (let pairing of this.hcData.pairingData) {
-                    await this.connect(pairing.topic, pairing.metadata, pairing.encryptionKey);
-                }
-
-                if(this.hcData.pairingData.length > 0){
-                    this.status = HashConnectConnectionState.Paired;
-                    this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Paired);
-                }
-            }
-            
-            if (this.debug) console.log("hashconnect - init data", initData);
-
-            this.findLocalWallets();
-
-            resolve(initData);
-        });
+    if (!this._signClient) {
+      throw new Error("No sign client");
     }
 
-
-    async connect(topic?: string, metadataToConnect?: HashConnectTypes.AppMetadata | HashConnectTypes.WalletMetadata, encryptionKey?: string): Promise<string> {
-        if (!topic) {
-            topic = this.messages.createRandomTopicId();
-            this.encryptionKeys[topic] = this.hcData.encryptionKey;
-            if (this.debug) console.log("hashconnect - Created new topic id - " + topic);
+    const sessions = this._signClient?.session.getAll() ?? [];
+    for (let i = 0; i < sessions.length; i++) {
+      const session = sessions[i];
+      if (session.namespaces.hedera?.accounts?.length > 0) {
+        for (let j = 0; j < session.namespaces.hedera.accounts.length; j++) {
+          const accountStr = session.namespaces.hedera.accounts[j];
+          const accountStrParts = accountStr.split(":");
+          if (
+            accountStrParts[accountStrParts.length - 1] === targetAccountIdStr
+          ) {
+            return new HashConnectSigner(
+              targetAccountIdStr,
+              chainIdToLedgerId(getChainIdFromSession(session)),
+              this._signClient
+            );
+          }
         }
+      }
+    }
 
-        if (metadataToConnect){
-            this.encryptionKeys[topic] = encryptionKey as string;
+    throw new Error("No signer found for account id: " + accountId.toString());
+  }
+
+  async init(ledgerId: LedgerId): Promise<void> {
+    if (this._debug) console.log("hashconnect - Initializing");
+
+    if (typeof window !== "undefined") {
+      this.metadata.url = window.location.origin;
+    } else if (!this.metadata.url) {
+      throw new Error(
+        "metadata.url must be defined if not running hashconnect within a browser"
+      );
+    }
+
+    if (!this._signClient) {
+      this._signClient = await SignClient.init({
+        projectId: this.projectId,
+        metadata: this.metadata,
+      });
+      // add delay for race condition in SignClient.init that causes .connect to never resolve
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
+    }
+
+    this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
+
+    if (this._debug) {
+      console.log("hashconnect - Initialized");
+    }
+
+    const chainId = `eip155:${
+      ledgerId.isMainnet()
+        ? 295
+        : ledgerId.isTestnet()
+        ? 296
+        : ledgerId.isPreviewnet()
+        ? 297
+        : 298
+    }`;
+
+    // if (this._signClient.session) {
+    //   this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Paired);
+    //   if (this._debug) {
+    //     console.log("hashconnect - init called, but already paired");
+    //   }
+    //   return;
+    // }
+
+    if (this._debug) {
+      console.log("hashconnect - connecting");
+      console.log({ sessionLength: this._signClient.session.length });
+    }
+
+    //generate a pairing string, which you can display and generate a QR code from
+    const { uri, approval } = await this._signClient.connect({
+      requiredNamespaces: {
+        hedera: {
+          chains: [chainId],
+          events: ["accountsChanged", "connect", "disconnect"],
+          methods: ["hedera_signAndExecuteTransaction"],
+        },
+      },
+    });
+    this._pairingString = uri;
+
+    if (this._debug) {
+      console.log(`hashconnect - Pairing string created: ${uri}`);
+    }
+
+    if (approval) {
+      approval().then(async (approved) => {
+        if (this._debug) {
+          console.log("hashconnect - Approval received", approved);
         }
-
-        await this.relay.subscribe(topic);
-
-        return topic;
-    }
-
-    async disconnect(topic: string) {
-        if(topic != this.hcData.topic) //only unsub from topic if not dapp
-            await this.relay.unsubscribe(topic);
-
-        let index = this.hcData.pairingData.findIndex(pairing => pairing.topic == topic);
-        this.hcData.pairingData.splice(index, 1);
-
-        if(this.hcData.pairingData.length == 0){
-            this.status = HashConnectConnectionState.Connected;
-            this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
-        }
-
-        this.saveDataInLocalstorage();
-    }
-
-    /**
-     * Set up event connections
-     */
-    private setupEvents() {
-        // This will listen for a payload emission from the relay
-        if (this.debug) console.log("hashconnect - Setting up events");
-        this.relay.payload.on(async (payload) => {
-            if (!payload) return;
-
-            //this is redundant until protobuffs are re-implemented
-            const message: RelayMessage = await this.messages.decode(payload, this);
-
-            await this.messageParser.onPayload(message, this);
-        })
-
-        this.pairingEvent.on((pairingEvent) => {
-            this.hcData.pairingData.push(pairingEvent.pairingData!);
-
-            this.saveDataInLocalstorage();
-        })
-
-        this.foundIframeEvent.on(walletMetadata => {
-            if (this.debug) console.log("hashconnect - Found iframe wallet", walletMetadata);
-
-            this.connectToIframeParent();
-        })
-    }
-
-    /**
-     * Local data management
-     */
-    saveDataInLocalstorage() {
-        if (typeof window === "undefined" || typeof localStorage === "undefined") return;
-
-        let data = JSON.stringify(this.hcData);
-        
-        if (this.debug) console.log("hashconnect - saving local data", this.hcData);
-
-        localStorage.setItem("hashconnectData", data);
-    }
-
-    loadLocalData(): boolean {
-        if (typeof window === "undefined" || typeof localStorage === "undefined") return false;
-
-        let foundData = localStorage.getItem("hashconnectData");
-
-        if (foundData) {
-            let data = JSON.parse(foundData);
-            
-            if(!data.pairingData || !data.encryptionKey) {
-                if (this.debug) console.log("hashconnect - legacy save data found, creating new data");
-                return false;
-            }
-
-            this.hcData = data;
-            return true;
-        }
-        else
-            return false;
-    }
-
-    async clearConnectionsAndData() {
-        if (this.debug) console.log("hashconnect - clearing local data - you will need to run init() again");
-
-        for (let pairing of this.hcData.pairingData) {
-            await this.relay.unsubscribe(pairing.topic);
-        }
-
-        this.hcData = {
-            topic: "",
-            pairingString: "",
-            encryptionKey: "",
-            pairingData: [],
-        };
-
-        if (typeof localStorage !== "undefined") {
-            localStorage.removeItem("hashconnectData");
-        }
-        
-        this.status = HashConnectConnectionState.Disconnected;
-        this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Disconnected);
-    }
-
-
-    /**
-     * Send functions
-     */
-    async sendTransaction(topic: string, transaction: MessageTypes.Transaction): Promise<MessageTypes.TransactionResponse> {
-        transaction.byteArray = Buffer.from(transaction.byteArray).toString("base64");
-
-        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.Transaction, transaction, topic, this);
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
-        this.sendEncryptedLocalTransaction(msg);
-
-        return await new Promise<MessageTypes.TransactionResponse>(resolve => this.transactionResolver = resolve)
-    }
-
-    async requestAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountRequest): Promise<MessageTypes.AdditionalAccountResponse> {
-        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountRequest, message, topic, this);
-
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
-
-        return await new Promise<MessageTypes.AdditionalAccountResponse>(resolve => this.additionalAccountResolver = resolve)
-
-    }
-
-    async sendAdditionalAccounts(topic: string, message: MessageTypes.AdditionalAccountResponse): Promise<string> {
-        message.accountIds = message.accountIds.map(id => { return id });
-
-        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AdditionalAccountResponse, message, topic, this);
-
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
-
-        return message.id!;
-    }
-
-    async sendTransactionResponse(topic: string, message: MessageTypes.TransactionResponse): Promise<string> {
-        if (message.receipt) message.receipt = Buffer.from(message.receipt).toString("base64");
-        if (message.signedTransaction) message.signedTransaction = Buffer.from(message.signedTransaction).toString("base64");
-
-        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.TransactionResponse, message, topic, this);
-
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
-
-        return message.id!;
-    }
-
-    async pair(pairingData: HashConnectTypes.PairingStringData, accounts: string[], network: string): Promise<HashConnectTypes.SavedPairingData> {
-        if (this.debug) console.log("hashconnect - Pairing to " + pairingData.metadata.name);
-        let state = await this.connect(pairingData.topic);
-
-        let msg: MessageTypes.ApprovePairing = {
-            metadata: this.metadata as HashConnectTypes.WalletMetadata,
-            topic: pairingData.topic,
-            accountIds: accounts,
-            network: network
-        }
-
-        let newPairingData: HashConnectTypes.SavedPairingData = {
-            accountIds: msg.accountIds,
-            metadata: pairingData.metadata,
-            network: msg.network,
-            topic: msg.topic,
-            origin: msg.origin,
-            lastUsed: new Date().getTime(),
-            encryptionKey: pairingData.metadata.encryptionKey || pairingData.metadata.publicKey!,
-        }
-
-        this.hcData.pairingData.push(newPairingData);
-        this.saveDataInLocalstorage();
-
-
-        //todo: remove as backwards compatibility
-        if(newPairingData.metadata.publicKey) { //this is a old version of hashconnect trying to connect, do some trickery for backwards compatibility
-            msg.metadata.publicKey = newPairingData.metadata.publicKey;
-        }
-
-        //clean up pairing data
-        msg.metadata.description = this.sanitizeString(msg.metadata.description);
-        msg.metadata.name = this.sanitizeString(msg.metadata.name);
-        msg.network = this.sanitizeString(msg.network);
-        msg.metadata.url = this.sanitizeString(msg.metadata.url!);
-        msg.accountIds = msg.accountIds.map(id => { return id });
-
-        //todo: remove as backwards compatibility (if statement only)
-        if(pairingData.metadata.encryptionKey) msg.metadata.encryptionKey = pairingData.metadata.encryptionKey; 
-
-        //set topic/key mapping
-        this.encryptionKeys[pairingData.topic] = pairingData.metadata.encryptionKey as string;
-        if(pairingData.metadata.publicKey) this.encryptionKeys[pairingData.topic] = pairingData.metadata.publicKey as string; //todo: remove as backwards compatibility
-
-        //send pairing approval
-        const payload = await this.messages.prepareSimpleMessage(RelayMessageType.ApprovePairing, msg, msg.topic, this)
-
-        this.relay.publish(pairingData.topic, payload, this.encryptionKeys[pairingData.topic])
-
-        return newPairingData;
-    }
-
-    async reject(topic: string, reason: string, msg_id: string) {
-        let reject: MessageTypes.Rejected = {
-            reason: reason,
-            topic: topic,
-            msg_id: msg_id
-        }
-
-        reject.reason = this.sanitizeString(reject.reason!);
-
-        // create protobuf message
-        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.RejectPairing, reject, topic, this)
-
-        // Publish the rejection
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
-    }
-
-    async acknowledge(topic: string, pubKey: string, msg_id: string) {
-        const ack: MessageTypes.Acknowledge = {
-            result: true,
-            topic: topic,
-            msg_id: msg_id
-        }
-
-        const ackPayload = await this.messages.prepareSimpleMessage(RelayMessageType.Acknowledge, ack, topic, this);
-        await this.relay.publish(topic, ackPayload, pubKey)
-    }
-
-
-    /**
-     * Authenticate
-     */
-
-    async authenticate(topic: string, account_id: string, server_signing_account: string, serverSignature: Uint8Array, payload: { url: string, data: any }): Promise<MessageTypes.AuthenticationResponse> {
-        let message: MessageTypes.AuthenticationRequest = {
-            topic: topic,
-            accountToSign: account_id,
-            serverSigningAccount: server_signing_account,
-            serverSignature: serverSignature,
-            payload: payload
-        }
-
-        message.serverSignature = Buffer.from(message.serverSignature).toString("base64")
-        console.log(message.serverSignature)
-        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AuthenticationRequest, message, topic, this);
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
-        this.sendEncryptedLocalTransaction(msg);
-
-        return await new Promise<MessageTypes.AuthenticationResponse>(resolve => this.authResolver = resolve)
-    }
-
-    async sendAuthenticationResponse(topic: string, message: MessageTypes.AuthenticationResponse): Promise<string> {
-        if (message.userSignature) message.userSignature = Buffer.from(message.userSignature).toString("base64");
-        if (message.signedPayload) message.signedPayload.serverSignature = Buffer.from(message.signedPayload.serverSignature).toString("base64");
-
-        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.AuthenticationResponse, message, topic, this);
-
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
-
-        return message.id!;
-    }
- 
-    /**
-     * Generic Signing
-     */
-
-    async sign(topic: string, account_id: string, payload: any): Promise<MessageTypes.SigningResponse> {
-        let message: MessageTypes.SigningRequest = {
-            topic: topic,
-            accountToSign: account_id,
-            payload: payload
-        }
-
-        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.SigningRequest, message, topic, this);
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
-        this.sendEncryptedLocalTransaction(msg);
-
-        return await new Promise<MessageTypes.SigningResponse>(resolve => this.signResolver = resolve)
-    }
-
-    async sendSigningResponse(topic: string, message: MessageTypes.SigningResponse): Promise<string> {
-        if (message.userSignature) message.userSignature = Buffer.from(message.userSignature).toString("base64");
-
-        const msg = await this.messages.prepareSimpleMessage(RelayMessageType.SigningResponse, message, topic, this);
-
-        await this.relay.publish(topic, msg, this.encryptionKeys[topic]);
-
-        return message.id!;
-    }
-
-
-    /**
-     * Helpers
-     */
-
-    generatePairingString(topic: string, network: string, multiAccount: boolean): string {
-        if (this.debug) console.log("hashconnect - Generating pairing string");
-
-        let data: HashConnectTypes.PairingStringData = {
+        if (approved) {
+          this.connectionStatusChangeEvent.emit(
+            HashConnectConnectionState.Paired
+          );
+
+          this.pairingEvent.emit({
+            pairingData: undefined,
             metadata: this.metadata,
-            topic: topic,
-            network: network,
-            multiAccount: multiAccount,
+            accountIds: this.connectedAccountIds.map((a) => a.toString()),
+            topic: approved.topic,
+            network: ledgerId.toString(),
+          });
         }
+      });
+    } else {
+      console.error("hashconnect - No approval function found");
+    }
+  }
 
-        data.metadata.description = this.sanitizeString(data.metadata.description);
-        data.metadata.name = this.sanitizeString(data.metadata.name);
-        data.network = this.sanitizeString(data.network);
-        data.metadata.url = this.sanitizeString(data.metadata.url!);
+  async connect(ledgerId: LedgerId): Promise<void> {
+    await this.init(ledgerId);
+  }
 
-        let pairingString: string = Buffer.from(JSON.stringify(data)).toString("base64")
-
-        this.hcData.pairingString = pairingString;
-
-        return pairingString;
+  async disconnect() {
+    if (!this._signClient) {
+      return;
     }
 
-    decodePairingString(pairingString: string) {
-        let json_string: string = Buffer.from(pairingString, 'base64').toString();
-        let data: HashConnectTypes.PairingStringData = JSON.parse(json_string);
-
-        return data;
-    }
-
-    private async generateEncryptionKeys(): Promise<string> { //https://github.com/diafygi/webcrypto-examples/#rsa-oaep---encrypt
-        let key = this.messages.createRandomTopicId()
-
-        if (this.debug) console.log("hashconnect - Generated new encryption key - " + key);
-
-        return key;
-    }
-
-    private sanitizeString(str: string) {
-        if(!str) return "";
-        
-        return str.replace(/[^\w. ]/gi, function (c) {
-            if (c == ".") return ".";
-            return '&#' + c.charCodeAt(0) + ';';
+    await Promise.all(
+      this._signClient.session.getAll().map(async (session) => {
+        await this._signClient?.disconnect({
+          topic: session.topic,
+          reason: getSdkError("USER_DISCONNECTED"),
         });
+      })
+    );
+    this.connectionStatusChangeEvent.emit(
+      HashConnectConnectionState.Disconnected
+    );
+  }
+
+  /**
+   * Send a transaction to hashpack for signing and execution
+   * @param accountId
+   * @param transaction
+   * @returns
+   * @example
+   * ```ts
+   * const transactionResponse = await hashconnect.sendTransaction(
+   *  accountId,
+   *  transaction
+   * );
+   * ```
+   * @category Transactions
+   */
+  async sendTransaction(
+    accountId: AccountId,
+    transaction: Transaction
+  ): Promise<TransactionResponse> {
+    const signer = this.getSigner(accountId);
+    return await signer.call(transaction);
+  }
+
+  /**
+   * Sign a message. This is a convenience method that calls `getSigner` and then `sign` on the signer
+   * @param accountId
+   * @param message
+   * @returns
+   * @example
+   * ```ts
+   * const signerSignature = await hashconnect.signMessage(
+   *   accountId,
+   *   ["Hello World"]
+   * );
+   */
+  async signMessages(
+    accountId: AccountId,
+    message: string[]
+  ): Promise<SignerSignature[]> {
+    const signer = this.getSigner(accountId);
+    return await signer.sign(message.map((m) => Buffer.from(m)));
+  }
+
+  /**
+   * Sign a transaction. This is a convenience method that calls `getSigner` and then `signTransaction` on the signer
+   * @param accountId
+   * @param transaction
+   * @returns
+   * @example
+   * ```ts
+   * const transaction = new TransferTransaction()
+   *  .addHbarTransfer(accountId, new Hbar(-1))
+   *  .addHbarTransfer(toAccountId, new Hbar(1))
+   *  .setNodeAccountIds(nodeAccoutIds)
+   *  .setTransactionId(TransactionId.generate(accountId))
+   *  .freeze();
+   * const signedTransaction = await hashconnect.signTransaction(
+   *  accountId,
+   *  transaction
+   * );
+   * ```
+   * @category Transactions
+   */
+  async signTransaction(
+    accountId: AccountId,
+    transaction: Transaction
+  ): Promise<Transaction> {
+    const signer = this.getSigner(accountId);
+    return await signer.signTransaction(transaction);
+  }
+
+  /**
+   * Verify the server signature of an authentication request and generate a signature for the account
+   * @param accountId
+   * @param serverSigningAccount
+   * @param serverSignature
+   * @param payload
+   * @returns
+   * @example
+   * ```ts
+   * const { accountSignature } = await hashconnect.authenticate(
+   *   accountId,
+   *   serverSigningAccountId,
+   *   serverSignature,
+   *   {
+   *     url: "https://example.com",
+   *     data: { foo: "bar" },
+   *   }
+   * );
+   * ```
+   * @category Authentication
+   */
+  async authenticate(
+    accountId: AccountId,
+    serverSigningAccount: AccountId,
+    serverSignature: Uint8Array,
+    payload: { url: string; data: any }
+  ): Promise<{
+    accountSignature: Uint8Array;
+  }> {
+    const signer = this.getSigner(accountId);
+    const payloadBytes = new Uint8Array(Buffer.from(JSON.stringify(payload)));
+    const signatures = await signer.sign([payloadBytes]);
+    return { accountSignature: signatures[0].signature };
+  }
+
+  /**
+   * Verify that the payload was signed by the account
+   * @param accountId
+   * @param accountSignature
+   * @param payload
+   * @param getPublicKey
+   * @returns
+   * @example
+   * ```ts
+   * const { isValid, error } = await hashconnect.verifyAuthenticationSignatures(
+   *   accountId,
+   *   accountSignature,
+   *   "Hello World",
+   *   async (accountId) => {
+   *     // Use custom logic to get the public key of the account
+   *     // in this example we use the hedera public mirror node.
+   *     const response = await fetch(
+   *       `https://mainnet-public.mirrornode.hedera.com/api/v1/accounts/${accountId.toString()}`
+   *     );
+   *     const accountInfo = await response.json();
+   *     return PublicKey.fromString(accountInfo.key.key);
+   *   }
+   * );
+   * ```
+   * @category Authentication
+   * @category Signature Verification
+   */
+  async verifySignature(
+    accountId: AccountId,
+    accountSignature: Uint8Array,
+    payload: any,
+    getPublicKey: (accountId: AccountId) => Promise<PublicKey>
+  ): Promise<{
+    isValid: boolean;
+    error?: string;
+  }> {
+    const payloadBytes = new Uint8Array(Buffer.from(JSON.stringify(payload)));
+
+    const accountPublicKey = await getPublicKey(accountId);
+    const accountSignatureIsValid = accountPublicKey.verify(
+      payloadBytes,
+      accountSignature
+    );
+    if (!accountSignatureIsValid) {
+      return {
+        isValid: false,
+        error: "Account signature is invalid",
+      };
     }
 
-    /**
-     * Local wallet stuff
-     */
+    return { isValid: true };
+  }
 
-     findLocalWallets() {
-        if (typeof window === "undefined") {
-            if (this.debug) console.log("hashconnect - Cancel findLocalWallets - no window object")
-            return;
-        }
+  /**
+   * Verify the signatures of an authentication request by verifying the account and server signatures
+   * @param accountId
+   * @param accountSignature
+   * @param serverSigningAccountId
+   * @param serverSignature
+   * @param payload
+   * @param getPublicKey
+   * @returns
+   * @example
+   * ```ts
+   * const { isValid, error } = await hashconnect.verifyAuthenticationSignatures(
+   *   accountId,
+   *   accountSignature,
+   *   serverSigningAccountId,
+   *   serverSignature,
+   *   {
+   *     url: "https://example.com",
+   *     data: { foo: "bar" },
+   *   },
+   *   async (accountId) => {
+   *     // Use custom logic to get the public key of the account
+   *     // in this example we use the hedera public mirror node.
+   *     const response = await fetch(
+   *       `https://mainnet-public.mirrornode.hedera.com/api/v1/accounts/${accountId.toString()}`
+   *     );
+   *     const accountInfo = await response.json();
+   *     return PublicKey.fromString(accountInfo.key.key);
+   *   }
+   * );
+   * ```
+   * @category Authentication
+   */
+  async verifyAuthenticationSignatures(
+    accountId: AccountId,
+    accountSignature: Uint8Array,
+    serverSigningAccountId: AccountId,
+    serverSignature: Uint8Array,
+    payload: { url: string; data: any },
+    getPublicKey: (accountId: AccountId) => Promise<PublicKey>
+  ): Promise<{
+    isValid: boolean;
+    error?: string;
+  }> {
+    const { isValid: accountSignatureIsValid } = await this.verifySignature(
+      accountId,
+      accountSignature,
+      payload,
+      getPublicKey
+    );
+    const { isValid: serverSignatureIsValid } = await this.verifySignature(
+      serverSigningAccountId,
+      serverSignature,
+      payload,
+      getPublicKey
+    );
 
-        if (this.debug) console.log("hashconnect - Finding local wallets");
-        window.addEventListener("message", (event) => {
-            if (event.data.type && (event.data.type == "hashconnect-query-extension-response")) {
-                if (this.debug) console.log("hashconnect - Local wallet metadata recieved", event.data);
-                if (event.data.metadata)
-                    this.foundExtensionEvent.emit(event.data.metadata);
-            }
-
-            if (event.data.type && event.data.type == "hashconnect-iframe-response") {
-                if (this.debug) console.log("hashconnect - iFrame wallet metadata recieved", event.data);
-
-                if (event.data.metadata)
-                    this.foundIframeEvent.emit(event.data.metadata);
-            }
-        }, false);
-
-        setTimeout(() => {
-            window.postMessage({ type: "hashconnect-query-extension" }, "*");
-            if (window.parent) window.parent.postMessage({ type: "hashconnect-iframe-query" }, '*');
-        }, 50);
+    if (!accountSignatureIsValid && !serverSignatureIsValid) {
+      return {
+        isValid: false,
+        error: "Account and server signatures are invalid",
+      };
+    } else if (!accountSignatureIsValid) {
+      return {
+        isValid: false,
+        error: "Account signature is invalid",
+      };
+    } else if (!serverSignatureIsValid) {
+      return {
+        isValid: false,
+        error: "Server signature is invalid",
+      };
     }
 
-    connectToIframeParent() {
-        if (typeof window === "undefined") {
-            if (this.debug) console.log("hashconnect - Cancel iframe connection - no window object")
-            return;
-        }
-
-        if (this.debug) console.log("hashconnect - Connecting to iframe parent wallet")
-
-        window.parent.postMessage({ type: "hashconnect-iframe-pairing", pairingString: this.hcData.pairingString }, '*');
-    }
-
-    connectToLocalWallet() {
-        if (typeof window === "undefined") {
-            if (this.debug) console.log("hashconnect - Cancel connect to local wallet - no window object")
-            return;
-        }
-
-        if (this.debug) console.log("hashconnect - Connecting to local wallet")
-        //todo: add extension metadata support
-        window.postMessage({ type: "hashconnect-connect-extension", pairingString: this.hcData.pairingString }, "*")
-    }
-
-    sendEncryptedLocalTransaction(message: string) {
-        if (typeof window === "undefined") {
-            if (this.debug) console.log("hashconnect - Cancel send local transaction - no window object")
-            return;
-        }
-
-        if (this.debug) console.log("hashconnect - sending local transaction", message);
-        window.postMessage({ type: "hashconnect-send-local-transaction", message: message }, "*")
-    }
-
-    async decodeLocalTransaction(message: string) {
-        const local_message: RelayMessage = await this.messages.decode(message, this);
-
-        return local_message;
-    }
-
-    /**
-     * Provider stuff
-     */
-
-    getProvider(network: string, topicId: string, accountToSign: string): HashConnectProvider {
-        return new HashConnectProvider(network, this, topicId, accountToSign);
-    }
-
-    getSigner(provider: HashConnectProvider): HashConnectSigner {
-        return new HashConnectSigner(this, provider, provider.accountToSign, provider.topicId);
-    }
-
-    getPairingByTopic(topic: string) {
-        let pairingData: HashConnectTypes.SavedPairingData | undefined = this.hcData.pairingData.find(pairing => {
-            return pairing.topic == topic;
-        })
-
-        if(!pairingData) {
-            return null;
-        }
-
-        return pairingData;
-    }
+    return { isValid: true };
+  }
 }

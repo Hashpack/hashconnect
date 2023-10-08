@@ -1,10 +1,9 @@
-import { Transaction, AccountId, LedgerId, PrivateKey } from "@hashgraph/sdk";
+import { AccountId, LedgerId, PrivateKey } from "@hashgraph/sdk";
 import { HashConnectWallet, MessageTypes } from "hashconnect";
 import { createContext, useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppStore, actions } from "../store";
 
-const env = "testnet";
 const projectId = "20b7ba9c31e88f674fca101479b6c898";
 const walletMetadata = {
   name: "Example Wallet",
@@ -13,31 +12,6 @@ const walletMetadata = {
   url: "https://www.hashpack.app",
 };
 const hc = new HashConnectWallet(projectId, walletMetadata, true);
-// const sendAuthenticationResponse = async (
-//   topic: string,
-//   response: MessageTypes.AuthenticationResponse
-// ) => {
-//   const result = await hc.sendAuthenticationResponse(topic, response);
-//   return result;
-// };
-
-// const sendSigningResponse = async (
-//   topic: string,
-//   response: MessageTypes.SigningResponse
-// ) => {
-//   const result = await hc.sendSigningResponse(topic, response);
-//   return result;
-// };
-
-// const sendTransactionResponse = async (
-//   topic: string,
-//   response: MessageTypes.TransactionResponse
-// ) => {
-//   const result = await hc.sendTransactionResponse(topic, response);
-//   return result;
-// };
-
-// Approve pairing
 
 const initPairing = async (pairingString: string) => {
   await hc.initPairing(pairingString);
@@ -50,16 +24,23 @@ const approvePairing = async (pairingId: number, accounts: string[]) => {
   );
 };
 
+export interface SignerRequest {
+  request:
+    | MessageTypes.Transaction
+    | MessageTypes.SigningRequest
+    | MessageTypes.AuthenticationRequest;
+  executionSuccessPromise: Promise<boolean>;
+  approve: () => void;
+  deny: () => void;
+}
+
 export const HashConnectWalletContext = createContext({
   hc,
   proposals: [] as MessageTypes.PairingProposal[],
-  // transactionRequests: [] as MessageTypes.Transaction[],
+  signerRequests: [] as SignerRequest[],
   helpers: {
-    // sendAuthenticationResponse,
-    // sendSigningResponse,
     initPairing,
     approvePairing,
-    // sendTransactionResponse,
   },
 });
 
@@ -85,6 +66,12 @@ export const HashConnectWalletProvider = ({
   const [pairingProposals, setPairingProposals] = useState<
     MessageTypes.PairingProposal[]
   >([]);
+
+  const [signerRequests, setSignerRequests] = useState<SignerRequest[]>([]);
+
+  console.log({
+    signerRequests,
+  });
 
   const pkResolver = useCallback(
     async (ledgerId: LedgerId, accountId: AccountId) => {
@@ -113,7 +100,38 @@ export const HashConnectWalletProvider = ({
   useEffect(() => {
     // initialize hashconnect
     hc.init();
-    hc.setSignerInterceptor(() => Promise.resolve(true));
+    hc.setSignerInterceptor((request, executionSuccessPromise) => {
+      // when execution is successful, remove the request from signerRequests
+      executionSuccessPromise.then((success) => {
+        if (success) {
+          setSignerRequests((prev) =>
+            prev.filter(
+              (o) =>
+                !(
+                  o.request.id === request.id &&
+                  o.request.topic === request.topic
+                )
+            )
+          );
+        }
+      });
+
+      return new Promise((resolve) => {
+        setSignerRequests((prev) => [
+          ...prev,
+          {
+            request,
+            executionSuccessPromise,
+            approve: () => {
+              resolve(true);
+            },
+            deny: () => {
+              resolve(false);
+            },
+          },
+        ]);
+      });
+    });
 
     const pairingProposalCallback = (
       proposal: MessageTypes.PairingProposal
@@ -135,6 +153,7 @@ export const HashConnectWalletProvider = ({
     <HashConnectWalletContext.Provider
       value={{
         hc,
+        signerRequests,
         proposals: pairingProposals,
         helpers: {
           approvePairing,

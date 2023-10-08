@@ -15,5 +15,6 @@ export type HashConnectWalletSignerInterceptor = (
   signingRequest:
     | MessageTypes.Transaction
     | MessageTypes.SigningRequest
-    | MessageTypes.AuthenticationRequest
+    | MessageTypes.AuthenticationRequest,
+  executionSuccessPromise: Promise<boolean>
 ) => Promise<boolean>;

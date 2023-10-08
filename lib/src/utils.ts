@@ -1,34 +1,4 @@
-import { LedgerId } from "@hashgraph/sdk";
 import { SignClientTypes, SessionTypes } from "@walletconnect/types";
-
-const defaultChainId = 298;
-const defaultLedgerId = LedgerId.LOCAL_NODE;
-const ledgerIdToChainIdMappings: [LedgerId, number][] = [
-  [LedgerId.MAINNET, 295],
-  [LedgerId.TESTNET, 296],
-  [LedgerId.PREVIEWNET, 297],
-  [LedgerId.LOCAL_NODE, 298],
-];
-
-export const chainIdToLedgerId = (chainId: number): LedgerId => {
-  for (let i = 0; i < ledgerIdToChainIdMappings.length; i++) {
-    const [ledgerId, chainId_] = ledgerIdToChainIdMappings[i];
-    if (chainId === chainId_) {
-      return ledgerId;
-    }
-  }
-  return defaultLedgerId;
-};
-
-export const ledgerIdToChainId = (ledgerId: LedgerId): number => {
-  for (let i = 0; i < ledgerIdToChainIdMappings.length; i++) {
-    const [ledgerId_, chainId] = ledgerIdToChainIdMappings[i];
-    if (ledgerId === ledgerId_) {
-      return chainId;
-    }
-  }
-  return defaultChainId;
-};
 
 export const getChainIdFromProposal = (
   proposal: SignClientTypes.EventArguments["session_proposal"]
@@ -46,16 +16,7 @@ export const getChainIdFromProposal = (
     );
   }
 
-  const chainIdParts =
-    proposal.params.requiredNamespaces.hedera.chains[0].split(":");
-  const chainIdStr = chainIdParts[chainIdParts.length - 1];
-  const chainId = Number.parseInt(chainIdStr!);
-
-  if (!chainId || isNaN(chainId)) {
-    throw new Error("Chain ID not found on proposal");
-  }
-
-  return chainId;
+  return proposal.params.requiredNamespaces.hedera.chains[0];
 };
 
 export const getChainIdFromSession = (session: SessionTypes.Struct) => {
@@ -72,13 +33,5 @@ export const getChainIdFromSession = (session: SessionTypes.Struct) => {
     );
   }
 
-  const chainIdParts = session.namespaces.hedera.chains[0].split(":");
-  const chainIdStr = chainIdParts[chainIdParts.length - 1];
-  const chainId = Number.parseInt(chainIdStr!);
-
-  if (!chainId || isNaN(chainId)) {
-    throw new Error("Chain ID not found on session");
-  }
-
-  return chainId;
+  return session.namespaces.hedera.chains[0];
 };

@@ -7,15 +7,17 @@ import {
   TransactionResponse,
   Signer,
   PublicKey,
-  RequestType,
 } from "@hashgraph/sdk";
 import { HashConnectConnectionState, MessageTypes } from "./types";
 import SignClient from "@walletconnect/sign-client";
 import { SignClientTypes } from "@walletconnect/types";
 import { getSdkError } from "@walletconnect/utils";
 import { HashConnectSigner } from "./signer";
-import { chainIdToLedgerId, getChainIdFromSession } from "./utils";
-import { HederaSessionRequest } from "@hgraph.io/hedera-walletconnect-utils";
+import { getChainIdFromSession } from "./utils";
+import {
+  CAIPChainIdToLedgerId,
+  ledgerIdToCAIPChainId,
+} from "@hgraph.io/hedera-walletconnect-utils";
 
 global.Buffer = global.Buffer || require("buffer").Buffer;
 
@@ -81,7 +83,7 @@ export class HashConnect {
           ) {
             return new HashConnectSigner(
               targetAccountIdStr,
-              chainIdToLedgerId(getChainIdFromSession(session)),
+              CAIPChainIdToLedgerId(getChainIdFromSession(session)),
               this._signClient
             );
           }
@@ -109,7 +111,7 @@ export class HashConnect {
         metadata: this.metadata,
       });
       // add delay for race condition in SignClient.init that causes .connect to never resolve
-      await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
+      await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
     }
 
     this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
@@ -117,24 +119,6 @@ export class HashConnect {
     if (this._debug) {
       console.log("hashconnect - Initialized");
     }
-
-    const chainId = `eip155:${
-      ledgerId.isMainnet()
-        ? 295
-        : ledgerId.isTestnet()
-        ? 296
-        : ledgerId.isPreviewnet()
-        ? 297
-        : 298
-    }`;
-
-    // if (this._signClient.session) {
-    //   this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Paired);
-    //   if (this._debug) {
-    //     console.log("hashconnect - init called, but already paired");
-    //   }
-    //   return;
-    // }
 
     if (this._debug) {
       console.log("hashconnect - connecting");
@@ -145,9 +129,13 @@ export class HashConnect {
     const { uri, approval } = await this._signClient.connect({
       requiredNamespaces: {
         hedera: {
-          chains: [chainId],
+          chains: [ledgerIdToCAIPChainId(ledgerId)],
           events: ["accountsChanged", "connect", "disconnect"],
-          methods: ["hedera_signAndExecuteTransaction"],
+          methods: [
+            "hedera_signAndExecuteTransaction",
+            "hedera_signAndReturnTransaction",
+            "hedera_signMessage",
+          ],
         },
       },
     });
@@ -220,9 +208,13 @@ export class HashConnect {
   async sendTransaction(
     accountId: AccountId,
     transaction: Transaction
-  ): Promise<TransactionResponse> {
+  ): Promise<TransactionResponse | Error> {
     const signer = this.getSigner(accountId);
-    return await signer.call(transaction);
+    try {
+      return await signer.call(transaction);
+    } catch (error: any) {
+      return error;
+    }
   }
 
   /**

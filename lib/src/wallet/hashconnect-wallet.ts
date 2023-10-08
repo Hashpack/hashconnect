@@ -1,18 +1,27 @@
-import { AccountId, LedgerId, Signer, Transaction } from "@hashgraph/sdk";
+import { AccountId, LedgerId } from "@hashgraph/sdk";
 import { PrivateKeyResolver } from "./private-key-resolver";
 import { Event } from "ts-typed-events";
-import { HashconnectWalletSignerFactory } from "./hashconnect-wallet-signer-factory";
 import { HashConnectWalletSignerInterceptor } from "./hashconnect-wallet-signer-interceptor";
 import SignClient from "@walletconnect/sign-client";
 import { EngineTypes, SignClientTypes } from "@walletconnect/types";
 import { MessageTypes } from "../types";
-import { chainIdToLedgerId, getChainIdFromProposal } from "../utils";
+import { getChainIdFromProposal, getChainIdFromSession } from "../utils";
+import {
+  CAIPChainIdToLedgerId,
+  HederaSignAndExecuteTransactionParams,
+  HederaSignAndExecuteTransactionResponse,
+  HederaSignAndReturnTransactionParams,
+  HederaSignAndReturnTransactionResponse,
+  HederaSignMessageParams,
+  HederaSignMessageResponse,
+  HederaWallet,
+  base64StringToTransaction,
+} from "@hgraph.io/hedera-walletconnect-utils";
 
 global.Buffer = global.Buffer || require("buffer").Buffer;
 
 export class HashConnectWallet {
   private _signClient?: SignClient;
-  private _signers: Signer[] = [];
   private _pkResolver: PrivateKeyResolver = async (
     _: LedgerId,
     __: AccountId
@@ -45,7 +54,7 @@ export class HashConnectWallet {
     }
 
     const chainId = getChainIdFromProposal(proposal);
-    const ledgerId = chainIdToLedgerId(chainId);
+    const ledgerId = CAIPChainIdToLedgerId(chainId);
 
     this._proposals.set(proposal.id, proposal);
     this.pairingProposalEvent.emit({
@@ -53,6 +62,35 @@ export class HashConnectWallet {
       ledgerId: ledgerId,
       metadata: proposal.params.proposer.metadata,
     });
+  }
+
+  private async _getHederaWalletForSessionTopicAccount(
+    topic: string,
+    accountId: string
+  ) {
+    if (!this._signClient) {
+      throw new Error("No sign client");
+    }
+
+    const session = this._signClient.session.getAll().find((session) => {
+      return session.topic === topic;
+    });
+
+    if (!session) {
+      throw new Error("Session not found");
+    }
+
+    const chainId = getChainIdFromSession(session);
+    const ledgerId = CAIPChainIdToLedgerId(chainId);
+    const hederaWallet = HederaWallet.init({
+      accountId: accountId,
+      privateKey: (
+        await this._pkResolver(ledgerId, AccountId.fromString(accountId))
+      ).toStringRaw(),
+      network: ledgerId.toString() as any,
+    });
+
+    return hederaWallet;
   }
 
   private async _onReceiveRequest(
@@ -66,20 +104,167 @@ export class HashConnectWallet {
       throw new Error("No sign client");
     }
 
-    const { method, params } = request.params.request;
-    if (method === "hedera_signAndExecuteTransaction") {
-      const decoded = Buffer.from(params?.transaction?.bytes, "base64");
-      const transaction = Transaction.fromBytes(decoded);
+    let executionSuccessPromiseResolver = (value: boolean) => {};
+    const executionSuccessPromise = new Promise<boolean>((res) => {
+      executionSuccessPromiseResolver = res;
+    });
 
-      const signer = this._signers[0];
-      const response = await signer.call(transaction);
+    const method = request.params.request.method;
+    if (method === "hedera_signAndExecuteTransaction") {
+      const params = request.params.request
+        .params as HederaSignAndExecuteTransactionParams;
+
+      const shouldSign = await this._signerInterceptor(
+        {
+          id: `${request.id}`,
+          topic: request.topic,
+          byteArray: params.transaction.bytes,
+          metadata: {
+            accountToSign: params.signerAccountId,
+            returnTransaction: false,
+          },
+        },
+        executionSuccessPromise
+      );
+
+      if (!shouldSign) {
+        const wcResponse: EngineTypes.RespondParams = {
+          topic: request.topic,
+          response: {
+            id: request.id,
+            jsonrpc: "none",
+            result: "rejected by user",
+          },
+        };
+        await this._signClient.respond(wcResponse);
+        return;
+      }
+
+      const hederaWallet = await this._getHederaWalletForSessionTopicAccount(
+        request.topic,
+        params.signerAccountId
+      );
+      const transaction = base64StringToTransaction(params.transaction.bytes);
+
+      let result: HederaSignAndExecuteTransactionResponse | null = null;
+      try {
+        result = await hederaWallet.signAndExecuteTransaction(transaction);
+        executionSuccessPromiseResolver(true);
+      } catch (err) {
+        console.error(err);
+        executionSuccessPromiseResolver(false);
+      }
 
       const wcResponse: EngineTypes.RespondParams = {
         topic: request.topic,
         response: {
           id: request.id,
-          jsonrpc: response.transactionId.toString(),
-          result: response.toJSON(),
+          jsonrpc: transaction.transactionId?.toString() ?? "none",
+          result: result ? result : "failed to sign and execute transaction",
+        },
+      };
+      await this._signClient.respond(wcResponse);
+    } else if (method === "hedera_signAndReturnTransaction") {
+      const params = request.params.request
+        .params as HederaSignAndReturnTransactionParams;
+
+      const shouldSign = await this._signerInterceptor(
+        {
+          id: `${request.id}`,
+          topic: request.topic,
+          byteArray: params.transaction.bytes,
+          metadata: {
+            accountToSign: params.signerAccountId,
+            returnTransaction: true,
+          },
+        },
+        executionSuccessPromise
+      );
+
+      if (!shouldSign) {
+        const wcResponse: EngineTypes.RespondParams = {
+          topic: request.topic,
+          response: {
+            id: request.id,
+            jsonrpc: "none",
+            result: "rejected by user",
+          },
+        };
+        await this._signClient.respond(wcResponse);
+        return;
+      }
+
+      const hederaWallet = await this._getHederaWalletForSessionTopicAccount(
+        request.topic,
+        params.signerAccountId
+      );
+      const transaction = base64StringToTransaction(params.transaction.bytes);
+
+      let result: HederaSignAndReturnTransactionResponse | null = null;
+      try {
+        result = await hederaWallet.signAndReturnTransaction(transaction);
+        executionSuccessPromiseResolver(true);
+      } catch (err) {
+        console.error(err);
+        executionSuccessPromiseResolver(false);
+      }
+
+      const wcResponse: EngineTypes.RespondParams = {
+        topic: request.topic,
+        response: {
+          id: request.id,
+          jsonrpc: transaction.transactionId?.toString() ?? "none",
+          result: result ? result : "failed to sign and return transaction",
+        },
+      };
+      await this._signClient.respond(wcResponse);
+    } else if (method === "hedera_signMessage") {
+      const params = request.params.request.params as HederaSignMessageParams;
+
+      const signingRequest: MessageTypes.SigningRequest = {
+        id: `${request.id}`,
+        topic: request.topic,
+        accountToSign: params.signerAccountId,
+        payload: params.messages,
+      };
+      const shouldSign = await this._signerInterceptor(
+        signingRequest,
+        executionSuccessPromise
+      );
+
+      if (!shouldSign) {
+        const wcResponse: EngineTypes.RespondParams = {
+          topic: request.topic,
+          response: {
+            id: request.id,
+            jsonrpc: "none",
+            result: "rejected by user",
+          },
+        };
+        await this._signClient.respond(wcResponse);
+        return;
+      }
+
+      const hederaWallet = await this._getHederaWalletForSessionTopicAccount(
+        request.topic,
+        params.signerAccountId
+      );
+
+      let result: HederaSignMessageResponse | null = null;
+      try {
+        result = hederaWallet.signMessages(params.messages);
+        executionSuccessPromiseResolver(true);
+      } catch (err) {
+        console.error(err);
+        executionSuccessPromiseResolver(false);
+      }
+
+      const wcResponse: EngineTypes.RespondParams = {
+        topic: request.topic,
+        response: {
+          id: request.id,
+          jsonrpc: "none",
+          result: result ? result : "failed to sign message",
         },
       };
       await this._signClient.respond(wcResponse);
@@ -150,22 +335,6 @@ export class HashConnectWallet {
       throw new Error("Proposal not found");
     }
 
-    const chainId = getChainIdFromProposal(proposal);
-
-    const signers = [];
-    for (const accountId of accountIds) {
-      const ledgerId = chainIdToLedgerId(chainId);
-      const signer = await HashconnectWalletSignerFactory.createSigner(
-        this.metadata,
-        ledgerId,
-        accountId,
-        this._signerInterceptor,
-        this._pkResolver,
-        this._debug
-      );
-      signers.push(signer);
-    }
-
     await this._signClient.approve({
       id: proposal.id,
       namespaces: {
@@ -182,7 +351,6 @@ export class HashConnectWallet {
         },
       },
     });
-    this._signers = signers;
   }
 
   async rejectPairing(proposalId: number) {

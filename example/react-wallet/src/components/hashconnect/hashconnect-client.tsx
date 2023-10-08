@@ -16,7 +16,7 @@ export const HashConnectPairingsButton = () => {
   const {
     privateKeys: { testnetPrivateKeys, mainnetPrivateKeys },
   } = useSelector((state: AppStore) => state);
-  const { hc, helpers, proposals } = useContext(HashConnectWalletContext);
+  const { helpers, proposals } = useContext(HashConnectWalletContext);
 
   const [pairingString, setPairingString] = useState("");
 

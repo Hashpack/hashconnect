@@ -2,9 +2,6 @@ import {
   LedgerId,
   AccountId,
   SignerSignature,
-  AccountBalance,
-  AccountInfo,
-  TransactionRecord,
   Executable,
   Query,
   TransactionResponse,
@@ -13,8 +10,18 @@ import {
   AccountInfoQuery,
   AccountRecordsQuery,
   Client,
+  Transaction,
+  PublicKey,
 } from "@hashgraph/sdk";
-import { Signer, Transaction } from "@hashgraph/sdk/lib/Signer";
+import { Signer } from "@hashgraph/sdk/lib/Signer";
+import {
+  HederaSessionRequest,
+  HederaSignAndExecuteTransactionResponse,
+  HederaSignAndReturnTransactionResponse,
+  HederaSignMessageParams,
+  HederaSignMessageResponse,
+  base64StringToTransaction,
+} from "@hgraph.io/hedera-walletconnect-utils";
 import SignClient from "@walletconnect/sign-client";
 
 export class HashConnectSigner implements Signer {
@@ -26,6 +33,21 @@ export class HashConnectSigner implements Signer {
     private readonly _signClient: SignClient
   ) {
     this._client = Client.forName(ledgerId.toString());
+  }
+
+  private async _getPublicKey(): Promise<PublicKey> {
+    const ledgerIdStr = this.ledgerId.toString();
+    const mirrorNodeSubdomain =
+      ledgerIdStr === LedgerId.MAINNET.toString()
+        ? "mainnet-public"
+        : ledgerIdStr === LedgerId.TESTNET.toString()
+        ? "testnet"
+        : "previewnet";
+
+    const url = `https://${mirrorNodeSubdomain}.mirrornode.hedera.com/api/v1/accounts/${this.accountId}?limit=1&order=asc&transactiontype=cryptotransfer&transactions=false`;
+    const response = await fetch(url);
+    const json = await response.json();
+    return PublicKey.fromString(json.key.key);
   }
 
   getLedgerId(): LedgerId | null {
@@ -48,10 +70,49 @@ export class HashConnectSigner implements Signer {
     return [];
   }
 
-  sign(messages: Uint8Array[]): Promise<SignerSignature[]> {
-    throw new Error("Sign messages not implemented in HashConnect");
+  async sign(messages: Uint8Array[]): Promise<SignerSignature[]> {
+    const session = this._signClient.session.getAll()[0];
+    if (!session) {
+      throw new Error("Signer could not find session on sign client");
+    }
 
-    console.log(messages);
+    if (!session.namespaces.hedera) {
+      throw new Error(
+        "Signer could not find the hedera namespace in the sign client's session"
+      );
+    }
+
+    if (
+      !session.namespaces.hedera.chains ||
+      session.namespaces.hedera.chains.length <= 0
+    ) {
+      throw new Error(
+        "Signer could not find the chain in the sign client's session's hedera namespace"
+      );
+    }
+
+    const payload = HederaSessionRequest.create({
+      chainId: session.namespaces.hedera.chains[0],
+      topic: session.topic,
+    }).buildSignMessageRequest(this.accountId, messages);
+    const response: HederaSignMessageResponse = await this._signClient.request(
+      payload
+    );
+
+    const publicKey = await this._getPublicKey();
+    return response.signatures.map((signature) => {
+      const signatureRaw = atob(signature);
+      const signatureUint8Array = new Uint8Array(signatureRaw.length);
+      for (let i = 0; i < signatureRaw.length; i++) {
+        signatureUint8Array[i] = signatureRaw.charCodeAt(i);
+      }
+
+      return new SignerSignature({
+        publicKey,
+        signature: signatureUint8Array,
+        accountId: this.getAccountId(),
+      });
+    });
   }
 
   getAccountBalance() {
@@ -73,7 +134,37 @@ export class HashConnectSigner implements Signer {
   }
 
   async signTransaction<T extends Transaction>(transaction: T): Promise<T> {
-    return transaction.freezeWith(this._client);
+    const session = this._signClient.session.getAll()[0];
+    if (!session) {
+      throw new Error("Signer could not find session on sign client");
+    }
+
+    if (!session.namespaces.hedera) {
+      throw new Error(
+        "Signer could not find the hedera namespace in the sign client's session"
+      );
+    }
+
+    if (
+      !session.namespaces.hedera.chains ||
+      session.namespaces.hedera.chains.length <= 0
+    ) {
+      throw new Error(
+        "Signer could not find the chain in the sign client's session's hedera namespace"
+      );
+    }
+
+    const payload = HederaSessionRequest.create({
+      chainId: session.namespaces.hedera.chains[0],
+      topic: session.topic,
+    }).buildSignAndReturnTransactionRequest(
+      this.accountId,
+      Transaction.fromBytes(transaction.toBytes())
+    );
+    const response: HederaSignAndReturnTransactionResponse =
+      await this._signClient.request(payload);
+
+    return base64StringToTransaction<T>(response.transaction.bytes);
   }
 
   checkTransaction<T extends Transaction>(transaction: T): Promise<T> {
@@ -115,28 +206,17 @@ export class HashConnectSigner implements Signer {
       );
     }
 
-    const transactionBytes = request.toBytes();
-    const transactionBytesBase64Encoded =
-      Buffer.from(transactionBytes).toString("base64");
-
-    const response = await this._signClient.request({
+    const payload = HederaSessionRequest.create({
       chainId: session.namespaces.hedera.chains[0],
       topic: session.topic,
-      request: {
-        method: "hedera_signAndExecuteTransaction",
-        params: {
-          transaction: {
-            bytes: transactionBytesBase64Encoded,
-          },
-        },
-      },
-    });
+    }).buildSignAndExecuteTransactionRequest(
+      this.accountId,
+      Transaction.fromBytes(request.toBytes())
+    );
+    const response: HederaSignAndExecuteTransactionResponse =
+      await this._signClient.request(payload);
 
-    console.log({
-      responseFromSendingSignClientRequest: response,
-    });
-
-    return response as any;
+    return TransactionResponse.fromJSON(response.response) as OutputT;
   }
 
   private getBytesOf<RequestT, ResponseT, OutputT>(

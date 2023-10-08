@@ -4,20 +4,20 @@ import { Router } from "./components/layout/Router";
 import { HashConnectWalletContext } from "./context/hashconnect-wallet";
 
 function App() {
-  // const { transactionRequests } = useContext(HashConnectWalletContext);
+  const { signerRequests } = useContext(HashConnectWalletContext);
 
   return (
     <>
       <Router />
 
-      {/* {transactionRequests.map((transactionRequest) => {
+      {signerRequests.map((signerRequest) => {
         return (
           <HashconnectTransactionHandler
-            key={transactionRequest.id}
-            transactionRequest={transactionRequest}
+            key={`${signerRequest.request.id}-${signerRequest.request.topic}`}
+            signerRequest={signerRequest}
           />
         );
-      })} */}
+      })}
     </>
   );
 }

@@ -81,6 +81,9 @@ export const HashConnectConnectButton = () => {
             }
           } else {
             setOpen(true);
+
+            // try to pair through the browser extension
+            hc.connectToLocalWallet();
           }
         }}
       >

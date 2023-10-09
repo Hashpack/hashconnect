@@ -18,7 +18,6 @@ import {
   HederaSignAndReturnTransactionResponse,
   HederaSignMessageParams,
   HederaSignMessageResponse,
-  HederaWallet,
   base64StringToTransaction,
 } from "@hgraph.io/hedera-walletconnect-utils";
 

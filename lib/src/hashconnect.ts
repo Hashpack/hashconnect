@@ -172,13 +172,20 @@ export class HashConnect {
     }
 
     //generate a pairing string, which you can display and generate a QR code from
+    const chains = [ledgerIdToCAIPChainId(this.ledgerId)];
     const { uri, approval } = await this._signClient.connect({
+      optionalNamespaces: {
+        hedera: {
+          chains,
+          events: [],
+          methods: ["hashpack_authenticate"],
+        },
+      },
       requiredNamespaces: {
         hedera: {
-          chains: [ledgerIdToCAIPChainId(this.ledgerId)],
+          chains,
           events: ["accountsChanged", "connect", "disconnect"],
           methods: [
-            "hashpack_authenticate",
             "hedera_signAndExecuteTransaction",
             "hedera_signAndReturnTransaction",
             "hedera_signMessage",

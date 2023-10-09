@@ -362,7 +362,13 @@ export class HashConnect {
       payload
     );
 
-    return result;
+    return {
+      ...result,
+      accountId: accountId.toString(),
+      accountSignature: signature,
+      serverSigningAccount: serverSigningAccount.toString(),
+      serverSignature,
+    };
   }
 
   /**

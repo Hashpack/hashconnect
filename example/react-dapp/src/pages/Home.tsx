@@ -15,7 +15,11 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import { useSelector } from "react-redux";
-import { sendTransaction } from "../services/hashconnect";
+import {
+  authenticate,
+  executeTransaction,
+  signTransaction,
+} from "../services/hashconnect";
 import { AppStore } from "../store";
 
 export const Home = () => {
@@ -85,13 +89,51 @@ export const Home = () => {
                 .setNodeAccountIds([AccountId.fromString("0.0.3")])
                 .setTransactionId(TransactionId.generate(fromAccountId));
               const frozenTransaction = transferTransaction.freeze();
-              await sendTransaction(
+              const executeResult = await executeTransaction(
                 AccountId.fromString(fromAccountId),
                 frozenTransaction
               );
+              console.log({
+                executeResult,
+              });
             }}
           >
-            Send
+            Sign and Execute
+          </Button>
+          <Button
+            variant="contained"
+            color={"blurple" as any}
+            onClick={async () => {
+              const transferTransaction = new TransferTransaction()
+                .addHbarTransfer(fromAccountId, new Hbar(-1))
+                .addHbarTransfer(toAccountId, new Hbar(1))
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(TransactionId.generate(fromAccountId));
+              const frozenTransaction = transferTransaction.freeze();
+              const signResult = await signTransaction(
+                AccountId.fromString(fromAccountId),
+                frozenTransaction
+              );
+              console.log({
+                signResult,
+              });
+            }}
+          >
+            Sign and Return
+          </Button>
+          <Button
+            variant="contained"
+            color={"blurple" as any}
+            onClick={async () => {
+              const authenticateResult = await authenticate(
+                AccountId.fromString(fromAccountId)
+              );
+              console.log({
+                authenticateResult,
+              });
+            }}
+          >
+            Generate Server Signature and Authenticate
           </Button>
         </Stack>
       )}

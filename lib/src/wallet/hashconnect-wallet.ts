@@ -5,7 +5,11 @@ import { HashConnectWalletSignerInterceptor } from "./hashconnect-wallet-signer-
 import SignClient from "@walletconnect/sign-client";
 import { EngineTypes, SignClientTypes } from "@walletconnect/types";
 import { MessageTypes } from "../types";
-import { getChainIdFromProposal, getChainIdFromSession } from "../utils";
+import {
+  AuthenticationHelper,
+  ChainIdHelper,
+  SignClientHelper,
+} from "../utils";
 import {
   CAIPChainIdToLedgerId,
   HederaSignAndExecuteTransactionParams,
@@ -53,7 +57,7 @@ export class HashConnectWallet {
       console.log("hashconnect - Received proposal", proposal);
     }
 
-    const chainId = getChainIdFromProposal(proposal);
+    const chainId = ChainIdHelper.getChainIdFromProposal(proposal);
     const ledgerId = CAIPChainIdToLedgerId(chainId);
 
     this._proposals.set(proposal.id, proposal);
@@ -64,7 +68,7 @@ export class HashConnectWallet {
     });
   }
 
-  private async _getHederaWalletForSessionTopicAccount(
+  private async _createHederaWalletForSessionTopicAccount(
     topic: string,
     accountId: string
   ) {
@@ -72,23 +76,24 @@ export class HashConnectWallet {
       throw new Error("No sign client");
     }
 
-    const session = this._signClient.session.getAll().find((session) => {
-      return session.topic === topic;
-    });
-
-    if (!session) {
-      throw new Error("Session not found");
-    }
-
-    const chainId = getChainIdFromSession(session);
+    const session = SignClientHelper.getSessionForTopic(
+      this._signClient,
+      topic
+    );
+    const chainId = ChainIdHelper.getChainIdFromSession(session);
     const ledgerId = CAIPChainIdToLedgerId(chainId);
-    const hederaWallet = HederaWallet.init({
-      accountId: accountId,
-      privateKey: (
-        await this._pkResolver(ledgerId, AccountId.fromString(accountId))
-      ).toStringRaw(),
-      network: ledgerId.toString() as any,
-    });
+
+    const pk = await this._pkResolver(
+      ledgerId,
+      AccountId.fromString(accountId)
+    );
+
+    const hederaWallet = SignClientHelper.createHederaWallet(
+      this._signClient,
+      topic,
+      accountId,
+      pk
+    );
 
     return hederaWallet;
   }
@@ -140,7 +145,7 @@ export class HashConnectWallet {
         return;
       }
 
-      const hederaWallet = await this._getHederaWalletForSessionTopicAccount(
+      const hederaWallet = await this._createHederaWalletForSessionTopicAccount(
         request.topic,
         params.signerAccountId
       );
@@ -194,7 +199,7 @@ export class HashConnectWallet {
         return;
       }
 
-      const hederaWallet = await this._getHederaWalletForSessionTopicAccount(
+      const hederaWallet = await this._createHederaWalletForSessionTopicAccount(
         request.topic,
         params.signerAccountId
       );
@@ -245,7 +250,7 @@ export class HashConnectWallet {
         return;
       }
 
-      const hederaWallet = await this._getHederaWalletForSessionTopicAccount(
+      const hederaWallet = await this._createHederaWalletForSessionTopicAccount(
         request.topic,
         params.signerAccountId
       );
@@ -265,6 +270,96 @@ export class HashConnectWallet {
           id: request.id,
           jsonrpc: "none",
           result: result ? result : "failed to sign message",
+        },
+      };
+      await this._signClient.respond(wcResponse);
+    } else if (method === "hashpack_authenticate") {
+      const params = request.params.request.params as {
+        serverSigningAccount: string;
+        serverSignature: string;
+        signerAccountId: string;
+        payload: string;
+      };
+
+      const signingRequest: MessageTypes.AuthenticationRequest = {
+        id: `${request.id}`,
+        topic: request.topic,
+        accountToSign: params.signerAccountId,
+        payload: JSON.parse(
+          Buffer.from(params.payload, "base64").toString()
+        ) as any,
+        serverSignature: params.serverSignature,
+        serverSigningAccount: params.serverSigningAccount,
+      };
+      const shouldSign = await this._signerInterceptor(
+        signingRequest,
+        executionSuccessPromise
+      );
+
+      if (!shouldSign) {
+        const wcResponse: EngineTypes.RespondParams = {
+          topic: request.topic,
+          response: {
+            id: request.id,
+            jsonrpc: "none",
+            result: "rejected by user",
+          },
+        };
+        await this._signClient.respond(wcResponse);
+        return;
+      }
+
+      const hederaWallet = await this._createHederaWalletForSessionTopicAccount(
+        request.topic,
+        params.signerAccountId
+      );
+
+      const session = SignClientHelper.getSessionForTopic(
+        this._signClient,
+        request.topic
+      );
+
+      const chainId = ChainIdHelper.getChainIdFromSession(session);
+      const ledgerId = CAIPChainIdToLedgerId(chainId);
+      const serverVerification = await AuthenticationHelper.verifySignature(
+        ledgerId,
+        params.serverSigningAccount,
+        new Uint8Array(Buffer.from(params.serverSignature, "base64")),
+        signingRequest.payload
+      );
+      if (!serverVerification.isValid) {
+        executionSuccessPromiseResolver(false);
+        const wcResponse: EngineTypes.RespondParams = {
+          topic: request.topic,
+          response: {
+            id: request.id,
+            jsonrpc: "none",
+            result: "failed to verify server signature",
+          },
+        };
+        await this._signClient.respond(wcResponse);
+        return;
+      }
+
+      let result: HederaSignMessageResponse | null = null;
+      try {
+        result = hederaWallet.signMessages([params.payload]);
+        executionSuccessPromiseResolver(true);
+      } catch (err) {
+        console.error(err);
+        executionSuccessPromiseResolver(false);
+      }
+
+      const wcResponse: EngineTypes.RespondParams = {
+        topic: request.topic,
+        response: {
+          id: request.id,
+          jsonrpc: "none",
+          result: result
+            ? {
+                signature: result.signatures[0],
+              }
+            : "failed to sign authenticate request",
         },
       };
       await this._signClient.respond(wcResponse);

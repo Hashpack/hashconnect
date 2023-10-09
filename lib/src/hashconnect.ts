@@ -8,12 +8,16 @@ import {
   Signer,
   PublicKey,
 } from "@hashgraph/sdk";
-import { HashConnectConnectionState, MessageTypes } from "./types";
+import {
+  HashConnectConnectionState,
+  HashConnectTypes,
+  MessageTypes,
+} from "./types";
 import SignClient from "@walletconnect/sign-client";
 import { SignClientTypes } from "@walletconnect/types";
 import { getSdkError } from "@walletconnect/utils";
 import { HashConnectSigner } from "./signer";
-import { getChainIdFromSession } from "./utils";
+import { AuthenticationHelper, ChainIdHelper, SignClientHelper } from "./utils";
 import {
   CAIPChainIdToLedgerId,
   ledgerIdToCAIPChainId,
@@ -25,8 +29,11 @@ global.Buffer = global.Buffer || require("buffer").Buffer;
  * Main interface with hashpack
  */
 export class HashConnect {
-  connectionStatusChangeEvent = new Event<HashConnectConnectionState>();
-  pairingEvent = new Event<MessageTypes.ApprovePairing>();
+  readonly connectionStatusChangeEvent =
+    new Event<HashConnectConnectionState>();
+  readonly pairingEvent = new Event<MessageTypes.ApprovePairing>();
+  readonly foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
+  readonly foundIframeEvent = new Event<HashConnectTypes.WalletMetadata>();
 
   private _signClient?: SignClient;
   private _pairingString?: string;
@@ -58,43 +65,82 @@ export class HashConnect {
     return accountIds;
   }
 
+  private _connectToIframeParent() {
+    if (typeof window === "undefined") {
+      if (this._debug) {
+        console.log(
+          "hashconnect - Cancel iframe connection - no window object"
+        );
+      }
+      return;
+    }
+
+    if (!this._pairingString) {
+      console.error(
+        "hashconnect - Cancel connect to iframe parent wallet - no pairing string"
+      );
+      return;
+    }
+
+    if (this._debug) {
+      console.log("hashconnect - Connecting to iframe parent wallet");
+    }
+
+    window.parent.postMessage(
+      {
+        type: "hashconnect-iframe-pairing",
+        pairingString: this._pairingString,
+      },
+      "*"
+    );
+  }
+
+  private _setupEvents() {
+    this.foundIframeEvent.on(async (walletMetadata) => {
+      if (this._debug) {
+        console.log("hashconnect - Found iframe wallet", walletMetadata);
+      }
+
+      // wait for pairing string to be set
+      if (!this._pairingString) {
+        await new Promise<void>((resolve) => {
+          const intervalHandle = setInterval(() => {
+            if (this._pairingString) {
+              resolve();
+              clearInterval(intervalHandle);
+            }
+          }, 250);
+        });
+      }
+
+      this._connectToIframeParent();
+    });
+  }
+
   constructor(
+    readonly ledgerId: LedgerId,
     private readonly projectId: string,
     private readonly metadata: SignClientTypes.Metadata,
     private readonly _debug: boolean = false
-  ) {}
+  ) {
+    this._setupEvents();
+  }
 
-  getSigner(accountId: AccountId): Signer {
+  getSigner(accountId: AccountId): HashConnectSigner {
     const targetAccountIdStr = accountId.toString();
 
     if (!this._signClient) {
       throw new Error("No sign client");
     }
 
-    const sessions = this._signClient?.session.getAll() ?? [];
-    for (let i = 0; i < sessions.length; i++) {
-      const session = sessions[i];
-      if (session.namespaces.hedera?.accounts?.length > 0) {
-        for (let j = 0; j < session.namespaces.hedera.accounts.length; j++) {
-          const accountStr = session.namespaces.hedera.accounts[j];
-          const accountStrParts = accountStr.split(":");
-          if (
-            accountStrParts[accountStrParts.length - 1] === targetAccountIdStr
-          ) {
-            return new HashConnectSigner(
-              targetAccountIdStr,
-              CAIPChainIdToLedgerId(getChainIdFromSession(session)),
-              this._signClient
-            );
-          }
-        }
-      }
-    }
-
-    throw new Error("No signer found for account id: " + accountId.toString());
+    return new HashConnectSigner(
+      targetAccountIdStr,
+      this.ledgerId,
+      this._signClient
+    );
   }
 
-  async init(ledgerId: LedgerId): Promise<void> {
+  async init(): Promise<void> {
     if (this._debug) console.log("hashconnect - Initializing");
 
     if (typeof window !== "undefined") {
@@ -129,9 +175,10 @@ export class HashConnect {
     const { uri, approval } = await this._signClient.connect({
       requiredNamespaces: {
         hedera: {
-          chains: [ledgerIdToCAIPChainId(ledgerId)],
+          chains: [ledgerIdToCAIPChainId(this.ledgerId)],
           events: ["accountsChanged", "connect", "disconnect"],
           methods: [
+            "hashpack_authenticate",
             "hedera_signAndExecuteTransaction",
             "hedera_signAndReturnTransaction",
             "hedera_signMessage",
@@ -160,7 +207,7 @@ export class HashConnect {
             metadata: this.metadata,
             accountIds: this.connectedAccountIds.map((a) => a.toString()),
             topic: approved.topic,
-            network: ledgerId.toString(),
+            network: this.ledgerId.toString(),
           });
         }
       });
@@ -169,8 +216,8 @@ export class HashConnect {
     }
   }
 
-  async connect(ledgerId: LedgerId): Promise<void> {
-    await this.init(ledgerId);
+  async connect(): Promise<void> {
+    await this.init();
   }
 
   async disconnect() {
@@ -208,13 +255,9 @@ export class HashConnect {
   async sendTransaction(
     accountId: AccountId,
     transaction: Transaction
-  ): Promise<TransactionResponse | Error> {
+  ): Promise<TransactionResponse> {
     const signer = this.getSigner(accountId);
-    try {
-      return await signer.call(transaction);
-    } catch (error: any) {
-      return error;
-    }
+    return await signer.call(transaction);
   }
 
   /**
@@ -291,142 +334,125 @@ export class HashConnect {
     serverSigningAccount: AccountId,
     serverSignature: Uint8Array,
     payload: { url: string; data: any }
-  ): Promise<{
-    accountSignature: Uint8Array;
-  }> {
-    const signer = this.getSigner(accountId);
-    const payloadBytes = new Uint8Array(Buffer.from(JSON.stringify(payload)));
-    const signatures = await signer.sign([payloadBytes]);
-    return { accountSignature: signatures[0].signature };
-  }
-
-  /**
-   * Verify that the payload was signed by the account
-   * @param accountId
-   * @param accountSignature
-   * @param payload
-   * @param getPublicKey
-   * @returns
-   * @example
-   * ```ts
-   * const { isValid, error } = await hashconnect.verifyAuthenticationSignatures(
-   *   accountId,
-   *   accountSignature,
-   *   "Hello World",
-   *   async (accountId) => {
-   *     // Use custom logic to get the public key of the account
-   *     // in this example we use the hedera public mirror node.
-   *     const response = await fetch(
-   *       `https://mainnet-public.mirrornode.hedera.com/api/v1/accounts/${accountId.toString()}`
-   *     );
-   *     const accountInfo = await response.json();
-   *     return PublicKey.fromString(accountInfo.key.key);
-   *   }
-   * );
-   * ```
-   * @category Authentication
-   * @category Signature Verification
-   */
-  async verifySignature(
-    accountId: AccountId,
-    accountSignature: Uint8Array,
-    payload: any,
-    getPublicKey: (accountId: AccountId) => Promise<PublicKey>
-  ): Promise<{
-    isValid: boolean;
-    error?: string;
-  }> {
-    const payloadBytes = new Uint8Array(Buffer.from(JSON.stringify(payload)));
-
-    const accountPublicKey = await getPublicKey(accountId);
-    const accountSignatureIsValid = accountPublicKey.verify(
-      payloadBytes,
-      accountSignature
-    );
-    if (!accountSignatureIsValid) {
-      return {
-        isValid: false,
-        error: "Account signature is invalid",
-      };
+  ) {
+    if (!this._signClient) {
+      throw new Error("No sign client");
     }
 
-    return { isValid: true };
-  }
-
-  /**
-   * Verify the signatures of an authentication request by verifying the account and server signatures
-   * @param accountId
-   * @param accountSignature
-   * @param serverSigningAccountId
-   * @param serverSignature
-   * @param payload
-   * @param getPublicKey
-   * @returns
-   * @example
-   * ```ts
-   * const { isValid, error } = await hashconnect.verifyAuthenticationSignatures(
-   *   accountId,
-   *   accountSignature,
-   *   serverSigningAccountId,
-   *   serverSignature,
-   *   {
-   *     url: "https://example.com",
-   *     data: { foo: "bar" },
-   *   },
-   *   async (accountId) => {
-   *     // Use custom logic to get the public key of the account
-   *     // in this example we use the hedera public mirror node.
-   *     const response = await fetch(
-   *       `https://mainnet-public.mirrornode.hedera.com/api/v1/accounts/${accountId.toString()}`
-   *     );
-   *     const accountInfo = await response.json();
-   *     return PublicKey.fromString(accountInfo.key.key);
-   *   }
-   * );
-   * ```
-   * @category Authentication
-   */
-  async verifyAuthenticationSignatures(
-    accountId: AccountId,
-    accountSignature: Uint8Array,
-    serverSigningAccountId: AccountId,
-    serverSignature: Uint8Array,
-    payload: { url: string; data: any },
-    getPublicKey: (accountId: AccountId) => Promise<PublicKey>
-  ): Promise<{
-    isValid: boolean;
-    error?: string;
-  }> {
-    const { isValid: accountSignatureIsValid } = await this.verifySignature(
-      accountId,
-      accountSignature,
-      payload,
-      getPublicKey
+    const session = SignClientHelper.getSessionForAccount(
+      this._signClient,
+      this.ledgerId,
+      accountId.toString()
     );
-    const { isValid: serverSignatureIsValid } = await this.verifySignature(
-      serverSigningAccountId,
+    const signature = await SignClientHelper.sendAuthenticationRequest(
+      this._signClient,
+      session.topic,
+      serverSigningAccount,
       serverSignature,
-      payload,
-      getPublicKey
+      accountId.toString(),
+      payload
     );
 
-    if (!accountSignatureIsValid && !serverSignatureIsValid) {
-      return {
-        isValid: false,
-        error: "Account and server signatures are invalid",
-      };
-    } else if (!accountSignatureIsValid) {
-      return {
-        isValid: false,
-        error: "Account signature is invalid",
-      };
-    } else if (!serverSignatureIsValid) {
-      return {
-        isValid: false,
-        error: "Server signature is invalid",
-      };
+    const result = await AuthenticationHelper.verifyAuthenticationSignatures(
+      this.ledgerId,
+      accountId.toString(),
+      signature,
+      serverSigningAccount.toString(),
+      serverSignature,
+      payload
+    );
+
+    return result;
+  }
+
+  /**
+   * Local wallet stuff
+   */
+
+  findLocalWallets() {
+    if (typeof window === "undefined") {
+      if (this._debug) {
+        console.log("hashconnect - Cancel findLocalWallets - no window object");
+      }
+      return;
     }
 
-    return { isValid: true };
+    if (this._debug) {
+      console.log("hashconnect - Finding local wallets");
+    }
+    window.addEventListener(
+      "message",
+      (event) => {
+        if (
+          event.data.type &&
+          event.data.type == "hashconnect-query-extension-response"
+        ) {
+          if (this._debug) {
+            console.log(
+              "hashconnect - Local wallet metadata recieved",
+              event.data
+            );
+          }
+          if (event.data.metadata) {
+            this.foundExtensionEvent.emit(event.data.metadata);
+          }
+        }
+
+        if (
+          event.data.type &&
+          event.data.type == "hashconnect-iframe-response"
+        ) {
+          if (this._debug) {
+            console.log(
+              "hashconnect - iFrame wallet metadata recieved",
+              event.data
+            );
+          }
+
+          if (event.data.metadata) {
+            this.foundIframeEvent.emit(event.data.metadata);
+          }
+        }
+      },
+      false
+    );
+
+    setTimeout(() => {
+      window.postMessage({ type: "hashconnect-query-extension" }, "*");
+      if (window.parent) {
+        window.parent.postMessage({ type: "hashconnect-iframe-query" }, "*");
+      }
+    }, 50);
+  }
+
+  connectToLocalWallet() {
+    if (typeof window === "undefined") {
+      if (this._debug) {
+        console.log(
+          "hashconnect - Cancel connect to local wallet - no window object"
+        );
+      }
+      return;
+    }
+
+    if (!this._pairingString) {
+      console.error(
+        "hashconnect - Cancel connect to local wallet - no pairing string"
+      );
+      return;
+    }
+
+    if (this._debug) {
+      console.log("hashconnect - Connecting to local wallet");
+    }
+
+    //todo: add extension metadata support
+    window.postMessage(
+      {
+        type: "hashconnect-connect-extension",
+        pairingString: this._pairingString,
+      },
+      "*"
+    );
   }
 }

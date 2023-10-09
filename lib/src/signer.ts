@@ -18,11 +18,11 @@ import {
   HederaSessionRequest,
   HederaSignAndExecuteTransactionResponse,
   HederaSignAndReturnTransactionResponse,
-  HederaSignMessageParams,
   HederaSignMessageResponse,
   base64StringToTransaction,
 } from "@hgraph.io/hedera-walletconnect-utils";
 import SignClient from "@walletconnect/sign-client";
+import { AuthenticationHelper, SignClientHelper } from "./utils";
 
 export class HashConnectSigner implements Signer {
   private readonly _client: Client;
@@ -35,19 +35,12 @@ export class HashConnectSigner implements Signer {
     this._client = Client.forName(ledgerId.toString());
   }
 
-  private async _getPublicKey(): Promise<PublicKey> {
-    const ledgerIdStr = this.ledgerId.toString();
-    const mirrorNodeSubdomain =
-      ledgerIdStr === LedgerId.MAINNET.toString()
-        ? "mainnet-public"
-        : ledgerIdStr === LedgerId.TESTNET.toString()
-        ? "testnet"
-        : "previewnet";
-
-    const url = `https://${mirrorNodeSubdomain}.mirrornode.hedera.com/api/v1/accounts/${this.accountId}?limit=1&order=asc&transactiontype=cryptotransfer&transactions=false`;
-    const response = await fetch(url);
-    const json = await response.json();
-    return PublicKey.fromString(json.key.key);
+  private _getSession() {
+    return SignClientHelper.getSessionForAccount(
+      this._signClient,
+      this.ledgerId,
+      this.accountId
+    );
   }
 
   getLedgerId(): LedgerId | null {
@@ -71,25 +64,7 @@ export class HashConnectSigner implements Signer {
   }
 
   async sign(messages: Uint8Array[]): Promise<SignerSignature[]> {
-    const session = this._signClient.session.getAll()[0];
-    if (!session) {
-      throw new Error("Signer could not find session on sign client");
-    }
-
-    if (!session.namespaces.hedera) {
-      throw new Error(
-        "Signer could not find the hedera namespace in the sign client's session"
-      );
-    }
-
-    if (
-      !session.namespaces.hedera.chains ||
-      session.namespaces.hedera.chains.length <= 0
-    ) {
-      throw new Error(
-        "Signer could not find the chain in the sign client's session's hedera namespace"
-      );
-    }
+    const session = this._getSession();
 
     const payload = HederaSessionRequest.create({
       chainId: session.namespaces.hedera.chains[0],
@@ -99,17 +74,14 @@ export class HashConnectSigner implements Signer {
       payload
     );
 
-    const publicKey = await this._getPublicKey();
+    const publicKey = await AuthenticationHelper.getPublicKey(
+      this.ledgerId,
+      this.accountId
+    );
     return response.signatures.map((signature) => {
-      const signatureRaw = atob(signature);
-      const signatureUint8Array = new Uint8Array(signatureRaw.length);
-      for (let i = 0; i < signatureRaw.length; i++) {
-        signatureUint8Array[i] = signatureRaw.charCodeAt(i);
-      }
-
       return new SignerSignature({
         publicKey,
-        signature: signatureUint8Array,
+        signature: Buffer.from(signature, "base64"),
         accountId: this.getAccountId(),
       });
     });
@@ -134,25 +106,7 @@ export class HashConnectSigner implements Signer {
   }
 
   async signTransaction<T extends Transaction>(transaction: T): Promise<T> {
-    const session = this._signClient.session.getAll()[0];
-    if (!session) {
-      throw new Error("Signer could not find session on sign client");
-    }
-
-    if (!session.namespaces.hedera) {
-      throw new Error(
-        "Signer could not find the hedera namespace in the sign client's session"
-      );
-    }
-
-    if (
-      !session.namespaces.hedera.chains ||
-      session.namespaces.hedera.chains.length <= 0
-    ) {
-      throw new Error(
-        "Signer could not find the chain in the sign client's session's hedera namespace"
-      );
-    }
+    const session = this._getSession();
 
     const payload = HederaSessionRequest.create({
       chainId: session.namespaces.hedera.chains[0],
@@ -186,16 +140,7 @@ export class HashConnectSigner implements Signer {
   async call<RequestT, ResponseT, OutputT>(
     request: Executable<RequestT, ResponseT, OutputT>
   ): Promise<OutputT> {
-    const session = this._signClient.session.getAll()[0];
-    if (!session) {
-      throw new Error("Signer could not find session on sign client");
-    }
-
-    if (!session.namespaces.hedera) {
-      throw new Error(
-        "Signer could not find the hedera namespace in the sign client's session"
-      );
-    }
+    const session = this._getSession();
 
     if (
       !session.namespaces.hedera.chains ||

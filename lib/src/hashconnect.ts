@@ -211,7 +211,7 @@ export class HashConnect {
 
           this.pairingEvent.emit({
             pairingData: undefined,
-            metadata: this.metadata,
+            metadata: this.metadata, // TODO: Make wallet metadata instead of dapp metadata
             accountIds: this.connectedAccountIds.map((a) => a.toString()),
             topic: approved.topic,
             network: this.ledgerId.toString(),
@@ -346,14 +346,9 @@ export class HashConnect {
       throw new Error("No sign client");
     }
 
-    const session = SignClientHelper.getSessionForAccount(
-      this._signClient,
-      this.ledgerId,
-      accountId.toString()
-    );
     const signature = await SignClientHelper.sendAuthenticationRequest(
       this._signClient,
-      session.topic,
+      this.ledgerId,
       serverSigningAccount,
       serverSignature,
       accountId.toString(),

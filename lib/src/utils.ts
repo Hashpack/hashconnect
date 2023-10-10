@@ -6,6 +6,29 @@ import {
 import SignClient from "@walletconnect/sign-client";
 import { SignClientTypes, SessionTypes } from "@walletconnect/types";
 
+export const executeWithRetriesAsync = async <T>(
+  func: (retryNum: number) => Promise<T>,
+  shouldRetry: (err: any) => boolean,
+  maxRetries = 5
+): Promise<T> => {
+  let retryNum = 0;
+  while (maxRetries > 0) {
+    maxRetries--;
+    try {
+      return await func(retryNum);
+    } catch (err: any) {
+      if (maxRetries <= 0 || !shouldRetry(err)) {
+        throw err;
+      }
+      retryNum++;
+    }
+  }
+
+  throw new Error(
+    "Reached maximum retries and did not rethrow error... Should not have gotten here."
+  );
+};
+
 export class ChainIdHelper {
   static getChainIdFromProposal(
     proposal: SignClientTypes.EventArguments["session_proposal"]
@@ -79,10 +102,26 @@ export class AuthenticationHelper {
     }
 
     const url = `${baseUrl}/api/v1/accounts/${accountId}?limit=1&order=asc&transactiontype=cryptotransfer&transactions=false`;
-    const response = await fetch(url, {
-      headers,
-    });
-    const json = await response.json();
+
+    const json = await executeWithRetriesAsync(
+      async () => {
+        const response = await fetch(url, {
+          headers,
+        });
+
+        if (response.status !== 200 && response.status !== 404) {
+          throw new Error(
+            `Expected 200 or 404 status code from mirror node, got ${response.status}`
+          );
+        }
+
+        const json_ = await response.json();
+        return json_;
+      },
+      () => true,
+      5
+    );
+
     return PublicKey.fromString(json.key.key);
   }
 
@@ -312,7 +351,7 @@ export class SignClientHelper {
 
   static async sendAuthenticationRequest(
     signClient: SignClient,
-    topic: string,
+    ledgerId: LedgerId,
     serverSigningAccount: AccountId,
     serverSignature: Uint8Array,
     accountId: string,
@@ -321,10 +360,14 @@ export class SignClientHelper {
     const payload_ = Buffer.from(JSON.stringify(payload)).toString("base64");
     const serverSignature_ = Buffer.from(serverSignature).toString("base64");
 
-    const session = this.getSessionForTopic(signClient, topic);
+    const session = this.getSessionForAccount(
+      signClient,
+      ledgerId,
+      accountId.toString()
+    );
 
     const response = (await signClient.request({
-      topic,
+      topic: session.topic,
       chainId: session.namespaces.hedera.chains[0],
       request: {
         method: "hashpack_authenticate",

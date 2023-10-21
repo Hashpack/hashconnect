@@ -40,27 +40,27 @@ export class SmartcontractCallComponent implements OnInit {
     }
 
     async buildTransaction() {
-        //this is the example contract from https://hedera.com/blog/how-to-deploy-smart-contracts-on-hedera-part-1-a-simple-getter-and-setter-contract
-        let trans = new ContractCallQuery()
-        .setContractId(this.contractId)
-        .setGas(100000)
-        .setFunction("getMobileNumber", new ContractFunctionParameters().addString("Alice"))
-        .setMaxQueryPayment(new Hbar(0.00000001));
+        // //this is the example contract from https://hedera.com/blog/how-to-deploy-smart-contracts-on-hedera-part-1-a-simple-getter-and-setter-contract
+        // let trans = new ContractCallQuery()
+        // .setContractId(this.contractId)
+        // .setGas(100000)
+        // .setFunction("getMobileNumber", new ContractFunctionParameters().addString("Alice"))
+        // .setMaxQueryPayment(new Hbar(0.00000001));
 
-        let transactionBytes: Uint8Array = await trans.toBytes();
+        // let transactionBytes: Uint8Array = await trans.toBytes();
 
-        let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, false, false, true);
+        // let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, false, false, true);
 
-        //handle response
-        let responseData: any = {
-            response: res,
-            receipt: null
-        }
+        // //handle response
+        // let responseData: any = {
+        //     response: res,
+        //     receipt: null
+        // }
 
-        //todo: how to change query bytes back to query?
-        // if(res.success) responseData.receipt = TransactionReceipt.fromBytes(res.receipt as Uint8Array);
+        // //todo: how to change query bytes back to query?
+        // // if(res.success) responseData.receipt = TransactionReceipt.fromBytes(res.receipt as Uint8Array);
 
-        this.HashconnectService.showResultOverlay(responseData);
+        // this.HashconnectService.showResultOverlay(responseData);
     }
 
 }

@@ -49,9 +49,9 @@
         "typescript": "^5.0.3"
     },
     "dependencies": {
-        "@hashgraph/sdk": "2.31.0",
+        "@hashgraph/sdk": "2.36.0",
         "@hashgraph/cryptography": "1.4.7",
-        "@hgraph.io/hedera-walletconnect-utils": "/Users/pwoosam/Dev/hashpack/hedera-walletconnect-utils",
+        "@hgraph.io/hedera-walletconnect-utils": "/home/t/Work/Web/hashconnect_pwoosam/hedera-walletconnect-utils",
         "@walletconnect/sign-client": "2.10.1",
         "buffer": "^6.0.3",
         "crypto-es": "^1.2.7",
@@ -62,6 +62,7 @@
         "simple-crypto-js": "^3.0.1",
         "ts-typed-events": "3.0.0",
         "uuid": "^8.3.2",
-        "ws": "^8.8.1"
+        "ws": "^8.8.1",
+        "@walletconnect/auth-client": "^2.1.2"
     }
 }

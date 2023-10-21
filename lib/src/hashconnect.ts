@@ -14,6 +14,9 @@ import {
   MessageTypes,
 } from "./types";
 import SignClient from "@walletconnect/sign-client";
+import Core  from "@walletconnect/core";
+import AuthClient, { generateNonce } from "@walletconnect/auth-client";
+
 import { SignClientTypes } from "@walletconnect/types";
 import { getSdkError } from "@walletconnect/utils";
 import { HashConnectSigner } from "./signer";
@@ -35,7 +38,10 @@ export class HashConnect {
   readonly foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
   readonly foundIframeEvent = new Event<HashConnectTypes.WalletMetadata>();
 
+  private core?: Core
   private _signClient?: SignClient;
+  private _authClient?: AuthClient;
+
   private _pairingString?: string;
   get pairingString() {
     return this._pairingString;
@@ -151,12 +157,17 @@ export class HashConnect {
       );
     }
 
-    if (!this._signClient) {
-      this._signClient = await SignClient.init({
-        projectId: this.projectId,
-        metadata: this.metadata,
-      });
-      // add delay for race condition in SignClient.init that causes .connect to never resolve
+    if (!this.core || !this._signClient || !this._authClient) {
+        this.core = new Core({
+            projectId: this.projectId,
+        });
+
+        if(!this._signClient)
+          this._signClient = await SignClient.init({ core: this.core, metadata: this.metadata });
+        if(!this._authClient)
+          this._authClient = await AuthClient.init({ metadata: this.metadata, core: this.core, projectId: this.projectId });
+      
+        // add delay for race condition in SignClient.init that causes .connect to never resolve
       await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
     }
 
@@ -193,6 +204,7 @@ export class HashConnect {
         },
       },
     });
+
     this._pairingString = uri;
 
     if (this._debug) {
@@ -210,7 +222,6 @@ export class HashConnect {
           );
 
           this.pairingEvent.emit({
-            pairingData: undefined,
             metadata: this.metadata, // TODO: Make wallet metadata instead of dapp metadata
             accountIds: this.connectedAccountIds.map((a) => a.toString()),
             topic: approved.topic,
@@ -338,38 +349,45 @@ export class HashConnect {
    */
   async authenticate(
     accountId: AccountId,
-    serverSigningAccount: AccountId,
-    serverSignature: Uint8Array,
-    payload: { url: string; data: any }
+    payload?: string
   ) {
-    if (!this._signClient) {
-      throw new Error("No sign client");
+    if (!this._authClient) {
+      throw new Error("No auth client");
     }
 
-    const signature = await SignClientHelper.sendAuthenticationRequest(
-      this._signClient,
-      this.ledgerId,
-      serverSigningAccount,
-      serverSignature,
-      accountId.toString(),
-      payload
-    );
+    await this._authClient.request({
+        aud: 'http://test.com/login',
+        domain: 'http://test.com',
+        chainId: 'eip155:1',
+        type: 'eip4361',
+        nonce: payload || generateNonce()
+      })
 
-    const result = await AuthenticationHelper.verifyAuthenticationSignatures(
-      this.ledgerId,
-      accountId.toString(),
-      signature,
-      serverSigningAccount.toString(),
-      serverSignature,
-      payload
-    );
+      let result = {}
+      let signature = "";
+
+    // const signature = await SignClientHelper.sendAuthenticationRequest(
+    //   this._signClient,
+    //   this.ledgerId,
+    //   serverSigningAccount,
+    //   serverSignature,
+    //   accountId.toString(),
+    //   payload
+    // );
+
+    // const result = await AuthenticationHelper.verifyAuthenticationSignatures(
+    //   this.ledgerId,
+    //   accountId.toString(),
+    //   signature,
+    //   serverSigningAccount.toString(),
+    //   serverSignature,
+    //   payload
+    // );
 
     return {
       ...result,
       accountId: accountId.toString(),
       accountSignature: signature,
-      serverSigningAccount: serverSigningAccount.toString(),
-      serverSignature,
     };
   }
 

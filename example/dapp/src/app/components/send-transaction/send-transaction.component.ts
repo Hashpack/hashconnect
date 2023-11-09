@@ -97,7 +97,7 @@ export class SendTransactionComponent implements OnInit {
         let transaction = await this.SigningService.signAndMakeBytes(trans, this.signingAcct);
 
         let res = await this.HashconnectService.sendTransaction(transaction, AccountId.fromString(this.signingAcct), this.data.transfer.return_transaction, this.data.transfer.hideNfts);
-        
+        debugger
         //handle response
         let responseData: any = {
             response: res,

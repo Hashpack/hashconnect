@@ -54,12 +54,10 @@ export class SigningService {
         const sig = await privKey.signTransaction(Transaction.fromBytes(transBytes) as any);
 
         const out = trans.addSignature(pubKey, sig);
-
-        const outBytes = out.toBytes();
         
-        console.log("Transaction bytes", outBytes);
+        console.log("Transaction bytes", out);
 
-        return outBytes;
+        return out;
     }
 
     async makeBytes(trans: Transaction, signingAcctId: string) {

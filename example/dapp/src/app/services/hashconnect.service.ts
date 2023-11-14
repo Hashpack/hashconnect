@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { ButtonLayoutDisplay, ButtonMaker, DialogInitializer, DialogLayoutDisplay } from '@costlydeveloper/ngx-awesome-popup';
-import { Transaction, TransactionReceipt } from '@hashgraph/sdk';
+import { AccountId, LedgerId, Transaction, TransactionReceipt } from '@hashgraph/sdk';
 import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
 import { HashConnectConnectionState } from 'hashconnect/dist/types';
 import { ResultModalComponent } from '../components/result-modal/result-modal.component';
@@ -18,34 +18,30 @@ export class HashconnectService {
 
     hashconnect: HashConnect;
 
-    appMetadata: HashConnectTypes.AppMetadata = {
+    appMetadata = {
         name: "dApp Example",
         description: "An example hedera dApp",
-        icon: "https://www.hashpack.app/img/logo.svg"
+        icons: ["https://www.hashpack.app/img/logo.svg"],
+        url: "test.com"
     }
 
     availableExtension: HashConnectTypes.WalletMetadata;
     
     state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
     topic: string;
-    pairingString: string;
-    pairingData: HashConnectTypes.SavedPairingData | null = null;
+    pairingString?: string;
+    pairingData: MessageTypes.ApprovePairing;
 
     async initHashconnect() {
         //create the hashconnect instance
-        this.hashconnect = new HashConnect(true);
+        this.hashconnect = new HashConnect(LedgerId.TESTNET, "bfa190dbe93fcf30377b932b31129d05", this.appMetadata, true);
         
         //register events
         this.setUpHashConnectEvents();
 
         //initialize and use returned data
-        let initData = await this.hashconnect.init(this.appMetadata, "testnet", false);
-        
-        this.topic = initData.topic;
-        this.pairingString = initData.pairingString;
-        
-        //Saved pairings will return here, generally you will only have one unless you are doing something advanced
-        this.pairingData = initData.savedPairings[0];
+        await this.hashconnect.init();
+        this.pairingString = this.hashconnect.pairingString;
     }
 
     setUpHashConnectEvents() {
@@ -59,7 +55,7 @@ export class HashconnectService {
         this.hashconnect.pairingEvent.on((data) => {
             console.log("Paired with wallet", data);
 
-            this.pairingData = data.pairingData!;
+            this.pairingData = data;
         });
 
         //This is fired when HashConnect loses connection, pairs successfully, or is starting connection
@@ -75,40 +71,40 @@ export class HashconnectService {
     }
 
 
-    async sendTransaction(trans: Uint8Array, acctToSign: string, return_trans: boolean = false, hideNfts: boolean = false, getRecord: boolean = false) {
-        const transaction: MessageTypes.Transaction = {
-            topic: this.topic,
-            byteArray: trans,
+    async sendTransaction(trans: Transaction, acctToSign: AccountId, return_trans: boolean = false, hideNfts: boolean = false, getRecord: boolean = false) {
+        // const transaction: MessageTypes.Transaction = {
+        //     topic: this.topic,
+        //     byteArray: trans,
             
-            metadata: {
-                accountToSign: acctToSign,
-                returnTransaction: return_trans,
-                hideNft: hideNfts,
-                getRecord: getRecord
-            }
-        }
+        //     metadata: {
+        //         accountToSign: acctToSign,
+        //         returnTransaction: return_trans,
+        //         hideNft: hideNfts,
+        //         getRecord: getRecord
+        //     }
+        // }
 
-        return await this.hashconnect.sendTransaction(this.topic, transaction)
+        return await this.hashconnect.sendTransaction(acctToSign, trans)
     }
 
     async requestAccountInfo() {
-        let request:MessageTypes.AdditionalAccountRequest = {
-            topic: this.topic,
-            network: "mainnet",
-            multiAccount: true
-        } 
+        // let request:MessageTypes.AdditionalAccountRequest = {
+        //     topic: this.topic,
+        //     network: "mainnet",
+        //     multiAccount: true
+        // } 
 
-        await this.hashconnect.requestAdditionalAccounts(this.topic, request);
+        // await this.hashconnect.requestAdditionalAccounts(this.topic, request);
     }
 
     disconnect() {
-        this.hashconnect.disconnect(this.pairingData!.topic)
-        this.pairingData = null;
+        // this.hashconnect.disconnect(this.pairingData!.topic)
+        // this.pairingData = null;
     }
 
     clearPairings() {
-        this.hashconnect.clearConnectionsAndData();
-        this.pairingData = null;
+        // this.hashconnect.clearConnectionsAndData();
+        // this.pairingData = null;
     }
 
     showResultOverlay(data: any) {

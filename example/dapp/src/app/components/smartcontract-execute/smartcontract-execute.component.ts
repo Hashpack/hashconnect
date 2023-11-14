@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { ContractExecuteTransaction, ContractFunctionParameters, Hbar, TransactionReceipt } from '@hashgraph/sdk';
+import { AccountId, ContractExecuteTransaction, ContractFunctionParameters, Hbar, TransactionReceipt } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -49,17 +49,13 @@ export class SmartcontractExecuteComponent implements OnInit {
         .setFunction("setMobileNumber", new ContractFunctionParameters().addString("Bob").addUint256(222222))
         .setMaxTransactionFee(new Hbar(0.75));
 
-        let transactionBytes: Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
-
-        let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, false, false, this.getRecord);
+        let res = await this.HashconnectService.sendTransaction(trans, AccountId.fromString(this.signingAcct), false, false, this.getRecord);
 
         //handle response
         let responseData: any = {
             response: res,
             receipt: null
         }
-
-        if(res.success) responseData.receipt = TransactionReceipt.fromBytes(res.receipt as Uint8Array);
 
         this.HashconnectService.showResultOverlay(responseData);
     }

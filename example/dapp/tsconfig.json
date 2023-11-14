@@ -18,16 +18,12 @@
     "target": "ES2022",
     "module": "es2020",
     "lib": [
-      "es2018",
       "dom"
     ],
     "paths": {},
-    "types": [
-      "node"
-    ],
-    "typeRoots": [
-      "../node_modules/@types"
-    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
     "allowSyntheticDefaultImports": true,
     "useDefineForClassFields": false
   },
@@ -35,6 +31,7 @@
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
-    "strictTemplates": true
+    "strictTemplates": true,
+    "allowSyntheticDefaultImports": true,
   }
 }

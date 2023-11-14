@@ -12,9 +12,7 @@ import { SigningService } from './signing.service';
 })
 export class HashconnectService {
 
-    constructor(
-        private SigningService: SigningService
-    ) { }
+    constructor() { }
 
     hashconnect: HashConnect;
 
@@ -87,27 +85,12 @@ export class HashconnectService {
         return await this.hashconnect.sendTransaction(acctToSign, trans)
     }
 
-    async requestAccountInfo() {
-        // let request:MessageTypes.AdditionalAccountRequest = {
-        //     topic: this.topic,
-        //     network: "mainnet",
-        //     multiAccount: true
-        // } 
-
-        // await this.hashconnect.requestAdditionalAccounts(this.topic, request);
-    }
-
     async disconnect() {
         await this.hashconnect.disconnect();
 
         this.pairingData = null;
         await this.hashconnect.init();
         this.pairingString = this.hashconnect.pairingString;
-    }
-
-    clearPairings() {
-        // this.hashconnect.clearConnectionsAndData();
-        // this.pairingData = null;
     }
 
     showResultOverlay(data: any) {

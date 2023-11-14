@@ -30,7 +30,7 @@ export class HashconnectService {
     state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
     topic: string;
     pairingString?: string;
-    pairingData: MessageTypes.ApprovePairing;
+    pairingData: MessageTypes.SessionData;
 
     async initHashconnect() {
         //create the hashconnect instance
@@ -97,9 +97,12 @@ export class HashconnectService {
         // await this.hashconnect.requestAdditionalAccounts(this.topic, request);
     }
 
-    disconnect() {
-        // this.hashconnect.disconnect(this.pairingData!.topic)
-        // this.pairingData = null;
+    async disconnect() {
+        await this.hashconnect.disconnect();
+
+        this.pairingData = null;
+        await this.hashconnect.init();
+        this.pairingString = this.hashconnect.pairingString;
     }
 
     clearPairings() {

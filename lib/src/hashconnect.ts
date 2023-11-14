@@ -34,7 +34,7 @@ global.Buffer = global.Buffer || require("buffer").Buffer;
 export class HashConnect {
     readonly connectionStatusChangeEvent =
         new Event<HashConnectConnectionState>();
-    readonly pairingEvent = new Event<MessageTypes.ApprovePairing>();
+    readonly pairingEvent = new Event<MessageTypes.SessionData>();
     readonly foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
     readonly foundIframeEvent = new Event<HashConnectTypes.WalletMetadata>();
 
@@ -205,6 +205,21 @@ export class HashConnect {
             },
         });
 
+        let existing_sessions = this._signClient.session.getAll();
+
+        if (existing_sessions.length > 0) {
+            this.pairingEvent.emit({
+                metadata: this.metadata, // TODO: Make wallet metadata instead of dapp metadata
+                accountIds: this.connectedAccountIds.map((a) => a.toString()),
+                topic: existing_sessions[0].topic,
+                network: this.ledgerId.toString(),
+            });
+
+            this.connectionStatusChangeEvent.emit(
+                HashConnectConnectionState.Paired
+            );
+        }
+
         this._pairingString = uri;
 
         if (this._debug) {
@@ -250,9 +265,6 @@ export class HashConnect {
                     reason: getSdkError("USER_DISCONNECTED"),
                 });
             })
-        );
-        this.connectionStatusChangeEvent.emit(
-            HashConnectConnectionState.Disconnected
         );
     }
 

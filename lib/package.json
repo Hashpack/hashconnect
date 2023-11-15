@@ -1,6 +1,6 @@
 {
   "name": "hashconnect",
-  "version": "0.2.4",
+  "version": "0.3.0",
   "description": "hashconnect interoperability library",
   "author": "Tyler Coté <tyler@hashpack.app>, Nick Hanna <nick@hashpack.app>",
   "repository": "https://github.com/Hashpack/hashconnect",
@@ -52,7 +52,7 @@
     "@hashgraph/sdk": "^2.18.3",
     "buffer": "^6.0.3",
     "crypto-es": "^1.2.7",
-    "crypto-js": "^4.1.1",
+    "crypto-js": "4.1.1",
     "i": "^0.3.7",
     "isomorphic-ws": "^5.0.0",
     "protons": "^2.0.3",

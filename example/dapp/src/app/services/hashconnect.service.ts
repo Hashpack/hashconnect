@@ -30,9 +30,12 @@ export class HashconnectService {
     pairingString?: string;
     pairingData: MessageTypes.SessionData;
 
-    async initHashconnect() {
+    async initHashconnect(isMainnet: boolean) {
         //create the hashconnect instance
-        this.hashconnect = new HashConnect(LedgerId.TESTNET, "bfa190dbe93fcf30377b932b31129d05", this.appMetadata, true);
+        if (isMainnet)
+            this.hashconnect = new HashConnect(LedgerId.MAINNET, "bfa190dbe93fcf30377b932b31129d05", this.appMetadata, true);
+        else
+            this.hashconnect = new HashConnect(LedgerId.TESTNET, "bfa190dbe93fcf30377b932b31129d05", this.appMetadata, true);
         
         //register events
         this.setUpHashConnectEvents();

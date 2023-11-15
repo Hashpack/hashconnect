@@ -4,6 +4,11 @@
         <h2>Status: {{HashConnectService.state}}</h2>
         
         <h3>Connected accounts: {{ HashConnectService.pairingData?.accountIds | json}}</h3>
+
+        <div class="mainnet_toggle">
+            <input type="checkbox" [(ngModel)]="isMainnet" (ngModelChange)="toggleMainnet()">
+            Mainnet
+        </div>
     </div>
 
     

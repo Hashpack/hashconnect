@@ -12,9 +12,7 @@ import { SigningService } from './signing.service';
 })
 export class HashconnectService {
 
-    constructor(
-        private SigningService: SigningService
-    ) { }
+    constructor() { }
 
     hashconnect: HashConnect;
 
@@ -30,11 +28,14 @@ export class HashconnectService {
     state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
     topic: string;
     pairingString?: string;
-    pairingData: MessageTypes.ApprovePairing;
+    pairingData: MessageTypes.SessionData;
 
-    async initHashconnect() {
+    async initHashconnect(isMainnet: boolean) {
         //create the hashconnect instance
-        this.hashconnect = new HashConnect(LedgerId.TESTNET, "bfa190dbe93fcf30377b932b31129d05", this.appMetadata, true);
+        if (isMainnet)
+            this.hashconnect = new HashConnect(LedgerId.MAINNET, "bfa190dbe93fcf30377b932b31129d05", this.appMetadata, true);
+        else
+            this.hashconnect = new HashConnect(LedgerId.TESTNET, "bfa190dbe93fcf30377b932b31129d05", this.appMetadata, true);
         
         //register events
         this.setUpHashConnectEvents();
@@ -87,24 +88,12 @@ export class HashconnectService {
         return await this.hashconnect.sendTransaction(acctToSign, trans)
     }
 
-    async requestAccountInfo() {
-        // let request:MessageTypes.AdditionalAccountRequest = {
-        //     topic: this.topic,
-        //     network: "mainnet",
-        //     multiAccount: true
-        // } 
+    async disconnect() {
+        await this.hashconnect.disconnect();
 
-        // await this.hashconnect.requestAdditionalAccounts(this.topic, request);
-    }
-
-    disconnect() {
-        // this.hashconnect.disconnect(this.pairingData!.topic)
-        // this.pairingData = null;
-    }
-
-    clearPairings() {
-        // this.hashconnect.clearConnectionsAndData();
-        // this.pairingData = null;
+        this.pairingData = null;
+        await this.hashconnect.init();
+        this.pairingString = this.hashconnect.pairingString;
     }
 
     showResultOverlay(data: any) {

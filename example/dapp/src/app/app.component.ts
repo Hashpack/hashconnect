@@ -44,7 +44,8 @@ import { SigningService } from './services/signing.service';
 export class AppComponent {
     title = 'dapp | proposer';
     viewData = false;
-    
+    isMainnet = false;
+
     constructor(
         public HashConnectService: HashconnectService,
         private SigningService: SigningService
@@ -52,7 +53,13 @@ export class AppComponent {
 
     ngOnInit() {
         this.SigningService.init();
-        this.HashConnectService.initHashconnect();
+        this.HashConnectService.initHashconnect(false);
+    }
+
+    async toggleMainnet() {
+        console.log(this.isMainnet);
+        await this.HashConnectService.disconnect();
+        await this.HashConnectService.initHashconnect(this.isMainnet);
     }
 
     pair() {

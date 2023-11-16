@@ -4,6 +4,11 @@
         <h2>Status: {{HashConnectService.state}}</h2>
         
         <h3>Connected accounts: {{ HashConnectService.pairingData?.accountIds | json}}</h3>
+
+        <div class="mainnet_toggle">
+            <input type="checkbox" [(ngModel)]="isMainnet" (ngModelChange)="toggleMainnet()">
+            Mainnet
+        </div>
     </div>
 
     
@@ -13,9 +18,7 @@
             <input type="checkbox" [(ngModel)]="viewData"> View HashConnect Data
         </div>
         <button class="primary" (click)="pair()" [disabled]="HashConnectService.state == 'Paired' || HashConnectService.state == 'Disconnected'">Pair</button>
-        <button class="primary" (click)="HashConnectService.clearPairings()">Clear HashConnect Data - will need to refresh</button>
         <button class="primary" (click)="HashConnectService.disconnect()" [disabled]="HashConnectService.state != 'Paired'">Disconnect</button>
-        <!-- <button class="primary" (click)="HashConnectService.requestAccountInfo()" [disabled]="HashConnectService.state != 'Paired'">Request Additional Accounts</button> -->
         <button class="primary" (click)="auth()" [disabled]="HashConnectService.state != 'Paired'">Authenticate</button>
         <button class="primary" (click)="sign()" [disabled]="HashConnectService.state != 'Paired'">Sign</button>
 

@@ -15,7 +15,7 @@ export declare namespace HashConnectTypes {
 }
 
 export declare namespace MessageTypes {
-  export interface ApprovePairing {
+  export interface SessionData {
     metadata: HashConnectTypes.WalletMetadata;
     accountIds: string[];
     network: string;

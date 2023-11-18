@@ -47,8 +47,15 @@
         <label for="tokenAllowance">Token Allowance</label>
     </span>
     <div *ngIf="data.tokenAllowance">
-        <div class="allowance">
-
+        <div class="allowance" *ngFor="let allowance of data.tokenAllowances">
+            <span>
+                <label>Token ID</label>
+                <input type="text" [(ngModel)]="allowance.tokenId">
+            </span>
+            <span>
+                <label>Amount</label>
+                <input type="text" [(ngModel)]="allowance.amount">
+            </span>
         </div>
         <button (click)="addTokenAllowance()">Add token Allowance</button>
     </div>

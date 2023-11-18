@@ -4,6 +4,7 @@ import { MessageUtil, MessageHandler, MessageTypes, RelayMessage, RelayMessageTy
 import { HashConnectTypes, IHashConnect, HashConnectConnectionState } from "./types/hashconnect";
 import { HashConnectProvider } from "./provider/provider";
 import { HashConnectSigner } from "./provider/signer";
+import { Transaction } from "@hashgraph/sdk";
 
 global.Buffer = global.Buffer || require('buffer').Buffer;
 
@@ -601,5 +602,41 @@ export class HashConnect implements IHashConnect {
         }
 
         return pairingData;
+    }
+
+    /**
+     * Signer stuff
+     */
+
+    createOperatorSigner(accountId: string) {
+        const operatorSigner = async (txBodyBytes: Uint8Array) => {
+            const transaction: MessageTypes.Transaction = {
+                topic: this.hcData.topic,
+                byteArray: txBodyBytes,
+                metadata: {
+                    accountToSign: accountId,
+                    returnTransaction: true,
+                    hideNft: false,
+                    getRecord: false
+                }
+            }
+
+            const res = await this.sendTransaction(this.hcData.topic, transaction)
+
+            if (res.error) {
+                throw new Error(`Hashconnect failed to sign transaction: ${res.error}`);
+            }
+            
+            if (typeof res.signedTransaction === 'string') {
+                throw new Error(`Hashconnect unexpectedly returned a signedTransaction of type string`);
+            }
+            
+            if (res.signedTransaction === undefined) {
+                throw new Error(`Hashconnect unexpectedly returned an undefined signedTransaction`);
+            }
+
+            return res.signedTransaction;
+        }
+        return operatorSigner;
     }
 }

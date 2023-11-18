@@ -21,12 +21,24 @@ export class AllowanceDeleteComponent implements OnInit {
     subscriptions: Subscription = new Subscription();
 
     signingAcct: string;
-    data = {
+    spenderId = "0.0.3183101";
+
+    data: {
+        maxAutomaticTokenAssociations: 0,
+        key: string,
+        accountMemo: string,
+        transMemo: string,
+        newPublicKey: string,
+        nftAllowance: boolean, 
+        nftAllowances: { tokenId: string, serial: number, ownerAccountId: string, spenderAccountId: string }[], 
+    } = {
         maxAutomaticTokenAssociations: 0,
         key: "",
         accountMemo: "",
         transMemo: "",
-        newPublicKey: ""
+        newPublicKey: "",
+        nftAllowance: false,
+        nftAllowances: [],
     }
 
     ngOnInit(): void {
@@ -43,12 +55,18 @@ export class AllowanceDeleteComponent implements OnInit {
         );
     }
 
+    addNFTAllowance() {
+        this.data.nftAllowances.push({ tokenId: "", serial: 0, ownerAccountId: this.signingAcct, spenderAccountId: this.spenderId })
+    }
+
     async send() {
-        let trans = new AccountAllowanceDeleteTransaction().deleteAllTokenNftAllowances(new NftId(TokenId.fromString("0.0.29631020"), 1), this.signingAcct);
+        let trans = new AccountAllowanceDeleteTransaction();
+
+        for(let allowance of this.data.nftAllowances) {
+            trans.deleteAllTokenNftAllowances(new NftId(TokenId.fromString(allowance.tokenId), allowance.serial), this.signingAcct)
+        }
 
         let transBytes: Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
-
-        let trans2 = Transaction.fromBytes(transBytes);
 
         let res = await this.HashconnectService.sendTransaction(transBytes, this.signingAcct);
 

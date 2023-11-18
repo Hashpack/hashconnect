@@ -119,6 +119,8 @@ export interface IHashConnect {
     getProvider(network: string, topicId: string, accountToSign: string): HashConnectProvider;
     getSigner(provider: HashConnectProvider): HashConnectSigner;
     getPairingByTopic(topic: string): HashConnectTypes.SavedPairingData | null;
+
+    createOperatorSigner(accountId: string): (txBytes: Uint8Array) => Promise<Uint8Array>;
 }
 
 export declare namespace HashConnectTypes {

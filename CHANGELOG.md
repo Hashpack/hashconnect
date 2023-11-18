@@ -1,3 +1,6 @@
+## v0.2.5
+- lock crypto.js version to fix 'invalid decryption' bug
+
 ## v0.2.4
 - wrapped a console log in if(debug)
 

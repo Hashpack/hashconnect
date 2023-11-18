@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { Hbar, HbarUnit, TokenAssociateTransaction, TransactionReceipt, TransferTransaction } from '@hashgraph/sdk';
+import { Client, Hbar, HbarUnit, TokenAssociateTransaction, TransactionReceipt, TransferTransaction } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -29,7 +29,7 @@ export class SendTransactionComponent implements OnInit {
             include_hbar: true,
             to_hbar_amount: 1,
             from_hbar_amount: -1,
-            toAcc: "0.0.3183101",
+            toAcc: "0.0.1234",
             include_token: false,
             return_transaction: false,
             tokenTransfers: [
@@ -96,9 +96,20 @@ export class SendTransactionComponent implements OnInit {
 
         let transactionBytes: Uint8Array = await this.SigningService.signAndMakeBytes(trans, this.signingAcct);
 
+        let client: Client = await Client.forTestnet();
+
+        // if (this.HashconnectService.pairingData) {
+        //     client.setOperatorWith(
+        //         this.signingAcct,
+        //         "302a300506032b65700321008fef004074116a90717fbafc446c1d754f0dd562847cb12068a55a93376b964c",
+        //         this.HashconnectService.hashconnect.createOperatorSigner(this.HashconnectService.pairingData.accountIds[0]));
+
+        //     await trans.executeWithSigner().execute(client);
+        // }
+
         let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, this.data.transfer.return_transaction, this.data.transfer.hideNfts);
-        
-        //handle response
+
+        // handle response
         let responseData: any = {
             response: res,
             receipt: null

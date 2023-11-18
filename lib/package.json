@@ -1,6 +1,6 @@
 {
   "name": "hashconnect",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "description": "hashconnect interoperability library",
   "author": "Tyler Coté <tyler@hashpack.app>, Nick Hanna <nick@hashpack.app>",
   "repository": "https://github.com/Hashpack/hashconnect",
@@ -60,5 +60,10 @@
     "ts-typed-events": "3.0.0",
     "uuid": "^8.3.2",
     "ws": "^8.8.1"
+  },
+  "overrides": {
+    "simple-crypto-js": {
+        "crypto-js": "4.1.1"
+    }
   }
 }

@@ -29,7 +29,7 @@ export class SendTransactionComponent implements OnInit {
             include_hbar: true,
             to_hbar_amount: 1,
             from_hbar_amount: -1,
-            toAcc: "0.0.3183101",
+            toAcc: "0.0.1234",
             include_token: false,
             return_transaction: false,
             tokenTransfers: [
@@ -98,26 +98,26 @@ export class SendTransactionComponent implements OnInit {
 
         let client: Client = await Client.forTestnet();
 
-        if (this.HashconnectService.pairingData) {
-            client.setOperatorWith(
-                this.signingAcct,
-                "302a300506032b65700321008fef004074116a90717fbafc446c1d754f0dd562847cb12068a55a93376b964c",
-                this.HashconnectService.hashconnect.createOperatorSigner(this.HashconnectService.pairingData.accountIds[0]));
+        // if (this.HashconnectService.pairingData) {
+        //     client.setOperatorWith(
+        //         this.signingAcct,
+        //         "302a300506032b65700321008fef004074116a90717fbafc446c1d754f0dd562847cb12068a55a93376b964c",
+        //         this.HashconnectService.hashconnect.createOperatorSigner(this.HashconnectService.pairingData.accountIds[0]));
 
-            await trans.executeWithSigner().execute(client);
-        }
-
-        // let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, this.data.transfer.return_transaction, this.data.transfer.hideNfts);
-
-        //handle response
-        // let responseData: any = {
-        //     response: res,
-        //     receipt: null
+        //     await trans.executeWithSigner().execute(client);
         // }
 
-        // if(res.success && !this.data.transfer.return_transaction) responseData.receipt = TransactionReceipt.fromBytes(res.receipt as Uint8Array);
+        let res = await this.HashconnectService.sendTransaction(transactionBytes, this.signingAcct, this.data.transfer.return_transaction, this.data.transfer.hideNfts);
 
-        // this.HashconnectService.showResultOverlay(responseData);
+        // handle response
+        let responseData: any = {
+            response: res,
+            receipt: null
+        }
+
+        if(res.success && !this.data.transfer.return_transaction) responseData.receipt = TransactionReceipt.fromBytes(res.receipt as Uint8Array);
+
+        this.HashconnectService.showResultOverlay(responseData);
     }
 
     addTokenTransfer() {

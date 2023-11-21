@@ -72,6 +72,16 @@ export class SigningService {
         return transBytes;
     }
 
+    async freezeTransaction(trans: Transaction, signingAcctId: string) {
+        let transId = TransactionId.generate(signingAcctId)
+        trans.setTransactionId(transId);
+        trans.setNodeAccountIds([new AccountId(3), new AccountId(4), new AccountId(5)]);
+
+        await trans.freeze();
+
+        return trans;
+    }
+
     signData(data: object): { signature: Uint8Array, serverSigningAccount: string  } {
         const privKey = PrivateKey.fromString(this.pk);
         const pubKey = privKey.publicKey;

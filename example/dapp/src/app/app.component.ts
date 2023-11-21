@@ -57,7 +57,6 @@ export class AppComponent {
     }
 
     async toggleMainnet() {
-        console.log(this.isMainnet);
         await this.HashConnectService.disconnect();
         await this.HashConnectService.initHashconnect(this.isMainnet);
     }

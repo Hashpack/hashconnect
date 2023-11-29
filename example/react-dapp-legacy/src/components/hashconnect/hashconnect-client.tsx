@@ -112,7 +112,7 @@ export const HashConnectConnectButton = () => {
             variant="contained"
             onClick={async () => {
               await hcInitPromise;
-              hc.connectToLocalWallet();
+              await hc.connectToLocalWallet();
             }}
           >
             Connect to Local Wallet

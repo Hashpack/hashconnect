@@ -13,14 +13,19 @@ import {
 } from "./types";
 import Core from "@walletconnect/core";
 import SignClient from "@walletconnect/sign-client";
-import { ISignClient, SignClientTypes } from "@walletconnect/types";
+import QRCodeModal from "@walletconnect/qrcode-modal";
+import {
+  ISignClient,
+  SessionTypes,
+  SignClientTypes,
+} from "@walletconnect/types";
 import { getSdkError } from "@walletconnect/utils";
 
 import AuthClient, { generateNonce } from "@walletconnect/auth-client";
 import { HashConnectSigner } from "./signer";
 import { AuthenticationHelper, SignClientHelper } from "./utils";
-import { networkNamespaces } from "./shared";
-import { HederaJsonRpcMethod } from "@hgraph.io/hedera-walletconnect-utils";
+import { ledgerIdToCAIPChainId, networkNamespaces } from "./shared";
+import { HederaJsonRpcMethod } from "@hashgraph/walletconnect";
 
 global.Buffer = global.Buffer || require("buffer").Buffer;
 
@@ -67,7 +72,7 @@ export class HashConnect {
     return accountIds;
   }
 
-  private _connectToIframeParent() {
+  private async _connectToIframeParent() {
     if (typeof window === "undefined") {
       if (this._debug) {
         console.log(
@@ -75,6 +80,10 @@ export class HashConnect {
         );
       }
       return;
+    }
+
+    if (!this._pairingString) {
+      await this.generatePairingString();
     }
 
     if (!this._pairingString) {
@@ -105,14 +114,17 @@ export class HashConnect {
 
       // wait for pairing string to be set
       if (!this._pairingString) {
-        await new Promise<void>((resolve) => {
-          const intervalHandle = setInterval(() => {
-            if (this._pairingString) {
-              resolve();
-              clearInterval(intervalHandle);
-            }
-          }, 250);
-        });
+        await this.generatePairingString();
+        if (!this._pairingString) {
+          await new Promise<void>((resolve) => {
+            const intervalHandle = setInterval(() => {
+              if (this._pairingString) {
+                resolve();
+                clearInterval(intervalHandle);
+              }
+            }, 250);
+          });
+        }
       }
 
       this._connectToIframeParent();
@@ -194,20 +206,6 @@ export class HashConnect {
       console.log({ sessionLength: this._signClient.session.length });
     }
 
-    //generate a pairing string, which you can display and generate a QR code from
-    const { uri, approval } = await this._signClient.connect({
-      optionalNamespaces: networkNamespaces(
-        this.ledgerId,
-        ["hashpack_authenticate"],
-        []
-      ),
-      requiredNamespaces: networkNamespaces(
-        this.ledgerId,
-        Object.values(HederaJsonRpcMethod),
-        []
-      ),
-    });
-
     let existing_sessions = this._signClient.session.getAll();
 
     if (existing_sessions.length > 0) {
@@ -219,34 +217,8 @@ export class HashConnect {
       });
 
       this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Paired);
-    }
-
-    this._pairingString = uri;
-
-    if (this._debug) {
-      console.log(`hashconnect - Pairing string created: ${uri}`);
-    }
-
-    if (approval) {
-      approval().then(async (approved) => {
-        if (this._debug) {
-          console.log("hashconnect - Approval received", approved);
-        }
-        if (approved) {
-          this.connectionStatusChangeEvent.emit(
-            HashConnectConnectionState.Paired
-          );
-
-          this.pairingEvent.emit({
-            metadata: this.metadata, // TODO: Make wallet metadata instead of dapp metadata
-            accountIds: this.connectedAccountIds.map((a) => a.toString()),
-            topic: approved.topic,
-            network: this.ledgerId.toString(),
-          });
-        }
-      });
     } else {
-      console.error("hashconnect - No approval function found");
+      this.findLocalWallets();
     }
   }
 
@@ -457,7 +429,7 @@ export class HashConnect {
     }, 50);
   }
 
-  connectToLocalWallet() {
+  async connectToLocalWallet() {
     if (typeof window === "undefined") {
       if (this._debug) {
         console.log(
@@ -465,6 +437,10 @@ export class HashConnect {
         );
       }
       return;
+    }
+
+    if (!this._pairingString) {
+      await this.generatePairingString();
     }
 
     if (!this._pairingString) {
@@ -486,5 +462,89 @@ export class HashConnect {
       },
       "*"
     );
+  }
+
+  async openModal() {
+    //generate a pairing string, which you can display and generate a QR code from
+    const { uri, approval } = await this.generatePairingString();
+
+    if (this._debug) {
+      console.log(`hashconnect - Pairing string created: ${uri}`);
+    }
+
+    if (!uri) {
+      console.error("hashconnect - URI Missing");
+      return;
+    }
+
+    QRCodeModal.open(
+      uri,
+      () => {
+        throw new Error("User rejected pairing");
+      },
+      {
+        desktopLinks: ["7f2b35576edaddd033846b27c915b86c"],
+        mobileLinks: ["7f2b35576edaddd033846b27c915b86c"],
+      }
+    );
+
+    const pairTimeoutMs = 480_000;
+    const timeout = setTimeout(() => {
+      QRCodeModal.close();
+      throw new Error(`Connect timed out after ${pairTimeoutMs}(ms)`);
+    }, pairTimeoutMs);
+
+    if (approval) {
+      approval()
+        .then(async (approved) => {
+          if (this._debug) {
+            console.log("hashconnect - Approval received", approved);
+          }
+          if (approved) {
+            this.connectionStatusChangeEvent.emit(
+              HashConnectConnectionState.Paired
+            );
+
+            this.pairingEvent.emit({
+              metadata: this.metadata, // TODO: Make wallet metadata instead of dapp metadata
+              accountIds: this.connectedAccountIds.map((a) => a.toString()),
+              topic: approved.topic,
+              network: this.ledgerId.toString(),
+            });
+
+            clearTimeout(timeout);
+            QRCodeModal.close();
+          }
+        })
+        .catch((e) => {
+          console.error("hashconnect - Approval error", e);
+          clearTimeout(timeout);
+          QRCodeModal.close();
+        });
+    } else {
+      console.error("hashconnect - No approval function found");
+    }
+  }
+
+  async generatePairingString(): Promise<{
+    uri: string | undefined;
+    approval: () => Promise<SessionTypes.Struct>;
+  }> {
+    const { uri, approval } = await this._signClient!.connect({
+      optionalNamespaces: networkNamespaces(
+        this.ledgerId,
+        ["hashpack_authenticate"],
+        []
+      ),
+      requiredNamespaces: networkNamespaces(
+        this.ledgerId,
+        Object.values(HederaJsonRpcMethod),
+        []
+      ),
+    });
+
+    this._pairingString = uri;
+
+    return { uri, approval };
   }
 }

@@ -42,7 +42,6 @@ export class HashconnectService {
 
         //initialize and use returned data
         await this.hashconnect.init();
-        this.pairingString = this.hashconnect.pairingString;
     }
 
     setUpHashConnectEvents() {
@@ -93,7 +92,6 @@ export class HashconnectService {
 
         this.pairingData = null;
         await this.hashconnect.init();
-        this.pairingString = this.hashconnect.pairingString;
     }
 
     showResultOverlay(data: any) {

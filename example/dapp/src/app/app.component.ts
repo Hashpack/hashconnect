@@ -62,18 +62,19 @@ export class AppComponent {
     }
 
     pair() {
-        const dialogPopup = new DialogInitializer(PairingComponent);
+        // const dialogPopup = new DialogInitializer(PairingComponent);
 
-        dialogPopup.setConfig({
-            Width: '500px',
-            LayoutType: DialogLayoutDisplay.NONE
-        });
+        // dialogPopup.setConfig({
+        //     Width: '500px',
+        //     LayoutType: DialogLayoutDisplay.NONE
+        // });
 
-        dialogPopup.setButtons([
-            new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
-        ]);
+        // dialogPopup.setButtons([
+        //     new ButtonMaker('Cancel', 'cancel', ButtonLayoutDisplay.DANGER)
+        // ]);
 
-        dialogPopup.openDialog$().subscribe(resp => { });
+        // dialogPopup.openDialog$().subscribe(resp => { });
+        this.HashConnectService.hashconnect.openModal();
     }
 
     auth() {

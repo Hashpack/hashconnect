@@ -35,17 +35,17 @@ export class PairingComponent implements OnInit {
             this.dialogBelonging.EventsController.close();
         })
 
-        new AwesomeQR({
-            text: this.HashconnectService.pairingString,
-            size: 400,
-            margin: 16,
-            maskPattern: 110,
-            colorLight: "#fff",
-            // colorDark: "#1F1D2B"
-        }).draw().then((dataURL) => {
-            if (dataURL)
-                this.qr_url = dataURL.toString();
-        });
+        // new AwesomeQR({
+        //     text: this.HashconnectService.pairingString,
+        //     size: 400,
+        //     margin: 16,
+        //     maskPattern: 110,
+        //     colorLight: "#fff",
+        //     // colorDark: "#1F1D2B"
+        // }).draw().then((dataURL) => {
+        //     if (dataURL)
+        //         this.qr_url = dataURL.toString();
+        // });
     }
 
 

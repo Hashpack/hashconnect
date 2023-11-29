@@ -12,7 +12,7 @@ import {
   HederaJsonRpcMethod,
   buildSignAndExecuteTransactionParams,
   buildSignMessageParams,
-} from "@hgraph.io/hedera-walletconnect-utils";
+} from "@hashgraph/walletconnect";
 
 export class HashConnectSigner extends DAppSigner {
   async sign(messages: Uint8Array[]): Promise<SignerSignature[]> {

@@ -51,18 +51,15 @@
     "dependencies": {
         "@hashgraph/sdk": "2.37.0",
         "@hashgraph/cryptography": "1.4.7",
-        "@hgraph.io/hedera-walletconnect-utils": "/Users/pwoosam/Dev/hashpack/hedera-walletconnect-utils",
+        "@hashgraph/walletconnect": "/Users/pwoosam/Dev/hashpack/hedera-walletconnect-utils",
         "@walletconnect/modal": "^2.6.2",
         "@walletconnect/qrcode-modal": "^1.8.0",
         "@walletconnect/sign-client": "^2.10.4",
         "@walletconnect/types": "^2.9.2",
         "buffer": "^6.0.3",
-        "crypto-es": "^1.2.7",
-        "crypto-js": "^4.1.1",
         "i": "^0.3.7",
         "protons": "^2.0.3",
         "ts-typed-events": "3.0.0",
-        "uuid": "^8.3.2",
         "@walletconnect/auth-client": "^2.1.2"
     }
 }

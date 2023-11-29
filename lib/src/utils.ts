@@ -1,10 +1,9 @@
 import { AccountId, LedgerId, PrivateKey, PublicKey } from "@hashgraph/sdk";
 import {
-  CAIPChainIdToLedgerId,
-  HederaWallet,
-} from "@hgraph.io/hedera-walletconnect-utils";
-import SignClient from "@walletconnect/sign-client";
-import { SignClientTypes, SessionTypes } from "@walletconnect/types";
+  SignClientTypes,
+  SessionTypes,
+  ISignClient,
+} from "@walletconnect/types";
 
 export const executeWithRetriesAsync = async <T>(
   func: (retryNum: number) => Promise<T>,
@@ -263,7 +262,7 @@ export class AuthenticationHelper {
 
 export class SignClientHelper {
   static getSessionForAccount(
-    signClient: SignClient,
+    signClient: ISignClient,
     ledgerId: LedgerId,
     accountId: string
   ) {
@@ -274,8 +273,7 @@ export class SignClientHelper {
       }
 
       const chainId = ChainIdHelper.getChainIdFromSession(session_);
-      const ledgerId_ = CAIPChainIdToLedgerId(chainId);
-      const isCorrectLedgerId = ledgerId_.toString() === ledgerId.toString();
+      const isCorrectLedgerId = chainId.includes(ledgerId.toString());
 
       if (!isCorrectLedgerId) {
         return false;
@@ -305,7 +303,7 @@ export class SignClientHelper {
     };
   }
 
-  static getSessionForTopic(signClient: SignClient, topic: string) {
+  static getSessionForTopic(signClient: ISignClient, topic: string) {
     const session = signClient.session.getAll().find((session_) => {
       return session_.topic === topic;
     });
@@ -324,33 +322,8 @@ export class SignClientHelper {
     };
   }
 
-  static async createHederaWallet(
-    signClient: SignClient,
-    topic: string,
-    accountId: string,
-    privateKey: PrivateKey
-  ) {
-    const session = signClient.session.getAll().find((session) => {
-      return session.topic === topic;
-    });
-
-    if (!session) {
-      throw new Error("Session not found");
-    }
-
-    const chainId = ChainIdHelper.getChainIdFromSession(session);
-    const ledgerId = CAIPChainIdToLedgerId(chainId);
-    const hederaWallet = HederaWallet.init({
-      accountId: accountId,
-      privateKey: privateKey.toStringRaw(),
-      network: ledgerId.toString() as any,
-    });
-
-    return hederaWallet;
-  }
-
   static async sendAuthenticationRequest(
-    signClient: SignClient,
+    signClient: ISignClient,
     ledgerId: LedgerId,
     serverSigningAccount: AccountId,
     serverSignature: Uint8Array,

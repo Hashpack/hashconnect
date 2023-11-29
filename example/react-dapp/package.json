@@ -6,7 +6,7 @@
     "@emotion/react": "^11.10.4",
     "@emotion/styled": "^11.10.4",
     "@hashgraph/sdk": "2.37.0",
-    "@hgraph.io/hedera-walletconnect-utils": "/home/t/Work/Web/hashconnect_pwoosam/hedera-walletconnect-utils",
+    "@hgraph.io/hedera-walletconnect-utils": "/Users/pwoosam/Dev/hashpack/hedera-walletconnect-utils",
     "@mui/icons-material": "^5.10.9",
     "@mui/material": "^5.10.9",
     "@reduxjs/toolkit": "^1.8.6",

@@ -112,14 +112,22 @@ export const authenticate = async (accountIdForSigning: AccountId) => {
     };
 
     // simulate server signing a message by signing the payload as a string
-    //   const serverSignatures = await hc.signMessages(accountIdForSigning, [
-    //     JSON.stringify(payload),
-    //   ]);
-    //   const serverSignature = serverSignatures[0];
+    const serverSignatures = await hc.signMessages(accountIdForSigning, [
+        JSON.stringify(payload),
+    ]);
+    const serverSignature = serverSignatures[0];
+
+    console.log({
+        simulatedServerSignature: serverSignature
+    });
 
     // then actually authenticate
     const result = await hc.authenticate(
-        accountIdForSigning
+        accountIdForSigning,
+        accountIdForSigning,
+        serverSignature.signature,
+        payload
     );
+
     return result;
 };

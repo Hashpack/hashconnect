@@ -46,12 +46,6 @@ export class HashconnectService {
     }
 
     setUpHashConnectEvents() {
-        //This is fired when a extension is found
-        this.hashconnect.foundExtensionEvent.on((data) => {
-            console.log("Found extension", data);
-            this.availableExtension = data;
-        })
-
         //This is fired when a wallet approves a pairing
         this.hashconnect.pairingEvent.on(async (data) => {
             console.log("Paired with wallet", data);

@@ -27,6 +27,7 @@ export declare namespace MessageTypes {
 export interface UserProfile {
     accountId: string;
     network: "mainnet" | "testnet";
+    currency: string;
     profilePicture: {
         tokenId: string,
         serial: number,

@@ -13,7 +13,6 @@ import {
 } from "./types";
 import Core from "@walletconnect/core";
 import SignClient from "@walletconnect/sign-client";
-import QRCodeModal from "@walletconnect/qrcode-modal";
 import {
   ISignClient,
   SessionTypes,
@@ -24,8 +23,9 @@ import { getSdkError } from "@walletconnect/utils";
 import AuthClient, { generateNonce } from "@walletconnect/auth-client";
 import { HashConnectSigner } from "./signer";
 import { AuthenticationHelper, SignClientHelper } from "./utils";
-import { ledgerIdToCAIPChainId, networkNamespaces } from "./shared";
+import { HederaChainId, ledgerIdToCAIPChainId, networkNamespaces } from "./shared";
 import { HederaJsonRpcMethod } from "@hashgraph/walletconnect";
+import { WalletConnectModal } from '@walletconnect/modal';
 
 global.Buffer = global.Buffer || require("buffer").Buffer;
 
@@ -476,21 +476,25 @@ export class HashConnect {
       console.error("hashconnect - URI Missing");
       return;
     }
+    const chains = [HederaChainId.Testnet]
 
-    QRCodeModal.open(
-      uri,
-      () => {
-        throw new Error("User rejected pairing");
-      },
-      {
-        desktopLinks: ["7f2b35576edaddd033846b27c915b86c"],
-        mobileLinks: ["7f2b35576edaddd033846b27c915b86c"],
-      }
-    );
+    const walletConnectModal = new WalletConnectModal({
+        projectId: this.projectId,
+        chains,
+        desktopWallets: [],
+        enableExplorer: false,
+        mobileWallets: [],
+        themeVariables: {
+            "--wcm-accent-color": "#ACACD3",
+            "--wcm-accent-fill-color": "white",
+            "--wcm-background-color": "#1F1D2B",
+        }
+      })
+    walletConnectModal.openModal({ uri })
 
     const pairTimeoutMs = 480_000;
     const timeout = setTimeout(() => {
-      QRCodeModal.close();
+      walletConnectModal.closeModal()
       throw new Error(`Connect timed out after ${pairTimeoutMs}(ms)`);
     }, pairTimeoutMs);
 
@@ -513,13 +517,13 @@ export class HashConnect {
             });
 
             clearTimeout(timeout);
-            QRCodeModal.close();
+            walletConnectModal.closeModal()
           }
         })
         .catch((e) => {
           console.error("hashconnect - Approval error", e);
           clearTimeout(timeout);
-          QRCodeModal.close();
+          walletConnectModal.closeModal()
         });
     } else {
       console.error("hashconnect - No approval function found");

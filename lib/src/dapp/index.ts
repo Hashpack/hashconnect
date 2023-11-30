@@ -1,6 +1,5 @@
 import { AccountId, LedgerId } from '@hashgraph/sdk'
 import { SessionTypes, SignClientTypes } from '@walletconnect/types'
-import QRCodeModal from '@walletconnect/qrcode-modal'
 import Client, { SignClient } from '@walletconnect/sign-client'
 import { getSdkError } from '@walletconnect/utils'
 import { HederaJsonRpcMethod, accountAndLedgerFromSession, networkNamespaces } from '../shared'
@@ -56,48 +55,7 @@ export class DAppConnector {
     }
   }
 
-  public async connectQR(pairingTopic?: string): Promise<void> {
-    return this.abortableConnect(async () => {
-      try {
-        const { uri, approval } = await this.connectURI(pairingTopic)
-        if (!uri) throw new Error('URI is not defined')
-        QRCodeModal.open(uri, () => {
-          throw new Error('User rejected pairing')
-        })
 
-        await this.onSessionConnected(await approval())
-      } finally {
-        QRCodeModal.close()
-      }
-    })
-  }
-
-  public async connect(
-    launchCallback: (uri: string) => void,
-    pairingTopic?: string,
-  ): Promise<void> {
-    return this.abortableConnect(async () => {
-      const { uri, approval } = await this.connectURI(pairingTopic)
-      if (!uri) throw new Error('URI is not defined')
-      launchCallback(uri)
-      const session = await approval()
-      await this.onSessionConnected(session)
-    })
-  }
-
-  private abortableConnect = async <T>(callback: () => Promise<T>): Promise<T> => {
-    const pairTimeoutMs = 480_000
-    const timeout = setTimeout(() => {
-      QRCodeModal.close()
-      throw new Error(`Connect timed out after ${pairTimeoutMs}(ms)`)
-    }, pairTimeoutMs)
-
-    try {
-      return await callback()
-    } finally {
-      clearTimeout(timeout)
-    }
-  }
 
   public async disconnect(topic: string): Promise<void> {
     if (!this.walletConnectClient) {

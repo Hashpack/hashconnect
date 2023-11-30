@@ -22,3 +22,24 @@ export declare namespace MessageTypes {
     topic: string;
   }
 }
+
+
+export interface UserProfile {
+    accountId: string;
+    network: "mainnet" | "testnet";
+    profilePicture: {
+        tokenId: string,
+        serial: number,
+        thumbUrl: string,
+    };
+    theme: {
+        tokenId: string,
+        metadata: string,
+        themeId: string,
+    };
+    username: {
+        tokenId: string,
+        serial: number,
+        name: string,
+    }
+}

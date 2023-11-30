@@ -10,6 +10,7 @@ import {
   HashConnectConnectionState,
   HashConnectTypes,
   MessageTypes,
+  UserProfile,
 } from "./types";
 import Core from "@walletconnect/core";
 import SignClient from "@walletconnect/sign-client";
@@ -550,5 +551,26 @@ export class HashConnect {
     this._pairingString = uri;
 
     return { uri, approval };
+  }
+
+  async getUserProfile(accountId: string, network: "mainnet" | "testnet" = "mainnet"): Promise<UserProfile> {
+    //post fetch to https://api.hashpack.app/user-profile/get
+    //with accountId as the body
+    //returns UserProfile
+    const response = await fetch("https://api.hashpack.app/user-profile/get", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ accountId: accountId.toString(), network: network }),
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to get user profile");
+    }
+
+    const userProfile: UserProfile = await response.json();
+
+    return userProfile;
   }
 }

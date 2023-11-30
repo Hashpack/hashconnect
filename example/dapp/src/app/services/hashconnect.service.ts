@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { ButtonLayoutDisplay, ButtonMaker, DialogInitializer, DialogLayoutDisplay } from '@costlydeveloper/ngx-awesome-popup';
 import { AccountId, LedgerId, Transaction, TransactionReceipt } from '@hashgraph/sdk';
 import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
-import { HashConnectConnectionState } from 'hashconnect/dist/types';
+import { HashConnectConnectionState, UserProfile } from 'hashconnect/dist/types';
 import { ResultModalComponent } from '../components/result-modal/result-modal.component';
 import { SigningService } from './signing.service';
 
@@ -29,6 +29,7 @@ export class HashconnectService {
     topic: string;
     pairingString?: string;
     pairingData: MessageTypes.SessionData;
+    userProfile: UserProfile;
 
     async initHashconnect(isMainnet: boolean) {
         //create the hashconnect instance
@@ -52,10 +53,13 @@ export class HashconnectService {
         })
 
         //This is fired when a wallet approves a pairing
-        this.hashconnect.pairingEvent.on((data) => {
+        this.hashconnect.pairingEvent.on(async (data) => {
             console.log("Paired with wallet", data);
 
             this.pairingData = data;
+
+            let profile = await this.hashconnect.getUserProfile(this.pairingData.accountIds[0]);
+            this.userProfile = profile;
         });
 
         //This is fired when HashConnect loses connection, pairs successfully, or is starting connection

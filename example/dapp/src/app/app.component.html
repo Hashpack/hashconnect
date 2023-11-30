@@ -5,6 +5,17 @@
         
         <h3>Connected accounts: {{ HashConnectService.pairingData?.accountIds | json}}</h3>
 
+        <div class="profile" *ngIf="HashConnectService.userProfile">
+            <div class="profile_wrap">
+                <div class="profile__avatar">
+                    <img [src]="HashConnectService.userProfile.profilePicture.thumbUrl" alt="avatar">
+                </div>
+                <div class="profile__name">
+                    <h3>{{ HashConnectService.userProfile.username.name || HashConnectService.userProfile.accountId }}</h3>
+                </div>
+            </div>
+        </div>
+
         <div class="mainnet_toggle">
             <input type="checkbox" [(ngModel)]="isMainnet" (ngModelChange)="toggleMainnet()">
             Mainnet
@@ -24,7 +35,7 @@
 
         <button class="primary" (click)="sendTransaction()" [disabled]="HashConnectService.state != 'Paired'">Create basic transaction</button>
         <button class="primary" (click)="prngTrans()" [disabled]="HashConnectService.state != 'Paired'">prng</button>
-
+        <button class="primary" (click)="getUserProfile()" [disabled]="HashConnectService.state != 'Paired'">Get User Profile</button>
         
         <h3>Account</h3>
         <button class="primary" (click)="accountUpdate()" [disabled]="HashConnectService.state != 'Paired'">Account Update</button>

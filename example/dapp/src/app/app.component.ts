@@ -35,6 +35,7 @@ import { WipeTokenComponent } from './components/wipe-token/wipe-token.component
 
 import { HashconnectService } from './services/hashconnect.service';
 import { SigningService } from './services/signing.service';
+import { UserProfile } from 'hashconnect';
 
 @Component({
     selector: 'app-root',
@@ -245,5 +246,14 @@ export class AppComponent {
         ]);
 
         dialogPopup.openDialog$().subscribe(resp => { });
+    }
+
+    async getUserProfile() {
+        let profile = await this.HashConnectService.hashconnect.getUserProfile(this.HashConnectService.pairingData.accountIds[0]);
+    
+        if(profile)
+            this.HashConnectService.userProfile = profile;
+        
+        console.log("Got profile", profile)
     }
 }

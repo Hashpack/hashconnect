@@ -12,6 +12,26 @@
 
     .top {
         flex: 0 0 100%;
+
+        .profile {
+            display: flex;
+            justify-content: center;
+
+            .profile_wrap {
+                display: flex;
+                border: solid 1px white;
+                align-items: center;
+            }
+
+            img {
+                width: 60px;
+                margin-right: 8px;
+            }
+
+            .profile__name {
+                padding-right: 8px;
+            }
+        }
     }
 
     .buttons {

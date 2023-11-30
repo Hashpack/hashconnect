@@ -51,9 +51,8 @@
     "dependencies": {
         "@hashgraph/sdk": "2.37.0",
         "@hashgraph/cryptography": "1.4.7",
-        "@hashgraph/walletconnect": "/Users/pwoosam/Dev/hashpack/hedera-walletconnect-utils",
+        "@hashgraph/walletconnect": "/home/t/Work/Web/hashconnect_pwoosam/hedera-walletconnect-utils",
         "@walletconnect/modal": "^2.6.2",
-        "@walletconnect/qrcode-modal": "^1.8.0",
         "@walletconnect/sign-client": "^2.10.4",
         "@walletconnect/types": "^2.9.2",
         "buffer": "^6.0.3",

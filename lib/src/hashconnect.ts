@@ -117,7 +117,7 @@ export class HashConnect {
                         );
 
                         this.pairingEvent.emit({
-                            metadata: approved.peer.metadata, 
+                            metadata: approved.peer.metadata,
                             accountIds: this.connectedAccountIds.map((a) => a.toString()),
                             topic: approved.topic,
                             network: this.ledgerId.toString(),
@@ -255,6 +255,18 @@ export class HashConnect {
         } else {
             this.findLocalWallets();
         }
+
+        this._signClient.events.addListener('session_delete', event => {
+            if (this._debug)
+                console.log("hashconnect - Session deleted", event);
+
+            this.disconnectionEvent.emit(event);
+
+            let existing_sessions = this._signClient!.session.getAll();
+
+            if (existing_sessions.length === 0)
+                this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
+        });
     }
 
     async disconnect() {

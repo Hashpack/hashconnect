@@ -19,14 +19,11 @@ export class HashconnectService {
     appMetadata = {
         name: "dApp Example",
         description: "An example hedera dApp",
-        icons: ["https://www.hashpack.app/img/logo.svg"],
+        icons: ["https://assets-global.website-files.com/61ce2e4bcaa2660da2bb419e/61cf5cc71c9324950d7e071d_logo-colour-white.svg"],
         url: "test.com"
     }
 
-    availableExtension: HashConnectTypes.WalletMetadata;
-    
     state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
-    topic: string;
     pairingString?: string;
     pairingData: MessageTypes.SessionData;
     userProfile: UserProfile;
@@ -59,6 +56,7 @@ export class HashconnectService {
         //This is fired when a wallet disconnects
         this.hashconnect.disconnectionEvent.on((data) => {
             console.log("Disconnected from wallet", data);
+            this.pairingData = null;
         });
 
         //This is fired when HashConnect loses connection, pairs successfully, or is starting connection

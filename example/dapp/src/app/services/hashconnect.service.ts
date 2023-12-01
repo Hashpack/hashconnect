@@ -56,6 +56,11 @@ export class HashconnectService {
             this.userProfile = profile;
         });
 
+        //This is fired when a wallet disconnects
+        this.hashconnect.disconnectionEvent.on((data) => {
+            console.log("Disconnected from wallet", data);
+        });
+
         //This is fired when HashConnect loses connection, pairs successfully, or is starting connection
         this.hashconnect.connectionStatusChangeEvent.on((state) => {
             console.log("hashconnect state change event", state);

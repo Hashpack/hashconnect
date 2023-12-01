@@ -5,6 +5,7 @@
         
         <h3>Connected accounts: {{ HashConnectService.pairingData?.accountIds | json}}</h3>
 
+        <h3>Connected to: {{ HashConnectService.pairingData?.metadata | json }}</h3>
         <div class="profile" *ngIf="HashConnectService.userProfile">
             <div class="profile_wrap">
                 <div class="profile__avatar">

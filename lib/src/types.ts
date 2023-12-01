@@ -1,3 +1,5 @@
+import { SignClientTypes } from "@walletconnect/types";
+
 export enum HashConnectConnectionState {
   Connecting = "Connecting",
   Connected = "Connected",
@@ -16,7 +18,7 @@ export declare namespace HashConnectTypes {
 
 export declare namespace MessageTypes {
   export interface SessionData {
-    metadata: HashConnectTypes.WalletMetadata;
+    metadata: SignClientTypes.Metadata;
     accountIds: string[];
     network: string;
     topic: string;

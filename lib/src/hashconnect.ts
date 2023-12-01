@@ -37,6 +37,7 @@ export class HashConnect {
     readonly connectionStatusChangeEvent =
         new Event<HashConnectConnectionState>();
     readonly pairingEvent = new Event<MessageTypes.SessionData>();
+    readonly disconnectionEvent = new Event<void>();
     readonly foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
     readonly foundIframeEvent = new Event<HashConnectTypes.WalletMetadata>();
 
@@ -116,7 +117,7 @@ export class HashConnect {
                         );
 
                         this.pairingEvent.emit({
-                            metadata: this.metadata, // TODO: Make wallet metadata instead of dapp metadata
+                            metadata: approved.peer.metadata, 
                             accountIds: this.connectedAccountIds.map((a) => a.toString()),
                             topic: approved.topic,
                             network: this.ledgerId.toString(),
@@ -234,21 +235,26 @@ export class HashConnect {
         let existing_sessions = this._signClient.session.getAll();
 
         if (existing_sessions.length > 0) {
-            this.pairingEvent.emit({
-                metadata: this.metadata, // TODO: Make wallet metadata instead of dapp metadata
-                accountIds: this.connectedAccountIds.map((a) => a.toString()),
-                topic: existing_sessions[0].topic,
-                network: this.ledgerId.toString(),
-            });
+
+            if (this._debug) {
+                console.log("hashconnect - Existing sessions found", existing_sessions);
+            }
+
+            for (let i = 0; i < existing_sessions.length; i++) {
+                const session = existing_sessions[i];
+
+                this.pairingEvent.emit({
+                    metadata: session.peer.metadata,
+                    accountIds: this.connectedAccountIds.map((a) => a.toString()),
+                    topic: session.topic,
+                    network: this.ledgerId.toString(),
+                });
+            }
 
             this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Paired);
         } else {
             this.findLocalWallets();
         }
-    }
-
-    async connect(): Promise<void> {
-        await this.init();
     }
 
     async disconnect() {
@@ -268,7 +274,7 @@ export class HashConnect {
         this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
 
         await this.generatePairingString();
-        
+
         setTimeout(async () => {
             await this._connectToIframeParent();
         }, 5000)
@@ -537,7 +543,7 @@ export class HashConnect {
                         );
 
                         this.pairingEvent.emit({
-                            metadata: this.metadata, // TODO: Make wallet metadata instead of dapp metadata
+                            metadata: approved.peer.metadata,
                             accountIds: this.connectedAccountIds.map((a) => a.toString()),
                             topic: approved.topic,
                             network: this.ledgerId.toString(),

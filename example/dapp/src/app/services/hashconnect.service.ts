@@ -89,7 +89,9 @@ export class HashconnectService {
         await this.hashconnect.disconnect();
 
         this.pairingData = null;
-        await this.hashconnect.init();
+        this.userProfile = null;
+
+        // await this.hashconnect.init();
     }
 
     showResultOverlay(data: any) {

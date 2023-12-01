@@ -45,6 +45,8 @@ export class HashConnect {
     private _authClient?: AuthClient;
 
     private _pairingString?: string;
+    private approval: (() => Promise<SessionTypes.Struct>) | undefined;
+
     get pairingString() {
         return this._pairingString;
     }
@@ -84,10 +86,6 @@ export class HashConnect {
         }
 
         if (!this._pairingString) {
-            await this.generatePairingString();
-        }
-
-        if (!this._pairingString) {
             console.error(
                 "hashconnect - Cancel connect to iframe parent wallet - no pairing string"
             );
@@ -100,11 +98,36 @@ export class HashConnect {
 
         window.parent.postMessage(
             {
-                type: "hashconnect-iframe-pairing",
+                type: "hashconnect2-iframe-pairing",
                 pairingString: this._pairingString,
             },
             "*"
         );
+
+        if (this.approval) {
+            this.approval()
+                .then(async (approved) => {
+                    if (this._debug) {
+                        console.log("hashconnect - Approval received from iframe parent", approved);
+                    }
+                    if (approved) {
+                        this.connectionStatusChangeEvent.emit(
+                            HashConnectConnectionState.Paired
+                        );
+
+                        this.pairingEvent.emit({
+                            metadata: this.metadata, // TODO: Make wallet metadata instead of dapp metadata
+                            accountIds: this.connectedAccountIds.map((a) => a.toString()),
+                            topic: approved.topic,
+                            network: this.ledgerId.toString(),
+                        });
+
+                    }
+                })
+                .catch((e) => {
+                    console.error("hashconnect - Approval error from iframe parent", e);
+                });
+        }
     }
 
     private _setupEvents() {
@@ -115,7 +138,6 @@ export class HashConnect {
 
             // wait for pairing string to be set
             if (!this._pairingString) {
-                await this.generatePairingString();
                 if (!this._pairingString) {
                     await new Promise<void>((resolve) => {
                         const intervalHandle = setInterval(() => {
@@ -193,7 +215,7 @@ export class HashConnect {
                 });
 
             // add delay for race condition in SignClient.init that causes .connect to never resolve
-            await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
+            // await new Promise<void>((resolve) => setTimeout(() => resolve(), 1000));
         }
 
         this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
@@ -206,6 +228,8 @@ export class HashConnect {
             console.log("hashconnect - connecting");
             console.log({ sessionLength: this._signClient.session.length });
         }
+
+        await this.generatePairingString();
 
         let existing_sessions = this._signClient.session.getAll();
 
@@ -240,6 +264,15 @@ export class HashConnect {
                 });
             })
         );
+
+        this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
+
+        await this.generatePairingString();
+        
+        setTimeout(async () => {
+            await this._connectToIframeParent();
+        }, 5000)
+
     }
 
     /**
@@ -441,10 +474,6 @@ export class HashConnect {
         }
 
         if (!this._pairingString) {
-            await this.generatePairingString();
-        }
-
-        if (!this._pairingString) {
             console.error(
                 "hashconnect - Cancel connect to local wallet - no pairing string"
             );
@@ -466,14 +495,11 @@ export class HashConnect {
     }
 
     async openModal() {
-        //generate a pairing string, which you can display and generate a QR code from
-        const { uri, approval } = await this.generatePairingString();
-
         if (this._debug) {
-            console.log(`hashconnect - Pairing string created: ${uri}`);
+            console.log(`hashconnect - Pairing string created: ${this._pairingString}`);
         }
 
-        if (!uri) {
+        if (!this._pairingString) {
             console.error("hashconnect - URI Missing");
             return;
         }
@@ -491,7 +517,7 @@ export class HashConnect {
                 "--wcm-background-color": "#1F1D2B",
             }
         })
-        walletConnectModal.openModal({ uri })
+        walletConnectModal.openModal({ uri: this._pairingString })
 
         const pairTimeoutMs = 480_000;
         const timeout = setTimeout(() => {
@@ -499,8 +525,8 @@ export class HashConnect {
             throw new Error(`Connect timed out after ${pairTimeoutMs}(ms)`);
         }, pairTimeoutMs);
 
-        if (approval) {
-            approval()
+        if (this.approval) {
+            this.approval()
                 .then(async (approved) => {
                     if (this._debug) {
                         console.log("hashconnect - Approval received", approved);
@@ -549,6 +575,7 @@ export class HashConnect {
         });
 
         this._pairingString = uri;
+        this.approval = approval;
 
         return { uri, approval };
     }

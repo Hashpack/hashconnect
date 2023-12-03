@@ -8,9 +8,9 @@ import {
 } from "@hashgraph/sdk";
 import {
     HashConnectConnectionState,
-    HashConnectTypes,
-    MessageTypes,
+    SessionData,
     UserProfile,
+    WalletMetadata,
 } from "./types";
 import Core from "@walletconnect/core";
 import SignClient from "@walletconnect/sign-client";
@@ -36,10 +36,10 @@ global.Buffer = global.Buffer || require("buffer").Buffer;
 export class HashConnect {
     readonly connectionStatusChangeEvent =
         new Event<HashConnectConnectionState>();
-    readonly pairingEvent = new Event<MessageTypes.SessionData>();
+    readonly pairingEvent = new Event<SessionData>();
     readonly disconnectionEvent = new Event<void>();
-    readonly foundExtensionEvent = new Event<HashConnectTypes.WalletMetadata>();
-    readonly foundIframeEvent = new Event<HashConnectTypes.WalletMetadata>();
+    readonly foundExtensionEvent = new Event<WalletMetadata>();
+    readonly foundIframeEvent = new Event<WalletMetadata>();
 
     private core?: Core;
     private _signClient?: ISignClient;
@@ -188,6 +188,7 @@ export class HashConnect {
     }
 
     async init(): Promise<void> {
+        this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Disconnected);
         if (this._debug) console.log("hashconnect - Initializing");
 
         if (typeof window !== "undefined") {

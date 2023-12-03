@@ -2,7 +2,7 @@
 
 **HashConnect v3 is current in pre-release. API's may change or be unstable.**
 
-Hashconnect is a library to connect Hedera apps to wallets, similar to web3 functionality found in the Ethereum ecosystem.
+Hashconnect is a helper library around the Hedera WalletConnect standard, allowing dapps to easily integrate with a variety of wallets.
 
 The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pairing and signing functionality.
 
@@ -32,7 +32,6 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Provider/Signer](#providersigner)
       - [Get Provider](#get-provider)
       - [Get Signer](#get-signer)
-        - [Usage](#usage-1)
     - [Types](#types)
         - [HashConnectConnectionState](#hashconnectconnectionstate)
         - [SessionData](#sessiondata)
@@ -225,78 +224,25 @@ await hashconnect.sendTransaction(accountId, transaction);
 This request allows you to get a signature on a generic piece of data. You can send a string or object.
 
 ```js
-await hashconnect.sign(initData.topic, signingAcct, dataToSign);
+await hashconnect.sign(signingAcct, dataToSign);
 ```
-
-It will return a [SigningResponse](#messagetypessigningresponse)
 
 
 #### Authenticate
 
-This request sends an authentication response to the wallet which can be used to generate an authentication token for use with a backend system.
-
-The expected use of this is as follows:
-- generate a payload and signature on the server, this payload should contain a single-use code you can validate later
-- send that payload and signature to the frontend
-- send to the users wallet
-- receive a new payload back along with the users signature of the new payload
-- send this payload and user signature to your backend
-- use this in your auth flow
-
-This returns a [AuthenticationResponse](#messagetypesauthenticationresponse)
-
-```js
-await hashconnect.authenticate(topic, signingAcct, serverSigningAccount, serverSignature, payload);
-```
-
-**Example Implementation:**
-
-```js
-async send() {
-    //!!!!!!!!!! DO NOT DO THIS ON THE CLIENT SIDE - YOU MUST SIGN THE PAYLOAD IN YOUR BACKEND
-    // after verified on the server, generate some sort of auth token to use with your backend
-    let payload = { url: "test.com", data: { token: "fufhr9e84hf9w8fehw9e8fhwo9e8fw938fw3o98fhjw3of" } };
-
-    let signing_data = this.SigningService.signData(payload);
-
-    //this line you should do client side, after generating the signed payload on the server
-    let res = await this.HashconnectService.hashconnect.authenticate(this.HashconnectService.initData.topic, this.signingAcct, signing_data.serverSigningAccount, signing_data.signature, payload);
-    //send res to backend for validation
-    
-    //THE FOLLOWING IS SERVER SIDE ONLY
-    let url = "https://testnet.mirrornode.hedera.com/api/v1/accounts/" + this.signingAcct;
-
-    fetch(url, { method: "GET" }).then(async accountInfoResponse => {
-        if (accountInfoResponse.ok) {
-            let data = await accountInfoResponse.json();
-            console.log("Got account info", data);
-
-            if(!res.signedPayload) return; 
-            
-                let server_key_verified = this.SigningService.verifyData(res.signedPayload.originalPayload, this.SigningService.publicKey, res.signedPayload.serverSignature as Uint8Array);
-                let user_key_verified = this.SigningService.verifyData(res.signedPayload, data.key.key, res.userSignature as Uint8Array);
-
-            if(server_key_verified && user_key_verified)
-                //authenticated
-            else 
-                //not authenticated
-        } else {
-            alert("Error getting public key")
-        }
-    })
-    //!!!!!!!!!! DO NOT DO THIS ON THE CLIENT SIDE - YOU MUST PASS THE TRANSACTION BYTES TO THE SERVER AND VERIFY THERE
-    
-}
-```
+TODO
 
 ### Provider/Signer
 
-In accordance with [HIP-338](https://hips.hedera.com/hip/hip-338) and [hethers.js](https://docs.hedera.com/hethers/getting-started) we have added provider/signer support.
+TODO
+<!-- In accordance with [HIP-338](https://hips.hedera.com/hip/hip-338) and [hethers.js](https://docs.hedera.com/hethers/getting-started) we have added provider/signer support.
 
-You need to initialize HashConnect normally, then once you have your ```hashconnect``` variable you can use the ```.getProvider()``` and ```.getSigner()``` methods.
+You need to initialize HashConnect normally, then once you have your ```hashconnect``` variable you can use the ```.getProvider()``` and ```.getSigner()``` methods. -->
 
 #### Get Provider
 
+TODO
+<!-- 
 Just pass in these couple variables, and you'll get a provider back! 
 
 This allows you to interact using the API's [detailed here](https://docs.hedera.com/hethers/application-programming-interface/providers/provider).
@@ -309,17 +255,18 @@ Example Usage
 
 ```js
 let balance = await provider.getAccountBalance(accountId);
-```
+``` -->
 
 #### Get Signer
 
-Pass the provider into this method to get a signer back, this allows you to interact with HashConnect using a simpler API.
+TODO
+<!-- Pass the provider into this method to get a signer back, this allows you to interact with HashConnect using a simpler API.
 
 ```js
 signer = hashconnect.getSigner(provider);
-```
+``` -->
 
-##### Usage
+<!-- ##### Usage
 
 ```js
 let trans = await new TransferTransaction()
@@ -328,7 +275,7 @@ let trans = await new TransferTransaction()
     .freezeWithSigner(this.signer);
 
 let res = await trans.executeWithSigner(this.signer);
-```
+``` -->
 
 ### Types
 

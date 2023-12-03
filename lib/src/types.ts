@@ -18,7 +18,6 @@ export interface SessionData {
   metadata: SignClientTypes.Metadata;
   accountIds: string[];
   network: string;
-  topic: string;
 }
 
 export interface UserProfile {

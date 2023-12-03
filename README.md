@@ -11,10 +11,10 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
 **[Example React Integration](https://github.com/rajatK012/hashconnectWalletConnect)**
 
 - [Hashconnect](#hashconnect)
+  - [Project ID](#project-id)
   - [Quick Start](#quick-start)
   - [Concepts](#concepts)
   - [Usage](#usage)
-    - [Project ID](#project-id)
     - [Installation](#installation)
     - [Initialization](#initialization)
     - [Setup](#setup)
@@ -24,7 +24,6 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
       - [Connection Status Change](#connection-status-change)
     - [Pairing](#pairing)
       - [Pairing to extension](#pairing-to-extension)
-    - [Second Time Connecting](#second-time-connecting)
     - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
       - [Send Transaction](#send-transaction)
@@ -36,7 +35,11 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
         - [Usage](#usage-1)
     - [Types](#types)
         - [HashConnectConnectionState](#hashconnectconnectionstate)
+        - [SessionData](#sessiondata)
 
+## Project ID
+
+Before doing anything you will need a WalletConnect project ID. You can get one by going to [WalletConnect Cloud](https://cloud.walletconnect.com/) and setting up a project. 
 
 ## Quick Start
 
@@ -54,7 +57,7 @@ const appMetadata = {
 }
 
 let hashconnect: HashConnect;
-let state: HashConnectConnectionState;
+let state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
 let pairingData: SessionData;
 
 async init() {
@@ -83,7 +86,14 @@ setUpHashConnectEvents() {
     hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {
         state = connectionStatus;
     })
-    
+}
+
+sendTransaction(accountId: string, transaction: Transaction) {
+    hashconnect.sendTransaction(accountId, transaction).then(response => {
+        //handle success
+    }).catch(err => {
+        //handle error
+    })
 }
 ```
 
@@ -94,10 +104,6 @@ The main functionality of Hashconnect is to send Hedera transactions to a wallet
 HashConnect also providers other sorts of helpers, like user profile fetching and token gating.
 
 ## Usage
-
-### Project ID
-
-Before doing anything you will need a WalletConnect project ID. You can get one by going to [WalletConnect Cloud](https://cloud.walletconnect.com/) and setting up a project. 
 
 ### Installation
 
@@ -198,13 +204,10 @@ hashconnect.openModal();
 
 If the HashPack extension is found during init, it will automatically pop it up and request pairing.
 
-### Second Time Connecting
-
-When calling init HashConnect will automatically reconnect to any previously connected pairings. This will trigger a PairingEvent for each existing pairing.
 
 ### Disconnecting
 
-Call `hashconnect.disconnect(topic)` to disconnect a pairing. You can then access the new list of current pairings from `hashconnect.hcData.savedPairings`.
+Call `hashconnect.disconnect()` to disconnect.
 
 ### Sending Requests
 
@@ -216,25 +219,6 @@ This request takes two parameters, **accountId** and a Hedera Transaction.
 await hashconnect.sendTransaction(accountId, transaction);
 ```
 
-**Example Implementation:**
-
-```js
-async sendTransaction(trans: Transaction, acctToSign: string) {     
-    let transactionBytes: Uint8Array = await SigningService.signAndMakeBytes(trans);
-
-    const transaction: MessageTypes.Transaction = {
-        topic: initData.topic,
-        byteArray: transactionBytes,
-        metadata: {
-            accountToSign: acctToSign,
-            returnTransaction: false,
-            hideNft: false
-        }
-    }
-
-    let response = await hashconnect.sendTransaction(initData.topic, transaction)
-}
-```
 
 #### Sign
 
@@ -356,5 +340,20 @@ export enum HashConnectConnectionState {
     Connected="Connected",
     Disconnected="Disconnected",
     Paired="Paired"
+}
+```
+
+##### SessionData
+
+```js
+export interface SessionData {
+  metadata: {
+    name: string;
+    description: string;
+    url: string;
+    icons: string[];
+  };
+  accountIds: string[];
+  network: string;
 }
 ```

@@ -119,7 +119,6 @@ export class HashConnect {
                         this.pairingEvent.emit({
                             metadata: approved.peer.metadata,
                             accountIds: this.connectedAccountIds.map((a) => a.toString()),
-                            topic: approved.topic,
                             network: this.ledgerId.toString(),
                         });
 
@@ -247,7 +246,6 @@ export class HashConnect {
                 this.pairingEvent.emit({
                     metadata: session.peer.metadata,
                     accountIds: this.connectedAccountIds.map((a) => a.toString()),
-                    topic: session.topic,
                     network: this.ledgerId.toString(),
                 });
             }
@@ -558,7 +556,6 @@ export class HashConnect {
                         this.pairingEvent.emit({
                             metadata: approved.peer.metadata,
                             accountIds: this.connectedAccountIds.map((a) => a.toString()),
-                            topic: approved.topic,
                             network: this.ledgerId.toString(),
                         });
 

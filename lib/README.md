@@ -11,10 +11,10 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
 **[Example React Integration](https://github.com/rajatK012/hashconnectWalletConnect)**
 
 - [Hashconnect](#hashconnect)
+  - [Project ID](#project-id)
   - [Quick Start](#quick-start)
   - [Concepts](#concepts)
   - [Usage](#usage)
-    - [Project ID](#project-id)
     - [Installation](#installation)
     - [Initialization](#initialization)
     - [Setup](#setup)
@@ -37,6 +37,9 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Types](#types)
         - [HashConnectConnectionState](#hashconnectconnectionstate)
 
+## Project ID
+
+Before doing anything you will need a WalletConnect project ID. You can get one by going to [WalletConnect Cloud](https://cloud.walletconnect.com/) and setting up a project. 
 
 ## Quick Start
 
@@ -92,10 +95,6 @@ The main functionality of Hashconnect is to send Hedera transactions to a wallet
 HashConnect also providers other sorts of helpers, like user profile fetching and token gating.
 
 ## Usage
-
-### Project ID
-
-Before doing anything you will need a WalletConnect project ID. You can get one by going to [WalletConnect Cloud](https://cloud.walletconnect.com/) and setting up a project. 
 
 ### Installation
 

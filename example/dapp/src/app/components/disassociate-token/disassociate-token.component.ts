@@ -51,8 +51,9 @@ export class DisassociateTokenComponent implements OnInit {
         trans.setTokenIds(tokenIds);
         trans.setAccountId(this.signingAcct);
 
+        let frozenTrans = await this.SigningService.freezeTransaction(trans, this.signingAcct);
 
-        let res = await this.HashconnectService.sendTransaction(trans, AccountId.fromString(this.signingAcct));
+        let res = await this.HashconnectService.sendTransaction(frozenTrans, AccountId.fromString(this.signingAcct));
 
         //handle response
         let responseData: any = {

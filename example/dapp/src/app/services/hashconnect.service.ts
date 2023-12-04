@@ -64,11 +64,6 @@ export class HashconnectService {
         })
     }
 
-    async connectToExtension() {
-        //this will automatically pop up a pairing request in the HashPack extension
-        this.hashconnect.connectToLocalWallet();
-    }
-
 
     async sendTransaction(trans: Transaction, acctToSign: AccountId, return_trans: boolean = false, hideNfts: boolean = false, getRecord: boolean = false) {
         return await this.hashconnect.sendTransaction(acctToSign, trans)

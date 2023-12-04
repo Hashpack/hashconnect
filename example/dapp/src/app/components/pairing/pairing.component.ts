@@ -48,8 +48,8 @@ export class PairingComponent implements OnInit {
     }
 
 
-    pairWithExtension() {
-        this.HashconnectService.connectToExtension();
-    }
+    // pairWithExtension() {
+    //     this.HashconnectService.connectToExtension();
+    // }
 
 }

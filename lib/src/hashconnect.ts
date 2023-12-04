@@ -38,8 +38,6 @@ export class HashConnect {
         new Event<HashConnectConnectionState>();
     readonly pairingEvent = new Event<SessionData>();
     readonly disconnectionEvent = new Event<void>();
-    readonly foundExtensionEvent = new Event<WalletMetadata>();
-    readonly foundIframeEvent = new Event<WalletMetadata>();
 
     private core?: Core;
     private _signClient?: ISignClient;
@@ -76,116 +74,6 @@ export class HashConnect {
         return accountIds;
     }
 
-    private async _connectToIframeParent() {
-        if (typeof window === "undefined") {
-            if (this._debug) {
-                console.log(
-                    "hashconnect - Cancel iframe connection - no window object"
-                );
-            }
-            return;
-        }
-
-        if (!this._pairingString) {
-            console.error(
-                "hashconnect - Cancel connect to iframe parent wallet - no pairing string"
-            );
-            return;
-        }
-
-        if (this._debug) {
-            console.log("hashconnect - Connecting to iframe parent wallet");
-        }
-
-        window.parent.postMessage(
-            {
-                type: "hashconnect2-iframe-pairing",
-                pairingString: this._pairingString,
-            },
-            "*"
-        );
-
-        if (this.approval) {
-            this.approval()
-                .then(async (approved) => {
-                    if (this._debug) {
-                        console.log("hashconnect - Approval received from iframe parent", approved);
-                    }
-                    if (approved) {
-                        this.connectionStatusChangeEvent.emit(
-                            HashConnectConnectionState.Paired
-                        );
-
-                        this.pairingEvent.emit({
-                            metadata: approved.peer.metadata,
-                            accountIds: this.connectedAccountIds.map((a) => a.toString()),
-                            network: this.ledgerId.toString(),
-                        });
-
-                    }
-                })
-                .catch((e) => {
-                    console.error("hashconnect - Approval error from iframe parent", e);
-                });
-        }
-    }
-
-    private _setupEvents() {
-        this.foundIframeEvent.on(async (walletMetadata) => {
-            if (this._debug) {
-                console.log("hashconnect - Found iframe wallet", walletMetadata);
-            }
-
-            // wait for pairing string to be set
-            if (!this._pairingString) {
-                if (!this._pairingString) {
-                    await new Promise<void>((resolve) => {
-                        const intervalHandle = setInterval(() => {
-                            if (this._pairingString) {
-                                resolve();
-                                clearInterval(intervalHandle);
-                            }
-                        }, 250);
-                    });
-                }
-            }
-
-            this._connectToIframeParent();
-        });
-    }
-
-    constructor(
-        readonly ledgerId: LedgerId,
-        private readonly projectId: string,
-        private readonly metadata: SignClientTypes.Metadata,
-        private readonly _debug: boolean = false
-    ) {
-        this._setupEvents();
-    }
-
-    getSigner(accountId: AccountId): HashConnectSigner {
-        if (!this._signClient) {
-            throw new Error("No sign client");
-        }
-
-        const session = SignClientHelper.getSessionForAccount(
-            this._signClient,
-            this.ledgerId,
-            accountId.toString()
-        );
-
-        if (!session) {
-            throw new Error("No session found for account");
-        }
-
-        return new HashConnectSigner(
-            accountId,
-            this._signClient,
-            session.topic,
-            this.ledgerId
-        );
-    }
-
     async init(): Promise<void> {
         this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Disconnected);
         if (this._debug) console.log("hashconnect - Initializing");
@@ -193,9 +81,7 @@ export class HashConnect {
         if (typeof window !== "undefined") {
             this.metadata.url = window.location.origin;
         } else if (!this.metadata.url) {
-            throw new Error(
-                "metadata.url must be defined if not running hashconnect within a browser"
-            );
+            throw new Error("metadata.url must be defined if not running hashconnect within a browser");
         }
 
         if (!this.core || !this._signClient || !this._authClient) {
@@ -221,14 +107,8 @@ export class HashConnect {
 
         this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Connected);
 
-        if (this._debug) {
-            console.log("hashconnect - Initialized");
-        }
-
-        if (this._debug) {
-            console.log("hashconnect - connecting");
-            console.log({ sessionLength: this._signClient.session.length });
-        }
+        if (this._debug) console.log("hashconnect - Initialized");
+        if (this._debug) console.log("hashconnect - connecting");
 
         await this.generatePairingString();
 
@@ -236,9 +116,7 @@ export class HashConnect {
 
         if (existing_sessions.length > 0) {
 
-            if (this._debug) {
-                console.log("hashconnect - Existing sessions found", existing_sessions);
-            }
+            if (this._debug) console.log("hashconnect - Existing sessions found", existing_sessions);
 
             for (let i = 0; i < existing_sessions.length; i++) {
                 const session = existing_sessions[i];
@@ -256,8 +134,7 @@ export class HashConnect {
         }
 
         this._signClient.events.addListener('session_delete', event => {
-            if (this._debug)
-                console.log("hashconnect - Session deleted", event);
+            if (this._debug) console.log("hashconnect - Session deleted", event);
 
             this.disconnectionEvent.emit(event);
 
@@ -268,10 +145,68 @@ export class HashConnect {
         });
     }
 
+    private _setupEvents() {
+        window.addEventListener(
+            "message",
+            (event) => {
+                //if found iframe parent, connect to it
+                if (event.data.type && event.data.type == "hashconnect-iframe-response") {
+                    if (this._debug)
+                        console.log("hashconnect - iFrame wallet metadata recieved", event.data);
+                    
+                    if (event.data.metadata){
+                        this._connectToIframeParent();
+                        return; //dont try to connect to extension if found iframe
+                    }
+                }
+
+                //if found extension, connect to it
+                if (event.data.type && event.data.type == "hashconnect-query-extension-response") {
+                    if (this._debug) console.log("hashconnect - Local wallet metadata recieved", event.data);
+                    
+                    if (event.data.metadata)
+                        this.connectToExtension();
+                }
+            },
+            false
+        );
+    }
+
+    constructor(
+        readonly ledgerId: LedgerId,
+        private readonly projectId: string,
+        private readonly metadata: SignClientTypes.Metadata,
+        private readonly _debug: boolean = false
+    ) {
+        this._setupEvents();
+    }
+
+    getSigner(accountId: AccountId): HashConnectSigner {
+        if (!this._signClient)
+            throw new Error("No sign client");
+
+        const session = SignClientHelper.getSessionForAccount(
+            this._signClient,
+            this.ledgerId,
+            accountId.toString()
+        );
+
+        if (!session)
+            throw new Error("No session found for account");
+
+        return new HashConnectSigner(
+            accountId,
+            this._signClient,
+            session.topic,
+            this.ledgerId
+        );
+    }
+
+    
+
     async disconnect() {
-        if (!this._signClient) {
+        if (!this._signClient)
             return;
-        }
 
         await Promise.all(
             this._signClient.session.getAll().map(async (session) => {
@@ -289,7 +224,6 @@ export class HashConnect {
         setTimeout(async () => {
             await this._connectToIframeParent();
         }, 5000)
-
     }
 
     /**
@@ -389,9 +323,8 @@ export class HashConnect {
         serverSignature: Uint8Array,
         payload: { url: string; data: any }
     ) {
-        if (!this._signClient) {
+        if (!this._signClient)
             throw new Error("No sign client");
-        }
 
         const signature = await SignClientHelper.sendAuthenticationRequest(
             this._signClient,
@@ -424,82 +357,46 @@ export class HashConnect {
      * Local wallet stuff
      */
 
-    findLocalWallets() {
+    async findLocalWallets() {
         if (typeof window === "undefined") {
-            if (this._debug) {
-                console.log("hashconnect - Cancel findLocalWallets - no window object");
-            }
+            if (this._debug) console.log("hashconnect - Cancel findLocalWallets - no window object");
             return;
         }
 
-        if (this._debug) {
-            console.log("hashconnect - Finding local wallets");
+        if (this._debug) console.log("hashconnect - Finding local wallets");
+
+        // wait for pairing string to be set
+        if (!this._pairingString) {
+            await new Promise<void>((resolve) => {
+                const intervalHandle = setInterval(() => {
+                    if (this._pairingString) {
+                        resolve();
+                        clearInterval(intervalHandle);
+                    }
+                }, 250);
+            });
         }
-        window.addEventListener(
-            "message",
-            (event) => {
-                if (
-                    event.data.type &&
-                    event.data.type == "hashconnect-query-extension-response"
-                ) {
-                    if (this._debug) {
-                        console.log(
-                            "hashconnect - Local wallet metadata recieved",
-                            event.data
-                        );
-                    }
-                    if (event.data.metadata) {
-                        this.foundExtensionEvent.emit(event.data.metadata);
-                    }
-                }
-
-                if (
-                    event.data.type &&
-                    event.data.type == "hashconnect-iframe-response"
-                ) {
-                    if (this._debug) {
-                        console.log(
-                            "hashconnect - iFrame wallet metadata recieved",
-                            event.data
-                        );
-                    }
-
-                    if (event.data.metadata) {
-                        this.foundIframeEvent.emit(event.data.metadata);
-                    }
-                }
-            },
-            false
-        );
 
         setTimeout(() => {
             window.postMessage({ type: "hashconnect-query-extension" }, "*");
-            if (window.parent) {
+
+            if (window.parent)
                 window.parent.postMessage({ type: "hashconnect-iframe-query" }, "*");
-            }
         }, 50);
     }
 
-    async connectToLocalWallet() {
+    async connectToExtension() {
         if (typeof window === "undefined") {
-            if (this._debug) {
-                console.log(
-                    "hashconnect - Cancel connect to local wallet - no window object"
-                );
-            }
+            if (this._debug) console.log("hashconnect - Cancel connect to local wallet - no window object");
             return;
         }
 
         if (!this._pairingString) {
-            console.error(
-                "hashconnect - Cancel connect to local wallet - no pairing string"
-            );
+            console.error("hashconnect - Cancel connect to local wallet - no pairing string");
             return;
         }
 
-        if (this._debug) {
-            console.log("hashconnect - Connecting to local wallet");
-        }
+        if (this._debug)console.log("hashconnect - Connecting to local wallet");
 
         //todo: add extension metadata support
         window.postMessage(
@@ -509,12 +406,76 @@ export class HashConnect {
             },
             "*"
         );
+
+        if (this.approval) {
+            this.approval()
+                .then(async (approved) => {
+                    if (this._debug) console.log("hashconnect - Approval received from extension", approved);
+                    
+                    if (approved) {
+                        this.connectionStatusChangeEvent.emit(
+                            HashConnectConnectionState.Paired
+                        );
+
+                        this.pairingEvent.emit({
+                            metadata: approved.peer.metadata,
+                            accountIds: this.connectedAccountIds.map((a) => a.toString()),
+                            network: this.ledgerId.toString(),
+                        });
+                    }
+                })
+                .catch((e) => {
+                    console.error("hashconnect - Approval error from extension", e);
+                });
+        }
+    }
+
+    private async _connectToIframeParent() {
+        if (typeof window === "undefined") {
+            if (this._debug) console.log("hashconnect - Cancel iframe connection - no window object");
+            return;
+        }
+
+        if (!this._pairingString) {
+            console.error("hashconnect - Cancel connect to iframe parent wallet - no pairing string");
+            return;
+        }
+
+        if (this._debug) console.log("hashconnect - Connecting to iframe parent wallet");
+
+        window.parent.postMessage(
+            {
+                type: "hashconnect2-iframe-pairing",
+                pairingString: this._pairingString,
+            },
+            "*"
+        );
+
+        if (this.approval) {
+            this.approval()
+                .then(async (approved) => {
+                    if (this._debug) console.log("hashconnect - Approval received from iframe parent", approved);
+                    
+                    if (approved) {
+                        this.connectionStatusChangeEvent.emit(
+                            HashConnectConnectionState.Paired
+                        );
+
+                        this.pairingEvent.emit({
+                            metadata: approved.peer.metadata,
+                            accountIds: this.connectedAccountIds.map((a) => a.toString()),
+                            network: this.ledgerId.toString(),
+                        });
+                    }
+                })
+                .catch((e) => {
+                    console.error("hashconnect - Approval error from iframe parent", e);
+                });
+        }
     }
 
     async openModal() {
-        if (this._debug) {
-            console.log(`hashconnect - Pairing string created: ${this._pairingString}`);
-        }
+        if (this._debug) console.log(`hashconnect - Pairing string created: ${this._pairingString}`);
 
         if (!this._pairingString) {
             console.error("hashconnect - URI Missing");

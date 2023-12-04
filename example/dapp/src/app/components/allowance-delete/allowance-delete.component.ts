@@ -46,7 +46,9 @@ export class AllowanceDeleteComponent implements OnInit {
     async send() {
         let trans = new AccountAllowanceDeleteTransaction().deleteAllTokenNftAllowances(new NftId(TokenId.fromString("0.0.29631020"), 1), this.signingAcct);
 
-        let res = await this.HashconnectService.sendTransaction(trans, AccountId.fromString(this.signingAcct));
+        let frozenTrans = await this.SigningService.freezeTransaction(trans, this.signingAcct);
+
+        let res = await this.HashconnectService.sendTransaction(frozenTrans, AccountId.fromString(this.signingAcct));
 
         //handle response
         let responseData: any = {

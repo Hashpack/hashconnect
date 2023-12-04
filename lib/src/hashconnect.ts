@@ -4,6 +4,7 @@ import {
     LedgerId,
     SignerSignature,
     Transaction,
+    TransactionId,
     TransactionResponse,
 } from "@hashgraph/sdk";
 import {
@@ -245,6 +246,14 @@ export class HashConnect {
         transaction: Transaction
     ): Promise<TransactionResponse> {
         const signer = this.getSigner(accountId);
+
+        if(!transaction.isFrozen()) {
+            let transId = TransactionId.generate(accountId)
+            transaction.setTransactionId(transId);
+            transaction.setNodeAccountIds([new AccountId(3), new AccountId(4), new AccountId(5), new AccountId(6), new AccountId(7), new AccountId(8), new AccountId(9), new AccountId(10), new AccountId(11), new AccountId(12), new AccountId(13), new AccountId(14), new AccountId(15), new AccountId(16), new AccountId(17), ]);
+            transaction.freeze();
+        }
+
         return await signer.call(transaction);
     }
 

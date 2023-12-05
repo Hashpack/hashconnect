@@ -1,40 +1,48 @@
 import { Buffer } from "buffer";
 import {
-  Executable,
-  SignerSignature,
-  Transaction,
-  TransactionResponse,
+    Client,
+    Executable,
+    SignerSignature,
+    Transaction,
+    TransactionResponse,
+    TransactionResponseJSON,
 } from "@hashgraph/sdk";
 
 import { AuthenticationHelper } from "./utils";
 import { DAppSigner } from "./dapp/DAppSigner";
 import {
-  HederaJsonRpcMethod,
-  buildSignAndExecuteTransactionParams,
-  buildSignMessageParams,
+    HederaJsonRpcMethod,
+    buildSignAndExecuteTransactionParams,
+    buildSignMessageParams,
 } from "@hashgraph/walletconnect";
 
 export class HashConnectSigner extends DAppSigner {
-  async sign(messages: Uint8Array[]): Promise<SignerSignature[]> {
-    const signedMessages = await this.request<SignerSignature[]>({
-      method: HederaJsonRpcMethod.SignMessage,
-      params: buildSignMessageParams(this.getAccountId().toString(), messages),
-    });
+    private readonly hederaClient: Client = Client.forName(this.getLedgerId().toString());
 
-    return signedMessages;
-  }
+    getClient() {
+        return this.hederaClient;
+    }
 
-  async call<RequestT, ResponseT, OutputT>(
-    request: Executable<RequestT, ResponseT, OutputT>
-  ): Promise<OutputT> {
-    const response = await this.request<any>({
-      method: HederaJsonRpcMethod.SignTransactionAndSend,
-      params: buildSignAndExecuteTransactionParams(
-        this.getAccountId().toString(),
-        Transaction.fromBytes(request.toBytes())
-      ),
-    });
+    async sign(messages: Uint8Array[]): Promise<SignerSignature[]> {
+        const signedMessages = await this.request<SignerSignature[]>({
+            method: HederaJsonRpcMethod.SignMessage,
+            params: buildSignMessageParams(this.getAccountId().toString(), messages),
+        });
 
-    return TransactionResponse.fromJSON(response) as OutputT;
-  }
+        return signedMessages;
+    }
+
+    async call<RequestT, ResponseT, OutputT>(
+        request: Executable<RequestT, ResponseT, OutputT>
+    ): Promise<OutputT> {
+        const response = await this.request<TransactionResponseJSON>({
+            method: HederaJsonRpcMethod.SignTransactionAndSend,
+            params: buildSignAndExecuteTransactionParams(
+                this.getAccountId().toString(),
+                Transaction.fromBytes(request.toBytes())
+            ),
+        });
+
+        return TransactionResponse.fromJSON(response) as OutputT;
+    }
 }

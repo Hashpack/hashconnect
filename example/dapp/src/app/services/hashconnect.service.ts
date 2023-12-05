@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ButtonLayoutDisplay, ButtonMaker, DialogInitializer, DialogLayoutDisplay } from '@costlydeveloper/ngx-awesome-popup';
 import { AccountId, LedgerId, Transaction, TransactionReceipt } from '@hashgraph/sdk';
-import { HashConnect, HashConnectTypes, MessageTypes } from 'hashconnect';
-import { HashConnectConnectionState, UserProfile } from 'hashconnect/dist/types';
+import { HashConnect, HashConnectConnectionState, SessionData, UserProfile } from 'hashconnect';
 import { ResultModalComponent } from '../components/result-modal/result-modal.component';
 import { SigningService } from './signing.service';
 
@@ -24,8 +23,7 @@ export class HashconnectService {
     }
 
     state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
-    pairingString?: string;
-    pairingData: MessageTypes.SessionData;
+    pairingData: SessionData;
     userProfile: UserProfile;
 
     async initHashconnect(isMainnet: boolean) {
@@ -38,16 +36,16 @@ export class HashconnectService {
         //register events
         this.setUpHashConnectEvents();
 
-        //initialize and use returned data
+        //initialize
         await this.hashconnect.init();
     }
 
     setUpHashConnectEvents() {
         //This is fired when a wallet approves a pairing
-        this.hashconnect.pairingEvent.on(async (data) => {
-            console.log("Paired with wallet", data);
+        this.hashconnect.pairingEvent.on(async (newPairing) => {
+            console.log("Paired with wallet", newPairing);
 
-            this.pairingData = data;
+            this.pairingData = newPairing;
 
             let profile = await this.hashconnect.getUserProfile(this.pairingData.accountIds[0]);
             this.userProfile = profile;
@@ -66,25 +64,8 @@ export class HashconnectService {
         })
     }
 
-    async connectToExtension() {
-        //this will automatically pop up a pairing request in the HashPack extension
-        this.hashconnect.connectToLocalWallet();
-    }
-
 
     async sendTransaction(trans: Transaction, acctToSign: AccountId, return_trans: boolean = false, hideNfts: boolean = false, getRecord: boolean = false) {
-        // const transaction: MessageTypes.Transaction = {
-        //     topic: this.topic,
-        //     byteArray: trans,
-            
-        //     metadata: {
-        //         accountToSign: acctToSign,
-        //         returnTransaction: return_trans,
-        //         hideNft: hideNfts,
-        //         getRecord: getRecord
-        //     }
-        // }
-
         return await this.hashconnect.sendTransaction(acctToSign, trans)
     }
 

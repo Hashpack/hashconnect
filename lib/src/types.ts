@@ -7,24 +7,18 @@ export enum HashConnectConnectionState {
   Paired = "Paired",
 }
 
-export declare namespace HashConnectTypes {
-  export interface WalletMetadata {
-    name: string;
-    description: string;
-    icons: string[];
-    url?: string;
-  }
+export interface WalletMetadata {
+  name: string;
+  description: string;
+  icons: string[];
+  url?: string;
 }
 
-export declare namespace MessageTypes {
-  export interface SessionData {
-    metadata: SignClientTypes.Metadata;
-    accountIds: string[];
-    network: string;
-    topic: string;
-  }
+export interface SessionData {
+  metadata: SignClientTypes.Metadata;
+  accountIds: string[];
+  network: string;
 }
-
 
 export interface UserProfile {
     accountId: string;

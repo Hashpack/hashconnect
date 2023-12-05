@@ -3,7 +3,6 @@ import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { AwesomeQR } from 'awesome-qr';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
 import { Subscription } from 'rxjs';
-import { HashConnectTypes } from 'hashconnect';
 
 @Component({
     selector: 'app-pairing',
@@ -49,8 +48,8 @@ export class PairingComponent implements OnInit {
     }
 
 
-    pairWithExtension() {
-        this.HashconnectService.connectToExtension();
-    }
+    // pairWithExtension() {
+    //     this.HashconnectService.connectToExtension();
+    // }
 
 }

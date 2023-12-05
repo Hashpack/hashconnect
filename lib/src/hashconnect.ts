@@ -40,12 +40,13 @@ export class HashConnect {
     readonly pairingEvent = new Event<SessionData>();
     readonly disconnectionEvent = new Event<void>();
 
+    private readonly approveEvent = new Event<void>();
+
     private core?: Core;
     private _signClient?: ISignClient;
     private _authClient?: AuthClient;
 
     private _pairingString?: string;
-    private approval: (() => Promise<SessionTypes.Struct>) | undefined;
 
     get pairingString() {
         return this._pairingString;
@@ -155,14 +156,10 @@ export class HashConnect {
                     if (this._debug)
                         console.log("hashconnect - iFrame wallet metadata recieved", event.data);
                     
-                    if (event.data.metadata){
+                    if (event.data.metadata)
                         this._connectToIframeParent();
-                        return; //dont try to connect to extension if found iframe
-                    }
-                }
 
-                //if found extension, connect to it
-                if (event.data.type && event.data.type == "hashconnect-query-extension-response") {
+                } else if (event.data.type && event.data.type == "hashconnect-query-extension-response") { //if found extension, connect to it
                     if (this._debug) console.log("hashconnect - Local wallet metadata recieved", event.data);
                     
                     if (event.data.metadata)
@@ -249,8 +246,9 @@ export class HashConnect {
 
         if(!transaction.isFrozen()) {
             let transId = TransactionId.generate(accountId)
+            let temp_client = signer.getClient();
             transaction.setTransactionId(transId);
-            transaction.setNodeAccountIds([new AccountId(3), new AccountId(4), new AccountId(5), new AccountId(6), new AccountId(7), new AccountId(8), new AccountId(9), new AccountId(10), new AccountId(11), new AccountId(12), new AccountId(13), new AccountId(14), new AccountId(15), new AccountId(16), new AccountId(17), ]);
+            transaction.setNodeAccountIds(Object.values(temp_client.network).map(accId => typeof(accId) === "string" ? AccountId.fromString(accId) : accId));
             transaction.freeze();
         }
 
@@ -366,7 +364,7 @@ export class HashConnect {
      * Local wallet stuff
      */
 
-    async findLocalWallets() {
+    private async findLocalWallets() {
         if (typeof window === "undefined") {
             if (this._debug) console.log("hashconnect - Cancel findLocalWallets - no window object");
             return;
@@ -394,7 +392,7 @@ export class HashConnect {
         }, 50);
     }
 
-    async connectToExtension() {
+    private async connectToExtension() {
         if (typeof window === "undefined") {
             if (this._debug) console.log("hashconnect - Cancel connect to local wallet - no window object");
             return;
@@ -415,28 +413,6 @@ export class HashConnect {
             },
             "*"
         );
-
-        if (this.approval) {
-            this.approval()
-                .then(async (approved) => {
-                    if (this._debug) console.log("hashconnect - Approval received from extension", approved);
-                    
-                    if (approved) {
-                        this.connectionStatusChangeEvent.emit(
-                            HashConnectConnectionState.Paired
-                        );
-
-                        this.pairingEvent.emit({
-                            metadata: approved.peer.metadata,
-                            accountIds: this.connectedAccountIds.map((a) => a.toString()),
-                            network: this.ledgerId.toString(),
-                        });
-                    }
-                })
-                .catch((e) => {
-                    console.error("hashconnect - Approval error from extension", e);
-                });
-        }
     }
 
     private async _connectToIframeParent() {
@@ -459,28 +435,6 @@ export class HashConnect {
             },
             "*"
         );
-
-        if (this.approval) {
-            this.approval()
-                .then(async (approved) => {
-                    if (this._debug) console.log("hashconnect - Approval received from iframe parent", approved);
-                    
-                    if (approved) {
-                        this.connectionStatusChangeEvent.emit(
-                            HashConnectConnectionState.Paired
-                        );
-
-                        this.pairingEvent.emit({
-                            metadata: approved.peer.metadata,
-                            accountIds: this.connectedAccountIds.map((a) => a.toString()),
-                            network: this.ledgerId.toString(),
-                        });
-                    }
-                })
-                .catch((e) => {
-                    console.error("hashconnect - Approval error from iframe parent", e);
-                });
-        }
     }
 
     async openModal() {
@@ -506,41 +460,9 @@ export class HashConnect {
         })
         walletConnectModal.openModal({ uri: this._pairingString })
 
-        const pairTimeoutMs = 480_000;
-        const timeout = setTimeout(() => {
+        this.approveEvent.once(() => {
             walletConnectModal.closeModal()
-            throw new Error(`Connect timed out after ${pairTimeoutMs}(ms)`);
-        }, pairTimeoutMs);
-
-        if (this.approval) {
-            this.approval()
-                .then(async (approved) => {
-                    if (this._debug) {
-                        console.log("hashconnect - Approval received", approved);
-                    }
-                    if (approved) {
-                        this.connectionStatusChangeEvent.emit(
-                            HashConnectConnectionState.Paired
-                        );
-
-                        this.pairingEvent.emit({
-                            metadata: approved.peer.metadata,
-                            accountIds: this.connectedAccountIds.map((a) => a.toString()),
-                            network: this.ledgerId.toString(),
-                        });
-
-                        clearTimeout(timeout);
-                        walletConnectModal.closeModal()
-                    }
-                })
-                .catch((e) => {
-                    console.error("hashconnect - Approval error", e);
-                    clearTimeout(timeout);
-                    walletConnectModal.closeModal()
-                });
-        } else {
-            console.error("hashconnect - No approval function found");
-        }
+        });
     }
 
     async generatePairingString(): Promise<{
@@ -561,7 +483,39 @@ export class HashConnect {
         });
 
         this._pairingString = uri;
-        this.approval = approval;
+
+        const pairTimeoutMs = 480_000;
+        const timeout = setTimeout(() => {
+            this.approveEvent.emit();
+            this.generatePairingString();
+            throw new Error(`Connect timed out after ${pairTimeoutMs}(ms)`);
+        }, pairTimeoutMs);
+        
+        approval()
+            .then(async (approved) => {
+                if (this._debug) console.log("hashconnect - Approval received", approved);
+                
+                if (approved) {
+                    this.connectionStatusChangeEvent.emit(
+                        HashConnectConnectionState.Paired
+                    );
+
+                    this.pairingEvent.emit({
+                        metadata: approved.peer.metadata,
+                        accountIds: this.connectedAccountIds.map((a) => a.toString()),
+                        network: this.ledgerId.toString(),
+                    });
+
+                    this.approveEvent.emit();
+                    clearTimeout(timeout);
+                }
+            })
+            .catch((e) => {
+                this.approveEvent.emit();
+                clearTimeout(timeout);
+                console.error("hashconnect - Approval error", e);
+            });
+        
 
         return { uri, approval };
     }

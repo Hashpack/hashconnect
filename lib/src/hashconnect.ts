@@ -324,7 +324,7 @@ export class HashConnect {
      * ```
      * @category Authentication
      */
-    async authenticate(
+    async hashpackAuthenticate(
         accountId: AccountId,
         serverSigningAccount: AccountId,
         serverSignature: Uint8Array,

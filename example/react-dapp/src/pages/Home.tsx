@@ -19,6 +19,7 @@ import {
   authenticate,
   executeTransaction,
   signTransaction,
+  hc,
 } from "../services/hashconnect";
 import { AppStore } from "../store";
 
@@ -99,6 +100,48 @@ export const Home = () => {
             }}
           >
             Sign and Execute
+          </Button>
+          <Button
+            variant="contained"
+            color={"blurple" as any}
+            onClick={async () => {
+              const transferTransaction = new TransferTransaction()
+                .addHbarTransfer(fromAccountId, new Hbar(-1))
+                .addHbarTransfer(toAccountId, new Hbar(1))
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(TransactionId.generate(fromAccountId));
+              const frozenTransaction = transferTransaction.freeze();
+              const signResult = await signTransaction(
+                AccountId.fromString(fromAccountId),
+                frozenTransaction
+              );
+              console.log({
+                signResult,
+              });
+            }}
+          >
+            Sign and Return
+          </Button>
+          <Button
+            variant="contained"
+            color={"blurple" as any}
+            onClick={async () => {
+              const signer = hc.getSigner(AccountId.fromString(fromAccountId));
+              const frozenTransaction = await new TransferTransaction()
+                .addHbarTransfer(fromAccountId, new Hbar(-1))
+                .addHbarTransfer(toAccountId, new Hbar(1))
+                .freezeWithSigner(signer);
+
+              const executeResult = await frozenTransaction.executeWithSigner(
+                signer
+              );
+
+              console.log({
+                executeResult,
+              });
+            }}
+          >
+            Sign and Execute with signer
           </Button>
           <Button
             variant="contained"

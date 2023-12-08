@@ -11,7 +11,6 @@ import {
     HashConnectConnectionState,
     SessionData,
     UserProfile,
-    WalletMetadata,
 } from "./types";
 import Core from "@walletconnect/core";
 import SignClient from "@walletconnect/sign-client";
@@ -22,10 +21,10 @@ import {
 } from "@walletconnect/types";
 import { getSdkError } from "@walletconnect/utils";
 
-import AuthClient, { generateNonce } from "@walletconnect/auth-client";
+import AuthClient from "@walletconnect/auth-client";
 import { HashConnectSigner } from "./signer";
 import { AuthenticationHelper, SignClientHelper } from "./utils";
-import { HederaChainId, ledgerIdToCAIPChainId, networkNamespaces } from "./shared";
+import { HederaChainId, networkNamespaces } from "./shared";
 import { HederaJsonRpcMethod } from "@hashgraph/walletconnect";
 import { WalletConnectModal } from '@walletconnect/modal';
 

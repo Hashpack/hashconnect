@@ -1,14 +1,8 @@
-import { ContentCopy } from "@mui/icons-material";
 import {
   Box,
   Button,
-  Dialog,
-  IconButton,
-  Snackbar,
-  Stack,
-  TextField,
 } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getConnectedAccountIds,
@@ -44,6 +38,9 @@ export const HashConnectClient = () => {
   hc.pairingEvent.on(() => {
     syncWithHashConnect();
   });
+  hc.disconnectionEvent.on(() => {
+    syncWithHashConnect();
+  });
   hc.connectionStatusChangeEvent.on(() => {
     syncWithHashConnect();
   });
@@ -51,20 +48,9 @@ export const HashConnectClient = () => {
 };
 
 export const HashConnectConnectButton = () => {
-  const {
-    isConnected,
-    accountIds: connectedAccountIds,
-    pairingString,
-  } = useSelector((state: AppStore) => state.hashconnect);
-
-  const [open, setOpen] = useState(false);
-  useEffect(() => {
-    if (isConnected) {
-      setOpen(false);
-    }
-  }, [isConnected]);
-
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const { isConnected, accountIds: connectedAccountIds } = useSelector(
+    (state: AppStore) => state.hashconnect
+  );
 
   return (
     <Box>
@@ -80,10 +66,8 @@ export const HashConnectConnectButton = () => {
               }
             }
           } else {
-            setOpen(true);
-
-            // try to pair through the browser extension
-            hc.connectToLocalWallet();
+            // open walletconnect modal
+            hc.openModal();
           }
         }}
       >
@@ -91,68 +75,6 @@ export const HashConnectConnectButton = () => {
           ? `Disconnect Account${connectedAccountIds.length > 1 ? "s" : ""}`
           : "Connect"}
       </Button>
-
-      <Dialog
-        open={open}
-        onClose={() => {
-          setOpen(false);
-        }}
-      >
-        <Snackbar
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-          open={snackbarOpen}
-          autoHideDuration={3000}
-          onClose={() => {
-            setSnackbarOpen(false);
-          }}
-        >
-          <Box
-            sx={{
-              bgcolor: "success.main",
-              color: "white",
-              p: 2,
-              borderRadius: 1,
-            }}
-          >
-            Copied to clipboard!
-          </Box>
-        </Snackbar>
-        <Stack maxWidth="800px" spacing={4} p={4}>
-          <Button
-            color={"blurple" as any}
-            variant="contained"
-            onClick={async () => {
-              await hcInitPromise;
-              // hc.connectToLocalWallet();
-            }}
-          >
-            Connect to Local Wallet
-          </Button>
-
-          <TextField
-            variant="standard"
-            color={"blurple" as any}
-            value={pairingString}
-            contentEditable={false}
-            label="Pairing String"
-            // add end adornment to copy the pairing string
-            InputProps={{
-              endAdornment: (
-                // replace the below button with a copy to clipboard button icon
-                <IconButton
-                  color={"blurple" as any}
-                  onClick={() => {
-                    navigator.clipboard.writeText(pairingString);
-                    setSnackbarOpen(true);
-                  }}
-                >
-                  <ContentCopy />
-                </IconButton>
-              ),
-            }}
-          />
-        </Stack>
-      </Dialog>
     </Box>
   );
 };

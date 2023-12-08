@@ -122,7 +122,7 @@ export const authenticate = async (accountIdForSigning: AccountId) => {
     });
 
     // then actually authenticate
-    const result = await hc.authenticate(
+    const result = await hc.hashpackAuthenticate(
         accountIdForSigning,
         accountIdForSigning,
         serverSignature.signature,

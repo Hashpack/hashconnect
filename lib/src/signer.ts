@@ -1,14 +1,14 @@
-import { Buffer } from "buffer";
 import {
+    AccountId,
     Client,
     Executable,
     SignerSignature,
     Transaction,
+    TransactionId,
     TransactionResponse,
     TransactionResponseJSON,
 } from "@hashgraph/sdk";
 
-import { AuthenticationHelper } from "./utils";
 import { DAppSigner } from "./dapp/DAppSigner";
 import {
     HederaJsonRpcMethod,
@@ -29,6 +29,10 @@ export class HashConnectSigner extends DAppSigner {
             params: buildSignMessageParams(this.getAccountId().toString(), messages),
         });
 
+        signedMessages.forEach((signedMessage) => {
+            signedMessage.signature = new Uint8Array(Object.values(signedMessage.signature));
+        });
+
         return signedMessages;
     }
 
@@ -45,4 +49,14 @@ export class HashConnectSigner extends DAppSigner {
 
         return TransactionResponse.fromJSON(response) as OutputT;
     }
+
+    async populateTransaction<T extends Transaction>(transaction: T): Promise<T> {
+        return transaction
+            .setNodeAccountIds(
+                Object.values(this.getClient().network).map((o) =>
+                    typeof o === "string" ? AccountId.fromString(o) : o
+                )
+            )    
+            .setTransactionId(TransactionId.generate(this.getAccountId()));
+}
 }

@@ -230,52 +230,42 @@ await hashconnect.sign(signingAcct, dataToSign);
 
 #### Authenticate
 
-TODO
+You can authenticate a message came from the expected dapp and was signed by the expected user using `hashconnect.hashpackAuthenticate()`.
 
-### Provider/Signer
-
-TODO
-<!-- In accordance with [HIP-338](https://hips.hedera.com/hip/hip-338) and [hethers.js](https://docs.hedera.com/hethers/getting-started) we have added provider/signer support.
-
-You need to initialize HashConnect normally, then once you have your ```hashconnect``` variable you can use the ```.getProvider()``` and ```.getSigner()``` methods. -->
-
-#### Get Provider
-
-TODO
-<!-- 
-Just pass in these couple variables, and you'll get a provider back! 
-
-This allows you to interact using the API's [detailed here](https://docs.hedera.com/hethers/application-programming-interface/providers/provider).
+This method will validate that the `serverSignature` was signed using the `serverSigningAccount`'s private key, submit the payload for signing in the user's wallet, and then validate that the user's signature matches the expected signature.
 
 ```js
-provider = hashconnect.getProvider(network, topic, accountId);
+const { isValid, error } = await hashconnect.hashpackAuthenticate(
+    accountId,
+    serverSigningAccount,
+    serverSignature,
+    payload: {
+        url: 'https://example.dapp';
+        data: {}
+    }
+);
 ```
 
-Example Usage
+### Get Signer
+
+Pass the accountId of a paired account to get a signer back, this allows you to interact with HashConnect using a simpler API.
 
 ```js
-let balance = await provider.getAccountBalance(accountId);
-``` -->
+signer = hashconnect.getSigner(AccountId.fromString('0.0.12345'));
+```
 
-#### Get Signer
-
-TODO
-<!-- Pass the provider into this method to get a signer back, this allows you to interact with HashConnect using a simpler API.
+#### Usage
 
 ```js
-signer = hashconnect.getSigner(provider);
-``` -->
+const signer = hashconnect.getSigner(fromAccount);
 
-<!-- ##### Usage
-
-```js
 let trans = await new TransferTransaction()
     .addHbarTransfer(fromAccount, -1)
     .addHbarTransfer(toAccount, 1)
-    .freezeWithSigner(this.signer);
+    .freezeWithSigner(signer);
 
-let res = await trans.executeWithSigner(this.signer);
-``` -->
+let res = await trans.executeWithSigner(signer);
+```
 
 ### Types
 

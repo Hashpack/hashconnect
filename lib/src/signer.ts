@@ -1,7 +1,10 @@
 import {
+    AccountBalance,
+    AccountBalanceQuery,
     AccountId,
     Client,
     Executable,
+    Query,
     SignerSignature,
     Transaction,
     TransactionId,
@@ -10,11 +13,12 @@ import {
 } from "@hashgraph/sdk";
 
 import { DAppSigner } from "./dapp/DAppSigner";
+
 import {
     HederaJsonRpcMethod,
-    buildSignAndExecuteTransactionParams,
-    buildSignMessageParams,
+    transactionToBase64String,
 } from "@hashgraph/walletconnect";
+
 
 export class HashConnectSigner extends DAppSigner {
     private readonly hederaClient: Client = Client.forName(this.getLedgerId().toString());
@@ -26,12 +30,15 @@ export class HashConnectSigner extends DAppSigner {
     async sign(messages: Uint8Array[]): Promise<SignerSignature[]> {
         const signedMessages = await this.request<SignerSignature[]>({
             method: HederaJsonRpcMethod.SignMessage,
-            params: buildSignMessageParams(this.getAccountId().toString(), messages),
+            params: {
+                signerAccountId: this.getAccountId().toString(),
+                message: Buffer.from(messages[0]).toString()
+            }
         });
 
-        signedMessages.forEach((signedMessage) => {
-            signedMessage.signature = new Uint8Array(Object.values(signedMessage.signature));
-        });
+        
+
+        debugger
 
         return signedMessages;
     }
@@ -39,15 +46,36 @@ export class HashConnectSigner extends DAppSigner {
     async call<RequestT, ResponseT, OutputT>(
         request: Executable<RequestT, ResponseT, OutputT>
     ): Promise<OutputT> {
-        const response = await this.request<TransactionResponseJSON>({
-            method: HederaJsonRpcMethod.SignTransactionAndSend,
-            params: buildSignAndExecuteTransactionParams(
-                this.getAccountId().toString(),
-                Transaction.fromBytes(request.toBytes())
-            ),
-        });
+        debugger
+        try {
+            let transaction = Transaction.fromBytes(request.toBytes())
+            if (transaction) {
+                debugger
+                const response = await this.request<TransactionResponseJSON>({
+                    method: HederaJsonRpcMethod.SignAndExecuteTransaction,
+                    params: {
+                        signerAccountId: this.getAccountId().toString(),
+                        transactionList: transactionToBase64String(transaction)
+                    }
+                });
+     
+                return TransactionResponse.fromJSON(response) as OutputT;
+            }
+        } catch (error) {
+            throw error;
+        }
 
-        return TransactionResponse.fromJSON(response) as OutputT;
+        try {
+            let query = Query.fromBytes(request.toBytes())
+
+            if (query) {
+                throw new Error("Query not supported - use a mirror node instead");
+            }
+        } catch {
+
+        }
+        
+        throw new Error("Unsupported request type");
     }
 
     async populateTransaction<T extends Transaction>(transaction: T): Promise<T> {
@@ -56,7 +84,7 @@ export class HashConnectSigner extends DAppSigner {
                 Object.values(this.getClient().network).map((o) =>
                     typeof o === "string" ? AccountId.fromString(o) : o
                 )
-            )    
+            )
             .setTransactionId(TransactionId.generate(this.getAccountId()));
-}
+    }
 }

@@ -101,8 +101,10 @@ export class SendTransactionComponent implements OnInit {
                 response: res,
                 receipt: null
             }
+            debugger
             this.HashconnectService.showResultOverlay(responseData);
         }).catch(err => {
+            debugger
             this.HashconnectService.showResultOverlay(err);
         });
     }

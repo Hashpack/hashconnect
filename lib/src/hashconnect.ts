@@ -24,8 +24,7 @@ import { getSdkError } from "@walletconnect/utils";
 import AuthClient from "@walletconnect/auth-client";
 import { HashConnectSigner } from "./signer";
 import { AuthenticationHelper, SignClientHelper } from "./utils";
-import { HederaChainId, networkNamespaces } from "./shared";
-import { HederaJsonRpcMethod } from "@hashgraph/walletconnect";
+import { HederaJsonRpcMethod, HederaChainId, networkNamespaces } from "@hashgraph/walletconnect";
 import { WalletConnectModal } from '@walletconnect/modal';
 
 global.Buffer = global.Buffer || require("buffer").Buffer;
@@ -179,6 +178,7 @@ export class HashConnect {
     }
 
     getSigner(accountId: AccountId): HashConnectSigner {
+        debugger
         if (!this._signClient)
             throw new Error("No sign client");
 
@@ -241,8 +241,9 @@ export class HashConnect {
         accountId: AccountId,
         transaction: Transaction
     ): Promise<TransactionResponse> {
+        debugger
         const signer = this.getSigner(accountId);
-
+debugger 
         if(!transaction.isFrozen()) {
             let transId = TransactionId.generate(accountId)
             let temp_client = signer.getClient();
@@ -250,7 +251,7 @@ export class HashConnect {
             transaction.setNodeAccountIds(Object.values(temp_client.network).map(accId => typeof(accId) === "string" ? AccountId.fromString(accId) : accId));
             transaction.freeze();
         }
-
+debugger
         return await signer.call(transaction);
     }
 

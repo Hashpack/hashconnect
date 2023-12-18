@@ -1,0 +1,56 @@
+{
+  "name": "@hashgraph/walletconnect",
+  "version": "0.1.0",
+  "description": "A library to facilitate integrating Hedera with WalletConnect",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hgraph-io/hedera-walletconnect-utils.git"
+  },
+  "main": "./dist/node-cjs.js",
+  "module": "./dist/node-esm.js",
+  "browser": {
+    "./dist/node-cjs.js": "./dist/browser-cjs.js",
+    "./dist/node-esm.js": "./dist/browser-esm.js"
+  },
+  "types": "./dist/types/index.d.ts",
+  "author": "Hgraph <support@hgraph.io>",
+  "keywords": [
+    "hedera",
+    "walletconnect",
+    "hashgraph"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/jest": "^29.5.3",
+    "@types/node": "^20.5.3",
+    "@walletconnect/modal": "^2.6.2",
+    "@walletconnect/sign-client": "^2.10.4",
+    "@walletconnect/types": "^2.9.2",
+    "concurrently": "^8.2.2",
+    "esbuild": "^0.19.5",
+    "esbuild-plugin-copy": "^2.1.1",
+    "husky": "^8.0.0",
+    "jest": "^29.6.2",
+    "lint-staged": "^15.1.0",
+    "lokijs": "^1.5.12",
+    "nodemon": "^3.0.1",
+    "prettier": "^3.1.0",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.1",
+    "ts-node": "^10.9.1",
+    "typedoc": "^0.25.4",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.37.0",
+    "@hashgraph/walletconnect": "file:./",
+    "@walletconnect/qrcode-modal": "^1.8.0",
+    "@walletconnect/types": "^2.10.0",
+    "@walletconnect/utils": "^2.10.0",
+    "@walletconnect/web3wallet": "^1.9.3",
+    "web3-utils": "^4.0.7"
+  },
+  "scripts": {
+
+  }
+}

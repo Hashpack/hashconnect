@@ -1,5 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
+import { AccountId } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 
@@ -36,7 +37,7 @@ export class SignComponent implements OnInit {
     }
 
     async send() {
-        // let res = await this.HashconnectService.hashconnect.sign(this.HashconnectService.topic, this.signingAcct, { test: "ABC" });
+        let res = await this.HashconnectService.hashconnect.signMessages(AccountId.fromString(this.signingAcct), ["Hello World!"]);
         
         // this.HashconnectService.showResultOverlay(res);
     }

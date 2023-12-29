@@ -31,7 +31,7 @@ export class HashConnectSigner extends DAppSigner {
         const signedMessages = await this.request<SignerSignature[]>({
             method: HederaJsonRpcMethod.SignMessage,
             params: {
-                signerAccountId: this.getAccountId().toString(),
+                signerAccountId: "hedera:" + this.getLedgerId() + ":" + this.getAccountId().toString(),
                 message: Buffer.from(messages[0]).toString()
             }
         });
@@ -54,7 +54,7 @@ export class HashConnectSigner extends DAppSigner {
                 const response = await this.request<TransactionResponseJSON>({
                     method: HederaJsonRpcMethod.SignAndExecuteTransaction,
                     params: {
-                        signerAccountId: this.getAccountId().toString(),
+                        signerAccountId: "hedera:" + this.getLedgerId() + ":" + this.getAccountId().toString(),
                         transactionList: transactionToBase64String(transaction)
                     }
                 });

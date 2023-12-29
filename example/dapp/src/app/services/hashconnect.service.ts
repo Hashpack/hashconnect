@@ -29,9 +29,9 @@ export class HashconnectService {
     async initHashconnect(isMainnet: boolean) {
         //create the hashconnect instance
         if (isMainnet)
-            this.hashconnect = new HashConnect(LedgerId.MAINNET, "bfa190dbe93fcf30377b932b31129d05", this.appMetadata, true);
+            this.hashconnect = new HashConnect(LedgerId.MAINNET, "980abf41b1d12f345370395151338868", this.appMetadata, true);
         else
-            this.hashconnect = new HashConnect(LedgerId.TESTNET, "bfa190dbe93fcf30377b932b31129d05", this.appMetadata, true);
+            this.hashconnect = new HashConnect(LedgerId.TESTNET, "980abf41b1d12f345370395151338868", this.appMetadata, true);
         
         //register events
         this.setUpHashConnectEvents();

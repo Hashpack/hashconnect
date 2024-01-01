@@ -36,11 +36,21 @@ export class HashConnectSigner extends DAppSigner {
             }
         });
 
-        
-
         debugger
 
         return signedMessages;
+    }
+
+    async signTransaction<T extends Transaction>(transaction: T): Promise<T> {
+        const signedStringTransaction = await this.request<string>({
+            method: HederaJsonRpcMethod.SignTransaction,
+            params: {
+                signerAccountId: "hedera:" + this.getLedgerId() + ":" + this.getAccountId().toString(),
+                transactionList: transactionToBase64String(transaction)
+            }
+        })
+
+        return signedStringTransaction as unknown as T;
     }
 
     async call<RequestT, ResponseT, OutputT>(
@@ -58,7 +68,7 @@ export class HashConnectSigner extends DAppSigner {
                         transactionList: transactionToBase64String(transaction)
                     }
                 });
-     
+
                 return TransactionResponse.fromJSON(response) as OutputT;
             }
         } catch (error) {
@@ -74,7 +84,7 @@ export class HashConnectSigner extends DAppSigner {
         } catch {
 
         }
-        
+
         throw new Error("Unsupported request type");
     }
 

@@ -11,11 +11,13 @@ import {
     TransactionResponse,
     TransactionResponseJSON,
 } from "@hashgraph/sdk";
+import { proto } from '@hashgraph/proto'
 
 import { DAppSigner } from "./dapp/DAppSigner";
 
 import {
     HederaJsonRpcMethod,
+    Uint8ArrayToBase64String,
     transactionToBase64String,
 } from "@hashgraph/walletconnect";
 
@@ -42,11 +44,16 @@ export class HashConnectSigner extends DAppSigner {
     }
 
     async signTransaction<T extends Transaction>(transaction: T): Promise<T> {
+        debugger
+        //@ts-ignore
+        let transactionBody = transaction._makeTransactionBody(AccountId.fromString('0.0.3'));
+        let base64Body = Uint8ArrayToBase64String(proto.TransactionBody.encode(transactionBody).finish());
+
         const signedStringTransaction = await this.request<string>({
             method: HederaJsonRpcMethod.SignTransaction,
             params: {
                 signerAccountId: "hedera:" + this.getLedgerId() + ":" + this.getAccountId().toString(),
-                transactionList: transactionToBase64String(transaction)
+                transactionBody: base64Body
             }
         })
 

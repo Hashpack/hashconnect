@@ -431,7 +431,19 @@ export class HashConnect {
         );
     }
 
-    async openModal() {
+    /**
+     * Opens the WalletConnect pairing modal.
+     * @param themeMode - "dark" | "light"
+     * @param backgroundColor - string (hex color)
+     * @param accentColor - string (hex color)
+     * @param accentFillColor - string (hex color)
+     * @param borderRadius - string (css border radius)
+     * @example
+     * ```ts
+     * hashconnect.openModal();
+     * ```
+     */
+    async openModal(themeMode: "dark" | "light" = "dark", backgroundColor: string = "#1F1D2B", accentColor: string = "#ACACD3", accentFillColor: string = "white", borderRadius: string = "0px") {
         if (this._debug) console.log(`hashconnect - Pairing string created: ${this._pairingString}`);
 
         if (!this._pairingString) {
@@ -447,10 +459,22 @@ export class HashConnect {
             enableExplorer: false,
             mobileWallets: [],
             themeVariables: {
-                "--wcm-accent-color": "#ACACD3",
-                "--wcm-accent-fill-color": "white",
-                "--wcm-background-color": "#1F1D2B",
-            }
+                "--wcm-accent-color": accentColor,
+                "--wcm-accent-fill-color": accentFillColor,
+                "--wcm-background-color": backgroundColor,
+                '--wcm-container-border-radius': borderRadius,
+                '--wcm-background-border-radius': borderRadius,
+                '--wcm-wallet-icon-border-radius': borderRadius,
+                '--wcm-wallet-icon-large-border-radius': borderRadius,
+                '--wcm-wallet-icon-small-border-radius': borderRadius,
+                '--wcm-input-border-radius': borderRadius,
+                '--wcm-notification-border-radius': borderRadius,
+                '--wcm-button-border-radius': borderRadius,
+                '--wcm-secondary-button-border-radius': borderRadius,
+                '--wcm-icon-button-border-radius': borderRadius,
+                '--wcm-button-hover-highlight-border-radius': borderRadius,
+            },
+            themeMode: themeMode,
         })
         walletConnectModal.openModal({ uri: this._pairingString })
 

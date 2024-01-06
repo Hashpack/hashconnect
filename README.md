@@ -29,9 +29,8 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
       - [Send Transaction](#send-transaction)
       - [Sign](#sign)
       - [Authenticate](#authenticate)
-    - [Provider/Signer](#providersigner)
-      - [Get Provider](#get-provider)
-      - [Get Signer](#get-signer)
+    - [Get Signer](#get-signer)
+      - [Usage](#usage-1)
     - [Types](#types)
         - [HashConnectConnectionState](#hashconnectconnectionstate)
         - [SessionData](#sessiondata)
@@ -198,6 +197,14 @@ You can easily show a pairing popup containing the pairing code and a QR code by
 ```js
 hashconnect.openModal();
 ```
+
+There are a variety of theme properties you can pass into openModal() to customize it:
+
+- themeMode - "dark" | "light"
+- backgroundColor - string (hex color)
+- accentColor - string (hex color)
+- accentFillColor - string (hex color)
+- borderRadius - string (css border radius)
 
 #### Pairing to extension
 

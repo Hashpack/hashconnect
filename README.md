@@ -198,7 +198,7 @@ You can easily show a pairing popup containing the pairing code and a QR code by
 hashconnect.openModal();
 ```
 
-There are a variety of theme properties you can pass into openModal() to customize it:
+There are a variety of optional theme properties you can pass into openModal() to customize it:
 
 - themeMode - "dark" | "light"
 - backgroundColor - string (hex color)

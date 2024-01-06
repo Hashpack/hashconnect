@@ -2,7 +2,7 @@
     "name": "hashconnect",
     "version": "3.0.0-beta.7",
     "description": "hashconnect interoperability library",
-    "author": "Tyler Coté <tyler@hashpack.app>, Nick Hanna <nick@hashpack.app>, Patrick Woosam <>",
+    "author": "Tyler Coté <tyler@hashpack.app>, Nick Hanna <nick@hashpack.app>, Patrick Woosam <pwoosam5@icloud.com>",
     "repository": "https://github.com/Hashpack/hashconnect",
     "license": "MIT",
     "keywords": [

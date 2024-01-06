@@ -29,8 +29,6 @@ import { WalletConnectModal } from '@walletconnect/modal';
 
 import { UserProfileHelper } from "./profiles";
 
-global.Buffer = global.Buffer || require("buffer").Buffer;
-
 /**
  * Main interface with hashpack
  */

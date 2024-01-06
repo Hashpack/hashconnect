@@ -35,7 +35,6 @@ import { WipeTokenComponent } from './components/wipe-token/wipe-token.component
 
 import { HashconnectService } from './services/hashconnect.service';
 import { SigningService } from './services/signing.service';
-import { UserProfile } from 'hashconnect';
 
 @Component({
     selector: 'app-root',

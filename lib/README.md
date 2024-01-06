@@ -2,7 +2,7 @@
 
 **HashConnect v3 is current in pre-release. API's may change or be unstable.**
 
-Hashconnect is a library to connect Hedera apps to wallets, similar to web3 functionality found in the Ethereum ecosystem.
+Hashconnect is a helper library around the Hedera WalletConnect standard, allowing dapps to easily integrate with a variety of wallets.
 
 The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pairing and signing functionality.
 
@@ -24,18 +24,16 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
       - [Connection Status Change](#connection-status-change)
     - [Pairing](#pairing)
       - [Pairing to extension](#pairing-to-extension)
-    - [Second Time Connecting](#second-time-connecting)
     - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
       - [Send Transaction](#send-transaction)
       - [Sign](#sign)
       - [Authenticate](#authenticate)
-    - [Provider/Signer](#providersigner)
-      - [Get Provider](#get-provider)
-      - [Get Signer](#get-signer)
-        - [Usage](#usage-1)
+    - [Get Signer](#get-signer)
+      - [Usage](#usage-1)
     - [Types](#types)
         - [HashConnectConnectionState](#hashconnectconnectionstate)
+        - [SessionData](#sessiondata)
 
 ## Project ID
 
@@ -46,7 +44,7 @@ Before doing anything you will need a WalletConnect project ID. You can get one 
 This is what you need to start using HashConnect, it will be explained in detail in the subsequent documentation.
 
 ```js
-import { HashConnect } from 'hashconnect';
+import { HashConnect, HashConnectConnectionState, SessionData } from 'hashconnect';
 import { LedgerId } from '@hashgraph/sdk';
 
 const appMetadata = {
@@ -57,6 +55,8 @@ const appMetadata = {
 }
 
 let hashconnect: HashConnect;
+let state: HashConnectConnectionState = HashConnectConnectionState.Disconnected;
+let pairingData: SessionData;
 
 async init() {
     //create the hashconnect instance
@@ -73,18 +73,25 @@ async init() {
 }
 
 setUpHashConnectEvents() {
-    hashconnect.pairingEvent.on((pairingData) => {
-        //do something
+    hashconnect.pairingEvent.on((newPairing) => {
+        pairingData = newPairing;
     })
 
     hashconnect.disconnectionEvent.on((data) => {
-        //do something
+        pairingData = null;
     });
 
     hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {
-        //do something with connection status
+        state = connectionStatus;
     })
-    
+}
+
+sendTransaction(accountId: string, transaction: Transaction) {
+    hashconnect.sendTransaction(accountId, transaction).then(response => {
+        //handle success
+    }).catch(err => {
+        //handle error
+    })
 }
 ```
 
@@ -191,17 +198,22 @@ You can easily show a pairing popup containing the pairing code and a QR code by
 hashconnect.openModal();
 ```
 
+There are a variety of optional theme properties you can pass into openModal() to customize it:
+
+- themeMode - "dark" | "light"
+- backgroundColor - string (hex color)
+- accentColor - string (hex color)
+- accentFillColor - string (hex color)
+- borderRadius - string (css border radius)
+
 #### Pairing to extension
 
 If the HashPack extension is found during init, it will automatically pop it up and request pairing.
 
-### Second Time Connecting
-
-When calling init HashConnect will automatically reconnect to any previously connected pairings. This will trigger a PairingEvent for each existing pairing.
 
 ### Disconnecting
 
-Call `hashconnect.disconnect(topic)` to disconnect a pairing. You can then access the new list of current pairings from `hashconnect.hcData.savedPairings`.
+Call `hashconnect.disconnect()` to disconnect.
 
 ### Sending Requests
 
@@ -213,134 +225,53 @@ This request takes two parameters, **accountId** and a Hedera Transaction.
 await hashconnect.sendTransaction(accountId, transaction);
 ```
 
-**Example Implementation:**
-
-```js
-async sendTransaction(trans: Transaction, acctToSign: string) {     
-    let transactionBytes: Uint8Array = await SigningService.signAndMakeBytes(trans);
-
-    const transaction: MessageTypes.Transaction = {
-        topic: initData.topic,
-        byteArray: transactionBytes,
-        metadata: {
-            accountToSign: acctToSign,
-            returnTransaction: false,
-            hideNft: false
-        }
-    }
-
-    let response = await hashconnect.sendTransaction(initData.topic, transaction)
-}
-```
 
 #### Sign
 
 This request allows you to get a signature on a generic piece of data. You can send a string or object.
 
 ```js
-await hashconnect.sign(initData.topic, signingAcct, dataToSign);
+await hashconnect.sign(signingAcct, dataToSign);
 ```
-
-It will return a [SigningResponse](#messagetypessigningresponse)
 
 
 #### Authenticate
 
-This request sends an authentication response to the wallet which can be used to generate an authentication token for use with a backend system.
+You can authenticate a message came from the expected dapp and was signed by the expected user using `hashconnect.hashpackAuthenticate()`.
 
-The expected use of this is as follows:
-- generate a payload and signature on the server, this payload should contain a single-use code you can validate later
-- send that payload and signature to the frontend
-- send to the users wallet
-- receive a new payload back along with the users signature of the new payload
-- send this payload and user signature to your backend
-- use this in your auth flow
-
-This returns a [AuthenticationResponse](#messagetypesauthenticationresponse)
+This method will validate that the `serverSignature` was signed using the `serverSigningAccount`'s private key, submit the payload for signing in the user's wallet, and then validate that the user's signature matches the expected signature.
 
 ```js
-await hashconnect.authenticate(topic, signingAcct, serverSigningAccount, serverSignature, payload);
+const { isValid, error } = await hashconnect.hashpackAuthenticate(
+    accountId,
+    serverSigningAccount,
+    serverSignature,
+    payload: {
+        url: 'https://example.dapp';
+        data: {}
+    }
+);
 ```
 
-**Example Implementation:**
+### Get Signer
+
+Pass the accountId of a paired account to get a signer back, this allows you to interact with HashConnect using a simpler API.
 
 ```js
-async send() {
-    //!!!!!!!!!! DO NOT DO THIS ON THE CLIENT SIDE - YOU MUST SIGN THE PAYLOAD IN YOUR BACKEND
-    // after verified on the server, generate some sort of auth token to use with your backend
-    let payload = { url: "test.com", data: { token: "fufhr9e84hf9w8fehw9e8fhwo9e8fw938fw3o98fhjw3of" } };
-
-    let signing_data = this.SigningService.signData(payload);
-
-    //this line you should do client side, after generating the signed payload on the server
-    let res = await this.HashconnectService.hashconnect.authenticate(this.HashconnectService.initData.topic, this.signingAcct, signing_data.serverSigningAccount, signing_data.signature, payload);
-    //send res to backend for validation
-    
-    //THE FOLLOWING IS SERVER SIDE ONLY
-    let url = "https://testnet.mirrornode.hedera.com/api/v1/accounts/" + this.signingAcct;
-
-    fetch(url, { method: "GET" }).then(async accountInfoResponse => {
-        if (accountInfoResponse.ok) {
-            let data = await accountInfoResponse.json();
-            console.log("Got account info", data);
-
-            if(!res.signedPayload) return; 
-            
-                let server_key_verified = this.SigningService.verifyData(res.signedPayload.originalPayload, this.SigningService.publicKey, res.signedPayload.serverSignature as Uint8Array);
-                let user_key_verified = this.SigningService.verifyData(res.signedPayload, data.key.key, res.userSignature as Uint8Array);
-
-            if(server_key_verified && user_key_verified)
-                //authenticated
-            else 
-                //not authenticated
-        } else {
-            alert("Error getting public key")
-        }
-    })
-    //!!!!!!!!!! DO NOT DO THIS ON THE CLIENT SIDE - YOU MUST PASS THE TRANSACTION BYTES TO THE SERVER AND VERIFY THERE
-    
-}
+signer = hashconnect.getSigner(AccountId.fromString('0.0.12345'));
 ```
 
-### Provider/Signer
-
-In accordance with [HIP-338](https://hips.hedera.com/hip/hip-338) and [hethers.js](https://docs.hedera.com/hethers/getting-started) we have added provider/signer support.
-
-You need to initialize HashConnect normally, then once you have your ```hashconnect``` variable you can use the ```.getProvider()``` and ```.getSigner()``` methods.
-
-#### Get Provider
-
-Just pass in these couple variables, and you'll get a provider back! 
-
-This allows you to interact using the API's [detailed here](https://docs.hedera.com/hethers/application-programming-interface/providers/provider).
+#### Usage
 
 ```js
-provider = hashconnect.getProvider(network, topic, accountId);
-```
+const signer = hashconnect.getSigner(fromAccount);
 
-Example Usage
-
-```js
-let balance = await provider.getAccountBalance(accountId);
-```
-
-#### Get Signer
-
-Pass the provider into this method to get a signer back, this allows you to interact with HashConnect using a simpler API.
-
-```js
-signer = hashconnect.getSigner(provider);
-```
-
-##### Usage
-
-```js
 let trans = await new TransferTransaction()
     .addHbarTransfer(fromAccount, -1)
     .addHbarTransfer(toAccount, 1)
-    .freezeWithSigner(this.signer);
+    .freezeWithSigner(signer);
 
-let res = await trans.executeWithSigner(this.signer);
+let res = await trans.executeWithSigner(signer);
 ```
 
 ### Types
@@ -353,5 +284,20 @@ export enum HashConnectConnectionState {
     Connected="Connected",
     Disconnected="Disconnected",
     Paired="Paired"
+}
+```
+
+##### SessionData
+
+```js
+export interface SessionData {
+  metadata: {
+    name: string;
+    description: string;
+    url: string;
+    icons: string[];
+  };
+  accountIds: string[];
+  network: string;
 }
 ```

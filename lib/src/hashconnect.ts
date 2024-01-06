@@ -27,6 +27,8 @@ import { AuthenticationHelper, SignClientHelper } from "./utils";
 import { HederaJsonRpcMethod, HederaChainId, networkNamespaces } from "@hashgraph/walletconnect";
 import { WalletConnectModal } from '@walletconnect/modal';
 
+import { UserProfileHelper } from "./profiles";
+
 global.Buffer = global.Buffer || require("buffer").Buffer;
 
 /**
@@ -45,6 +47,9 @@ export class HashConnect {
     private _authClient?: AuthClient;
 
     private _pairingString?: string;
+
+    getUserProfile = UserProfileHelper.getUserProfile;
+    getMultipleUserProfiles = UserProfileHelper.getMultipleUserProfiles;
 
     get pairingString() {
         return this._pairingString;
@@ -151,17 +156,11 @@ export class HashConnect {
             (event) => {
                 //if found iframe parent, connect to it
                 if (event.data.type && event.data.type == "hashconnect-iframe-response") {
-                    if (this._debug)
-                        console.log("hashconnect - iFrame wallet metadata recieved", event.data);
-                    
-                    if (event.data.metadata)
-                        this._connectToIframeParent();
-
+                    if (this._debug) console.log("hashconnect - iFrame wallet metadata recieved", event.data);
+                    if (event.data.metadata) this._connectToIframeParent();
                 } else if (event.data.type && event.data.type == "hashconnect-query-extension-response") { //if found extension, connect to it
                     if (this._debug) console.log("hashconnect - Local wallet metadata recieved", event.data);
-                    
-                    if (event.data.metadata)
-                        this.connectToExtension();
+                    if (event.data.metadata) this.connectToExtension();
                 }
             },
             false
@@ -178,9 +177,7 @@ export class HashConnect {
     }
 
     getSigner(accountId: AccountId): HashConnectSigner {
-        debugger
-        if (!this._signClient)
-            throw new Error("No sign client");
+        if (!this._signClient) throw new Error("No sign client");
 
         const session = SignClientHelper.getSessionForAccount(
             this._signClient,
@@ -188,8 +185,7 @@ export class HashConnect {
             accountId.toString()
         );
 
-        if (!session)
-            throw new Error("No session found for account");
+        if (!session) throw new Error("No session found for account");
 
         return new HashConnectSigner(
             accountId,
@@ -202,8 +198,7 @@ export class HashConnect {
     
 
     async disconnect() {
-        if (!this._signClient)
-            return;
+        if (!this._signClient) return;
 
         await Promise.all(
             this._signClient.session.getAll().map(async (session) => {
@@ -241,9 +236,8 @@ export class HashConnect {
         accountId: AccountId,
         transaction: Transaction
     ): Promise<TransactionResponse> {
-        debugger
         const signer = this.getSigner(accountId);
-debugger 
+ 
         if(!transaction.isFrozen()) {
             let transId = TransactionId.generate(accountId)
             let temp_client = signer.getClient();
@@ -251,7 +245,7 @@ debugger
             transaction.setNodeAccountIds(Object.values(temp_client.network).map(accId => typeof(accId) === "string" ? AccountId.fromString(accId) : accId));
             transaction.freeze();
         }
-debugger
+
         return await signer.call(transaction);
     }
 
@@ -520,24 +514,30 @@ debugger
         return { uri, approval };
     }
 
-    async getUserProfile(accountId: string, network: "mainnet" | "testnet" = "mainnet"): Promise<UserProfile> {
-        //post fetch to https://api.hashpack.app/user-profile/get
-        //with accountId as the body
-        //returns UserProfile
-        const response = await fetch("https://api.hashpack.app/user-profile/get", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ accountId: accountId.toString(), network: network }),
-        });
+    // async getUserProfile(accountId: string, network: "mainnet" | "testnet" = "mainnet"): Promise<UserProfile> {
+    //     let profile: UserProfile = await UserProfileHelper.getUserProfile(accountId, network);
 
-        if (!response.ok) {
-            throw new Error("Failed to get user profile");
-        }
+    //     return profile;
+    // }
 
-        const userProfile: UserProfile = await response.json();
+    
 
-        return userProfile;
-    }
+    // async getMultipleUserProfiles(accountIds: string[], network: "mainnet" | "testnet" = "mainnet"): Promise<UserProfile[]> {
+    //     let profiles: UserProfile[] = await UserProfileHelper.getMultipleUserProfiles(accountIds, network);
+
+    //     return profiles;
+    // }
+
+    // verifyMessageSignature(
+    //     message: string,
+    //     base64SignatureMap: string,
+    //     publicKey: PublicKey,
+    //   ): boolean {
+    //     const signatureMap = base64StringToSignatureMap(base64SignatureMap)
+    //     const signature = signatureMap.sigPair[0].ed25519 || signatureMap.sigPair[0].ECDSASecp256k1
+      
+    //     if (!signature) throw new Error('Signature not found in signature map')
+      
+    //     return publicKey.verify(Buffer.from(prefixMessageToSign(message)), signature)
+    //   }
 }

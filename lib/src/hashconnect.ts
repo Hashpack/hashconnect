@@ -2,6 +2,7 @@ import { Event } from "ts-typed-events";
 import {
     AccountId,
     LedgerId,
+    PublicKey,
     SignerSignature,
     Transaction,
     TransactionId,
@@ -24,7 +25,7 @@ import { getSdkError } from "@walletconnect/utils";
 import AuthClient from "@walletconnect/auth-client";
 import { HashConnectSigner } from "./signer";
 import { AuthenticationHelper, SignClientHelper } from "./utils";
-import { HederaJsonRpcMethod, HederaChainId, networkNamespaces } from "@hashgraph/walletconnect";
+import { HederaJsonRpcMethod, HederaChainId, networkNamespaces, prefixMessageToSign, base64StringToSignatureMap } from "@hashgraph/walletconnect";
 import { WalletConnectModal } from '@walletconnect/modal';
 
 import { UserProfileHelper } from "./profiles";
@@ -33,8 +34,7 @@ import { UserProfileHelper } from "./profiles";
  * Main interface with hashpack
  */
 export class HashConnect {
-    readonly connectionStatusChangeEvent =
-        new Event<HashConnectConnectionState>();
+    readonly connectionStatusChangeEvent = new Event<HashConnectConnectionState>();
     readonly pairingEvent = new Event<SessionData>();
     readonly disconnectionEvent = new Event<void>();
 
@@ -165,6 +165,25 @@ export class HashConnect {
         );
     }
 
+    /**
+     * Create a new HashConnect instance
+     * @param ledgerId - LedgerId
+     * @param projectId - string
+     * @param metadata - { name: string; description: string; icons: string[]; url: string; }
+     * @param debug - boolean
+     * @returns
+     * @example
+     * ```ts
+     * const metadata = {
+     *      name: "Example dApp",
+     *      description: "Example dApp",
+     *      icons: ["https://example.com/icon.png"],
+     *      url: "https://example.com",
+     * };
+     * const hashconnect = new HashConnect(LedgerId.TESTNET, "<ProjectId>", metadata, true);
+     * ```
+     * @category Initialization
+     */
     constructor(
         readonly ledgerId: LedgerId,
         private readonly projectId: string,
@@ -193,8 +212,16 @@ export class HashConnect {
         );
     }
 
-    
 
+    /**
+     * Disconnect from hashpack
+     * @returns
+     * @example
+     * ```ts
+     * await hashconnect.disconnect();
+     * ```
+     * @category Initialization
+     */
     async disconnect() {
         if (!this._signClient) return;
 
@@ -220,7 +247,7 @@ export class HashConnect {
      * Send a transaction to hashpack for signing and execution
      * @param accountId
      * @param transaction
-     * @returns
+     * @returns TransactionResponse - {@link TransactionResponse}
      * @example
      * ```ts
      * const transactionResponse = await hashconnect.sendTransaction(
@@ -235,12 +262,12 @@ export class HashConnect {
         transaction: Transaction
     ): Promise<TransactionResponse> {
         const signer = this.getSigner(accountId);
- 
-        if(!transaction.isFrozen()) {
+
+        if (!transaction.isFrozen()) {
             let transId = TransactionId.generate(accountId)
             let temp_client = signer.getClient();
             transaction.setTransactionId(transId);
-            transaction.setNodeAccountIds(Object.values(temp_client.network).map(accId => typeof(accId) === "string" ? AccountId.fromString(accId) : accId));
+            transaction.setNodeAccountIds(Object.values(temp_client.network).map(accId => typeof (accId) === "string" ? AccountId.fromString(accId) : accId));
             transaction.freeze();
         }
 
@@ -395,7 +422,7 @@ export class HashConnect {
             return;
         }
 
-        if (this._debug)console.log("hashconnect - Connecting to local wallet");
+        if (this._debug) console.log("hashconnect - Connecting to local wallet");
 
         //todo: add extension metadata support
         window.postMessage(
@@ -481,7 +508,7 @@ export class HashConnect {
         });
     }
 
-    async generatePairingString(): Promise<{
+    private async generatePairingString(): Promise<{
         uri: string | undefined;
         approval: () => Promise<SessionTypes.Struct>;
     }> {
@@ -506,11 +533,11 @@ export class HashConnect {
             this.generatePairingString();
             throw new Error(`Connect timed out after ${pairTimeoutMs}(ms)`);
         }, pairTimeoutMs);
-        
+
         approval()
             .then(async (approved) => {
                 if (this._debug) console.log("hashconnect - Approval received", approved);
-                
+
                 if (approved) {
                     this.connectionStatusChangeEvent.emit(
                         HashConnectConnectionState.Paired
@@ -531,35 +558,38 @@ export class HashConnect {
                 clearTimeout(timeout);
                 console.error("hashconnect - Approval error", e);
             });
-        
+
 
         return { uri, approval };
     }
 
-    // async getUserProfile(accountId: string, network: "mainnet" | "testnet" = "mainnet"): Promise<UserProfile> {
-    //     let profile: UserProfile = await UserProfileHelper.getUserProfile(accountId, network);
-
-    //     return profile;
-    // }
-
     
+    /**
+     * Verify a message signature
+     * @param message
+     * @param base64SignatureMap
+     * @param publicKey
+     * @returns
+     * @example
+     * ```ts
+     * const verified = hashconnect.verifyMessageSignature(
+     *  message,
+     *  base64SignatureMap,
+     *  publicKey
+     * );
+     * ```
+     * @category Utils
+     */
+    verifyMessageSignature(
+        message: string,
+        base64SignatureMap: string,
+        publicKey: PublicKey,
+    ): boolean {
+        const signatureMap = base64StringToSignatureMap(base64SignatureMap)
+        const signature = signatureMap.sigPair[0].ed25519 || signatureMap.sigPair[0].ECDSASecp256k1
 
-    // async getMultipleUserProfiles(accountIds: string[], network: "mainnet" | "testnet" = "mainnet"): Promise<UserProfile[]> {
-    //     let profiles: UserProfile[] = await UserProfileHelper.getMultipleUserProfiles(accountIds, network);
+        if (!signature) throw new Error('Signature not found in signature map')
 
-    //     return profiles;
-    // }
-
-    // verifyMessageSignature(
-    //     message: string,
-    //     base64SignatureMap: string,
-    //     publicKey: PublicKey,
-    //   ): boolean {
-    //     const signatureMap = base64StringToSignatureMap(base64SignatureMap)
-    //     const signature = signatureMap.sigPair[0].ed25519 || signatureMap.sigPair[0].ECDSASecp256k1
-      
-    //     if (!signature) throw new Error('Signature not found in signature map')
-      
-    //     return publicKey.verify(Buffer.from(prefixMessageToSign(message)), signature)
-    //   }
+        return publicKey.verify(Buffer.from(prefixMessageToSign(message)), signature)
+    }
 }

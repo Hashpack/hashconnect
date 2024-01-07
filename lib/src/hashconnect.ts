@@ -2,6 +2,7 @@ import { Event } from "ts-typed-events";
 import {
     AccountId,
     LedgerId,
+    PublicKey,
     SignerSignature,
     Transaction,
     TransactionId,
@@ -24,17 +25,16 @@ import { getSdkError } from "@walletconnect/utils";
 import AuthClient from "@walletconnect/auth-client";
 import { HashConnectSigner } from "./signer";
 import { AuthenticationHelper, SignClientHelper } from "./utils";
-import { HederaJsonRpcMethod, HederaChainId, networkNamespaces } from "@hashgraph/walletconnect";
+import { HederaJsonRpcMethod, HederaChainId, networkNamespaces, prefixMessageToSign, base64StringToSignatureMap } from "@hashgraph/walletconnect";
 import { WalletConnectModal } from '@walletconnect/modal';
 
-global.Buffer = global.Buffer || require("buffer").Buffer;
+import { UserProfileHelper } from "./profiles";
 
 /**
  * Main interface with hashpack
  */
 export class HashConnect {
-    readonly connectionStatusChangeEvent =
-        new Event<HashConnectConnectionState>();
+    readonly connectionStatusChangeEvent = new Event<HashConnectConnectionState>();
     readonly pairingEvent = new Event<SessionData>();
     readonly disconnectionEvent = new Event<void>();
 
@@ -45,6 +45,9 @@ export class HashConnect {
     private _authClient?: AuthClient;
 
     private _pairingString?: string;
+
+    getUserProfile = UserProfileHelper.getUserProfile;
+    getMultipleUserProfiles = UserProfileHelper.getMultipleUserProfiles;
 
     get pairingString() {
         return this._pairingString;
@@ -151,23 +154,36 @@ export class HashConnect {
             (event) => {
                 //if found iframe parent, connect to it
                 if (event.data.type && event.data.type == "hashconnect-iframe-response") {
-                    if (this._debug)
-                        console.log("hashconnect - iFrame wallet metadata recieved", event.data);
-                    
-                    if (event.data.metadata)
-                        this._connectToIframeParent();
-
+                    if (this._debug) console.log("hashconnect - iFrame wallet metadata recieved", event.data);
+                    if (event.data.metadata) this._connectToIframeParent();
                 } else if (event.data.type && event.data.type == "hashconnect-query-extension-response") { //if found extension, connect to it
                     if (this._debug) console.log("hashconnect - Local wallet metadata recieved", event.data);
-                    
-                    if (event.data.metadata)
-                        this.connectToExtension();
+                    if (event.data.metadata) this.connectToExtension();
                 }
             },
             false
         );
     }
 
+    /**
+     * Create a new HashConnect instance
+     * @param ledgerId - LedgerId
+     * @param projectId - string
+     * @param metadata - { name: string; description: string; icons: string[]; url: string; }
+     * @param debug - boolean
+     * @returns
+     * @example
+     * ```ts
+     * const metadata = {
+     *      name: "Example dApp",
+     *      description: "Example dApp",
+     *      icons: ["https://example.com/icon.png"],
+     *      url: "https://example.com",
+     * };
+     * const hashconnect = new HashConnect(LedgerId.TESTNET, "<ProjectId>", metadata, true);
+     * ```
+     * @category Initialization
+     */
     constructor(
         readonly ledgerId: LedgerId,
         private readonly projectId: string,
@@ -178,9 +194,7 @@ export class HashConnect {
     }
 
     getSigner(accountId: AccountId): HashConnectSigner {
-        debugger
-        if (!this._signClient)
-            throw new Error("No sign client");
+        if (!this._signClient) throw new Error("No sign client");
 
         const session = SignClientHelper.getSessionForAccount(
             this._signClient,
@@ -188,8 +202,7 @@ export class HashConnect {
             accountId.toString()
         );
 
-        if (!session)
-            throw new Error("No session found for account");
+        if (!session) throw new Error("No session found for account");
 
         return new HashConnectSigner(
             accountId,
@@ -199,11 +212,18 @@ export class HashConnect {
         );
     }
 
-    
 
+    /**
+     * Disconnect from hashpack
+     * @returns
+     * @example
+     * ```ts
+     * await hashconnect.disconnect();
+     * ```
+     * @category Initialization
+     */
     async disconnect() {
-        if (!this._signClient)
-            return;
+        if (!this._signClient) return;
 
         await Promise.all(
             this._signClient.session.getAll().map(async (session) => {
@@ -227,7 +247,7 @@ export class HashConnect {
      * Send a transaction to hashpack for signing and execution
      * @param accountId
      * @param transaction
-     * @returns
+     * @returns TransactionResponse - {@link TransactionResponse}
      * @example
      * ```ts
      * const transactionResponse = await hashconnect.sendTransaction(
@@ -241,17 +261,16 @@ export class HashConnect {
         accountId: AccountId,
         transaction: Transaction
     ): Promise<TransactionResponse> {
-        debugger
         const signer = this.getSigner(accountId);
-debugger 
-        if(!transaction.isFrozen()) {
+
+        if (!transaction.isFrozen()) {
             let transId = TransactionId.generate(accountId)
             let temp_client = signer.getClient();
             transaction.setTransactionId(transId);
-            transaction.setNodeAccountIds(Object.values(temp_client.network).map(accId => typeof(accId) === "string" ? AccountId.fromString(accId) : accId));
+            transaction.setNodeAccountIds(Object.values(temp_client.network).map(accId => typeof (accId) === "string" ? AccountId.fromString(accId) : accId));
             transaction.freeze();
         }
-debugger
+
         return await signer.call(transaction);
     }
 
@@ -403,7 +422,7 @@ debugger
             return;
         }
 
-        if (this._debug)console.log("hashconnect - Connecting to local wallet");
+        if (this._debug) console.log("hashconnect - Connecting to local wallet");
 
         //todo: add extension metadata support
         window.postMessage(
@@ -437,7 +456,19 @@ debugger
         );
     }
 
-    async openModal() {
+    /**
+     * Opens the WalletConnect pairing modal.
+     * @param themeMode - "dark" | "light"
+     * @param backgroundColor - string (hex color)
+     * @param accentColor - string (hex color)
+     * @param accentFillColor - string (hex color)
+     * @param borderRadius - string (css border radius)
+     * @example
+     * ```ts
+     * hashconnect.openModal();
+     * ```
+     */
+    async openModal(themeMode: "dark" | "light" = "dark", backgroundColor: string = "#1F1D2B", accentColor: string = "#ACACD3", accentFillColor: string = "white", borderRadius: string = "0px") {
         if (this._debug) console.log(`hashconnect - Pairing string created: ${this._pairingString}`);
 
         if (!this._pairingString) {
@@ -453,10 +484,22 @@ debugger
             enableExplorer: false,
             mobileWallets: [],
             themeVariables: {
-                "--wcm-accent-color": "#ACACD3",
-                "--wcm-accent-fill-color": "white",
-                "--wcm-background-color": "#1F1D2B",
-            }
+                "--wcm-accent-color": accentColor,
+                "--wcm-accent-fill-color": accentFillColor,
+                "--wcm-background-color": backgroundColor,
+                '--wcm-container-border-radius': borderRadius,
+                '--wcm-background-border-radius': borderRadius,
+                '--wcm-wallet-icon-border-radius': borderRadius,
+                '--wcm-wallet-icon-large-border-radius': borderRadius,
+                '--wcm-wallet-icon-small-border-radius': borderRadius,
+                '--wcm-input-border-radius': borderRadius,
+                '--wcm-notification-border-radius': borderRadius,
+                '--wcm-button-border-radius': borderRadius,
+                '--wcm-secondary-button-border-radius': borderRadius,
+                '--wcm-icon-button-border-radius': borderRadius,
+                '--wcm-button-hover-highlight-border-radius': borderRadius,
+            },
+            themeMode: themeMode,
         })
         walletConnectModal.openModal({ uri: this._pairingString })
 
@@ -465,7 +508,7 @@ debugger
         });
     }
 
-    async generatePairingString(): Promise<{
+    private async generatePairingString(): Promise<{
         uri: string | undefined;
         approval: () => Promise<SessionTypes.Struct>;
     }> {
@@ -490,11 +533,11 @@ debugger
             this.generatePairingString();
             throw new Error(`Connect timed out after ${pairTimeoutMs}(ms)`);
         }, pairTimeoutMs);
-        
+
         approval()
             .then(async (approved) => {
                 if (this._debug) console.log("hashconnect - Approval received", approved);
-                
+
                 if (approved) {
                     this.connectionStatusChangeEvent.emit(
                         HashConnectConnectionState.Paired
@@ -515,29 +558,38 @@ debugger
                 clearTimeout(timeout);
                 console.error("hashconnect - Approval error", e);
             });
-        
+
 
         return { uri, approval };
     }
 
-    async getUserProfile(accountId: string, network: "mainnet" | "testnet" = "mainnet"): Promise<UserProfile> {
-        //post fetch to https://api.hashpack.app/user-profile/get
-        //with accountId as the body
-        //returns UserProfile
-        const response = await fetch("https://api.hashpack.app/user-profile/get", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ accountId: accountId.toString(), network: network }),
-        });
+    
+    /**
+     * Verify a message signature
+     * @param message
+     * @param base64SignatureMap
+     * @param publicKey
+     * @returns
+     * @example
+     * ```ts
+     * const verified = hashconnect.verifyMessageSignature(
+     *  message,
+     *  base64SignatureMap,
+     *  publicKey
+     * );
+     * ```
+     * @category Utils
+     */
+    verifyMessageSignature(
+        message: string,
+        base64SignatureMap: string,
+        publicKey: PublicKey,
+    ): boolean {
+        const signatureMap = base64StringToSignatureMap(base64SignatureMap)
+        const signature = signatureMap.sigPair[0].ed25519 || signatureMap.sigPair[0].ECDSASecp256k1
 
-        if (!response.ok) {
-            throw new Error("Failed to get user profile");
-        }
+        if (!signature) throw new Error('Signature not found in signature map')
 
-        const userProfile: UserProfile = await response.json();
-
-        return userProfile;
+        return publicKey.verify(Buffer.from(prefixMessageToSign(message)), signature)
     }
 }

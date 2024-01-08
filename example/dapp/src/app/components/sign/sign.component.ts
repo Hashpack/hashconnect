@@ -38,7 +38,7 @@ export class SignComponent implements OnInit {
 
     async send() {
         let res = await this.HashconnectService.hashconnect.signMessages(AccountId.fromString(this.signingAcct), ["Hello World!"]);
-        
+        debugger
         // this.HashconnectService.showResultOverlay(res);
     }
 }

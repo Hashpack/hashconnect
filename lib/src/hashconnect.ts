@@ -47,9 +47,9 @@ export class HashConnect {
 
     private _pairingString?: string;
 
-    getUserProfile = UserProfileHelper.getUserProfile;
-    getMultipleUserProfiles = UserProfileHelper.getMultipleUserProfiles;
-
+    getUserProfile = UserProfileHelper.getUserProfile.bind(UserProfileHelper);
+    getMultipleUserProfiles = UserProfileHelper.getMultipleUserProfiles.bind(UserProfileHelper);
+    
     get pairingString() {
         return this._pairingString;
     }
@@ -598,7 +598,7 @@ export class HashConnect {
     ): boolean {
         const signatureMap = base64StringToSignatureMap(base64SignatureMap)
         const signature = signatureMap.sigPair[0].ed25519 || signatureMap.sigPair[0].ECDSASecp256k1
-        
+        debugger
         if (!signature) throw new Error('Signature not found in signature map')
 
         return publicKey.verify(Buffer.from(prefixMessageToSign(message)), signature)

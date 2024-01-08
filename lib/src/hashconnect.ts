@@ -9,6 +9,7 @@ import {
     TransactionResponse,
 } from "@hashgraph/sdk";
 import {
+    DappMetadata,
     HashConnectConnectionState,
     SessionData,
     UserProfile,
@@ -77,6 +78,34 @@ export class HashConnect {
         return accountIds;
     }
 
+    /**
+     * Create a new HashConnect instance
+     * @param ledgerId - LedgerId
+     * @param projectId - string
+     * @param metadata - {@link DappMetadata}
+     * @param debug - boolean
+     * @returns
+     * @example
+     * ```ts
+     * const metadata = {
+     *      name: "Example dApp",
+     *      description: "Example dApp",
+     *      icons: ["https://example.com/icon.png"],
+     *      url: "https://example.com",
+     * };
+     * const hashconnect = new HashConnect(LedgerId.TESTNET, "<ProjectId>", metadata, true);
+     * ```
+     * @category Initialization
+     */
+    constructor(
+        readonly ledgerId: LedgerId,
+        private readonly projectId: string,
+        private readonly metadata: DappMetadata,
+        private readonly _debug: boolean = false
+    ) {
+        this._setupEvents();
+    }
+
     async init(): Promise<void> {
         this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Disconnected);
         if (this._debug) console.log("hashconnect - Initializing");
@@ -95,11 +124,11 @@ export class HashConnect {
             if (!this._signClient)
                 this._signClient = await SignClient.init({
                     core: this.core,
-                    metadata: this.metadata,
+                    metadata: this.metadata as SignClientTypes.Metadata,
                 });
             if (!this._authClient)
                 this._authClient = await AuthClient.init({
-                    metadata: this.metadata,
+                    metadata: this.metadata as SignClientTypes.Metadata,
                     core: this.core,
                     projectId: this.projectId,
                 });
@@ -166,33 +195,15 @@ export class HashConnect {
     }
 
     /**
-     * Create a new HashConnect instance
-     * @param ledgerId - LedgerId
-     * @param projectId - string
-     * @param metadata - { name: string; description: string; icons: string[]; url: string; }
-     * @param debug - boolean
-     * @returns
+     * Get a signer for an account
+     * @param accountId
+     * @returns {@link HashConnectSigner}
      * @example
      * ```ts
-     * const metadata = {
-     *      name: "Example dApp",
-     *      description: "Example dApp",
-     *      icons: ["https://example.com/icon.png"],
-     *      url: "https://example.com",
-     * };
-     * const hashconnect = new HashConnect(LedgerId.TESTNET, "<ProjectId>", metadata, true);
+     * const signer = hashconnect.getSigner(accountId);
      * ```
-     * @category Initialization
+     * @category Signers
      */
-    constructor(
-        readonly ledgerId: LedgerId,
-        private readonly projectId: string,
-        private readonly metadata: SignClientTypes.Metadata,
-        private readonly _debug: boolean = false
-    ) {
-        this._setupEvents();
-    }
-
     getSigner(accountId: AccountId): HashConnectSigner {
         if (!this._signClient) throw new Error("No sign client");
 
@@ -563,7 +574,7 @@ export class HashConnect {
         return { uri, approval };
     }
 
-    
+
     /**
      * Verify a message signature
      * @param message
@@ -587,7 +598,7 @@ export class HashConnect {
     ): boolean {
         const signatureMap = base64StringToSignatureMap(base64SignatureMap)
         const signature = signatureMap.sigPair[0].ed25519 || signatureMap.sigPair[0].ECDSASecp256k1
-
+        
         if (!signature) throw new Error('Signature not found in signature map')
 
         return publicKey.verify(Buffer.from(prefixMessageToSign(message)), signature)

@@ -31,9 +31,15 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
       - [Authenticate](#authenticate)
     - [Get Signer](#get-signer)
       - [Usage](#usage-1)
+    - [Profiles](#profiles)
+      - [Single Profile](#single-profile)
+      - [Multiple Profiles](#multiple-profiles)
+    - [Token Gating](#token-gating)
     - [Types](#types)
+        - [DappMetadata](#dappmetadata)
         - [HashConnectConnectionState](#hashconnectconnectionstate)
         - [SessionData](#sessiondata)
+        - [UserProfile](#userprofile)
 
 ## Project ID
 
@@ -117,7 +123,7 @@ Import the library like you would any npm package
 import { HashConnect } from 'hashconnect';
 ```
 
-Create a metadata object that contains information about your dapp.
+Create a [DappMetadata](#dappmetadata) object that contains information about your dapp.
 
 ```js
 const appMetadata = {
@@ -274,7 +280,47 @@ let trans = await new TransferTransaction()
 let res = await trans.executeWithSigner(signer);
 ```
 
+
+### Profiles
+
+HashConnect allows you to get a users decentralized social profile. This currently includes a username and profile picture, and will be expanded to support more information in the future.
+
+#### Single Profile
+
+To get a single profile, usually for the currently logged in user, it returns a single [UserProfile](#userprofile).
+
+```js
+const profile = hashconnect.getUserProfile(accountId)
+```
+
+You can optionally pass in a network if you want to get a profile from testnet.
+
+#### Multiple Profiles
+
+It's generally a good idea to fetch multiple profiles in a single call. Will return an array of [UserProfiles](#userprofile).
+
+```js
+const profiles = hashconnect.getMultipleUserProfiles([accountIds]);
+```
+
+You can optionally pass in a network if you want to get a profiles from testnet.
+
+### Token Gating
+
+Coming Soon
+
 ### Types
+
+##### DappMetadata
+
+```js
+export interface DappMetadata {
+  name: string;
+  description: string;
+  icons: string[];
+  url: string;
+}
+```
 
 ##### HashConnectConnectionState
 
@@ -299,5 +345,25 @@ export interface SessionData {
   };
   accountIds: string[];
   network: string;
+}
+```
+
+##### UserProfile
+
+```js
+export interface UserProfile {
+    accountId: string;
+    network: "mainnet" | "testnet";
+    currency: string;
+    profilePicture: {
+        tokenId: string,
+        serial: number,
+        thumbUrl: string,
+    };
+    username: {
+        tokenId: string,
+        serial: number,
+        name: string,
+    }
 }
 ```

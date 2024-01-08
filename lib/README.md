@@ -27,7 +27,8 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
       - [Send Transaction](#send-transaction)
-      - [Sign](#sign)
+      - [Sign Message](#sign-message)
+      - [Verify Signature](#verify-signature)
       - [Authenticate](#authenticate)
     - [Get Signer](#get-signer)
       - [Usage](#usage-1)
@@ -225,15 +226,38 @@ This request takes two parameters, **accountId** and a Hedera Transaction.
 await hashconnect.sendTransaction(accountId, transaction);
 ```
 
-
-#### Sign
-
-This request allows you to get a signature on a generic piece of data. You can send a string or object.
+---or---
 
 ```js
-await hashconnect.sign(signingAcct, dataToSign);
+let signer = hashconnect.getSigner(accountId);
+let signature = await signer.signMessages(["Hello World!"]);
 ```
 
+
+#### Sign Message
+
+This request allows you to get a signature on a generic string.
+
+```js
+await hashconnect.signMessages(accountId, message);
+```
+
+---or---
+
+```js
+let signer = hashconnect.getSigner(accountId);
+let signature = await signer.signMessages(["Hello World!"]);
+```
+
+#### Verify Signature
+
+Once you've got the result you can call .verifyMessageSignature() to verify it was signed by the correct account. **Please note** - you will need to get the public key from a mirror node as you cannot trust the public key being returned by the user for verification purposes.
+
+This method will return a boolean if the signature matches the public key.
+
+```js
+let verified = hashconnect.verifyMessageSignature("Hello World!", signMessageResponse, publicKey);
+```
 
 #### Authenticate
 

@@ -299,10 +299,11 @@ export class HashConnect {
      */
     async signMessages(
         accountId: AccountId,
-        message: string[]
+        message: string
     ): Promise<SignerSignature[]> {
         const signer = this.getSigner(accountId);
-        return await signer.sign(message.map((m) => Buffer.from(m)));
+        let messageArray = [message];
+        return await signer.sign(messageArray.map((m) => Buffer.from(m)));
     }
 
     /**
@@ -576,31 +577,21 @@ export class HashConnect {
 
 
     /**
-     * Verify a message signature
+     * Verify a signature on a message with a public key
      * @param message
-     * @param base64SignatureMap
+     * @param signerSignature
      * @param publicKey
      * @returns
      * @example
      * ```ts
-     * const verified = hashconnect.verifyMessageSignature(
-     *  message,
-     *  base64SignatureMap,
-     *  publicKey
-     * );
+     * const verified = hashconnect.verifyMessageSignature("<message>", signerSignature);
      * ```
-     * @category Utils
+     * @category Signatures
      */
-    verifyMessageSignature(
-        message: string,
-        base64SignatureMap: string,
-        publicKey: PublicKey,
-    ): boolean {
-        const signatureMap = base64StringToSignatureMap(base64SignatureMap)
-        const signature = signatureMap.sigPair[0].ed25519 || signatureMap.sigPair[0].ECDSASecp256k1
-        debugger
-        if (!signature) throw new Error('Signature not found in signature map')
+    verifyMessageSignature(message: string, signerSignature: SignerSignature[], publicKey: PublicKey) {
+        let messageToVerify = Buffer.from(prefixMessageToSign(message));
+        let signature = signerSignature[0].signature;
 
-        return publicKey.verify(Buffer.from(prefixMessageToSign(message)), signature)
+        return publicKey.verify(messageToVerify, signature)
     }
 }

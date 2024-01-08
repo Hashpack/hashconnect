@@ -4,6 +4,7 @@ import {
     AccountId,
     Client,
     Executable,
+    PublicKey,
     Query,
     SignerSignature,
     Transaction,
@@ -18,6 +19,7 @@ import { DAppSigner } from "./dapp/DAppSigner";
 import {
     HederaJsonRpcMethod,
     Uint8ArrayToBase64String,
+    base64StringToSignatureMap,
     transactionToBase64String,
 } from "@hashgraph/walletconnect";
 
@@ -30,7 +32,7 @@ export class HashConnectSigner extends DAppSigner {
     }
 
     async sign(messages: Uint8Array[]): Promise<SignerSignature[]> {
-        const signedMessages = await this.request<SignerSignature[]>({
+        const signedMessages = await this.request<{ signatureMap: string }>({
             method: HederaJsonRpcMethod.SignMessage,
             params: {
                 signerAccountId: "hedera:" + this.getLedgerId() + ":" + this.getAccountId().toString(),
@@ -38,13 +40,18 @@ export class HashConnectSigner extends DAppSigner {
             }
         });
 
-        debugger
+        let sigmap = base64StringToSignatureMap(signedMessages.signatureMap);
+        
+        let signerSignature = new SignerSignature({
+            accountId: this.getAccountId(),
+            publicKey: PublicKey.fromBytes(sigmap.sigPair[0].pubKeyPrefix as Uint8Array),
+            signature: sigmap.sigPair[0].ed25519 as Uint8Array || sigmap.sigPair[0].ECDSASecp256k1 as Uint8Array
+        })
 
-        return signedMessages;
+        return [signerSignature];
     }
 
     async signTransaction<T extends Transaction>(transaction: T): Promise<T> {
-        debugger
         //@ts-ignore
         let transactionBody = transaction._makeTransactionBody(AccountId.fromString('0.0.3'));
         let base64Body = Uint8ArrayToBase64String(proto.TransactionBody.encode(transactionBody).finish());
@@ -63,11 +70,9 @@ export class HashConnectSigner extends DAppSigner {
     async call<RequestT, ResponseT, OutputT>(
         request: Executable<RequestT, ResponseT, OutputT>
     ): Promise<OutputT> {
-        debugger
         try {
             let transaction = Transaction.fromBytes(request.toBytes())
             if (transaction) {
-                debugger
                 const response = await this.request<TransactionResponseJSON>({
                     method: HederaJsonRpcMethod.SignAndExecuteTransaction,
                     params: {

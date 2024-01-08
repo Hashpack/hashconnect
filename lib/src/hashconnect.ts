@@ -446,6 +446,8 @@ export class HashConnect {
         );
     }
 
+    
+
     private async _connectToIframeParent() {
         if (typeof window === "undefined") {
             if (this._debug) console.log("hashconnect - Cancel iframe connection - no window object");
@@ -480,7 +482,7 @@ export class HashConnect {
      * hashconnect.openModal();
      * ```
      */
-    async openModal(themeMode: "dark" | "light" = "dark", backgroundColor: string = "#1F1D2B", accentColor: string = "#ACACD3", accentFillColor: string = "white", borderRadius: string = "0px") {
+    async openPairingModal(themeMode: "dark" | "light" = "dark", backgroundColor: string = "#1F1D2B", accentColor: string = "#ACACD3", accentFillColor: string = "white", borderRadius: string = "0px") {
         if (this._debug) console.log(`hashconnect - Pairing string created: ${this._pairingString}`);
 
         if (!this._pairingString) {

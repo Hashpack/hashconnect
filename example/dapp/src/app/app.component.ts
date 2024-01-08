@@ -74,7 +74,7 @@ export class AppComponent {
         // ]);
 
         // dialogPopup.openDialog$().subscribe(resp => { });
-        this.HashConnectService.hashconnect.openModal();
+        this.HashConnectService.hashconnect.openPairingModal();
     }
 
     auth() {

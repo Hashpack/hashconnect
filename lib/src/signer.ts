@@ -27,11 +27,24 @@ import {
 export class HashConnectSigner extends DAppSigner {
     private readonly hederaClient: Client = Client.forName(this.getLedgerId().toString());
 
+    private openExtension() {
+        window.postMessage(
+            {
+                type: "hashconnect-send-local-transaction",
+                transaction: null,
+                origin: null
+            },
+            "*"
+        );
+    }
+
     getClient() {
         return this.hederaClient;
     }
 
     async sign(messages: Uint8Array[]): Promise<SignerSignature[]> {
+        this.openExtension();
+
         const signedMessages = await this.request<{ signatureMap: string }>({
             method: HederaJsonRpcMethod.SignMessage,
             params: {
@@ -52,6 +65,8 @@ export class HashConnectSigner extends DAppSigner {
     }
 
     async signTransaction<T extends Transaction>(transaction: T): Promise<T> {
+        this.openExtension();
+
         //@ts-ignore
         let transactionBody = transaction._makeTransactionBody(AccountId.fromString('0.0.3'));
         let base64Body = Uint8ArrayToBase64String(proto.TransactionBody.encode(transactionBody).finish());
@@ -73,6 +88,8 @@ export class HashConnectSigner extends DAppSigner {
         try {
             let transaction = Transaction.fromBytes(request.toBytes())
             if (transaction) {
+                this.openExtension();
+                
                 const response = await this.request<TransactionResponseJSON>({
                     method: HederaJsonRpcMethod.SignAndExecuteTransaction,
                     params: {

@@ -70,7 +70,7 @@ async init() {
     await hashconnect.init();
 
     //open pairing modal
-    hashconnect.openModal();
+    hashconnect.openPairingModal();
 }
 
 setUpHashConnectEvents() {
@@ -196,10 +196,10 @@ hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {
 You can easily show a pairing popup containing the pairing code and a QR code by calling showModal().
 
 ```js
-hashconnect.openModal();
+hashconnect.openPairingModal();
 ```
 
-There are a variety of optional theme properties you can pass into openModal() to customize it:
+There are a variety of optional theme properties you can pass into openPairingModal() to customize it:
 
 - themeMode - "dark" | "light"
 - backgroundColor - string (hex color)

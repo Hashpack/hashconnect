@@ -27,14 +27,19 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
       - [Send Transaction](#send-transaction)
-      - [Sign Message](#sign-message)
-      - [Verify Signature](#verify-signature)
+      - [Sign](#sign)
       - [Authenticate](#authenticate)
     - [Get Signer](#get-signer)
       - [Usage](#usage-1)
+    - [Profiles](#profiles)
+      - [Single Profile](#single-profile)
+      - [Multiple Profiles](#multiple-profiles)
+    - [Token Gating](#token-gating)
     - [Types](#types)
+        - [DappMetadata](#dappmetadata)
         - [HashConnectConnectionState](#hashconnectconnectionstate)
         - [SessionData](#sessiondata)
+        - [UserProfile](#userprofile)
 
 ## Project ID
 
@@ -70,7 +75,7 @@ async init() {
     await hashconnect.init();
 
     //open pairing modal
-    hashconnect.openPairingModal();
+    hashconnect.openModal();
 }
 
 setUpHashConnectEvents() {
@@ -118,7 +123,7 @@ Import the library like you would any npm package
 import { HashConnect } from 'hashconnect';
 ```
 
-Create a metadata object that contains information about your dapp.
+Create a [DappMetadata](#dappmetadata) object that contains information about your dapp.
 
 ```js
 const appMetadata = {
@@ -196,10 +201,10 @@ hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {
 You can easily show a pairing popup containing the pairing code and a QR code by calling showModal().
 
 ```js
-hashconnect.openPairingModal();
+hashconnect.openModal();
 ```
 
-There are a variety of optional theme properties you can pass into openPairingModal() to customize it:
+There are a variety of optional theme properties you can pass into openModal() to customize it:
 
 - themeMode - "dark" | "light"
 - backgroundColor - string (hex color)
@@ -226,38 +231,15 @@ This request takes two parameters, **accountId** and a Hedera Transaction.
 await hashconnect.sendTransaction(accountId, transaction);
 ```
 
----or---
+
+#### Sign
+
+This request allows you to get a signature on a generic piece of data. You can send a string or object.
 
 ```js
-let signer = hashconnect.getSigner(accountId);
-let signature = await signer.signMessages(["Hello World!"]);
+await hashconnect.sign(signingAcct, dataToSign);
 ```
 
-
-#### Sign Message
-
-This request allows you to get a signature on a generic string.
-
-```js
-await hashconnect.signMessages(accountId, message);
-```
-
----or---
-
-```js
-let signer = hashconnect.getSigner(accountId);
-let signature = await signer.signMessages(["Hello World!"]);
-```
-
-#### Verify Signature
-
-Once you've got the result you can call .verifyMessageSignature() to verify it was signed by the correct account. **Please note** - you will need to get the public key from a mirror node as you cannot trust the public key being returned by the user for verification purposes.
-
-This method will return a boolean if the signature matches the public key.
-
-```js
-let verified = hashconnect.verifyMessageSignature("Hello World!", signMessageResponse, publicKey);
-```
 
 #### Authenticate
 
@@ -298,7 +280,47 @@ let trans = await new TransferTransaction()
 let res = await trans.executeWithSigner(signer);
 ```
 
+
+### Profiles
+
+HashConnect allows you to get a users decentralized social profile. This currently includes a username and profile picture, and will be expanded to support more information in the future.
+
+#### Single Profile
+
+To get a single profile, usually for the currently logged in user, it returns a single [UserProfile](#userprofile).
+
+```js
+const profile = hashconnect.getUserProfile(accountId)
+```
+
+You can optionally pass in a network if you want to get a profile from testnet.
+
+#### Multiple Profiles
+
+It's generally a good idea to fetch multiple profiles in a single call. Will return an array of [UserProfiles](#userprofile).
+
+```js
+const profiles = hashconnect.getMultipleUserProfiles([accountIds]);
+```
+
+You can optionally pass in a network if you want to get a profiles from testnet.
+
+### Token Gating
+
+Coming Soon
+
 ### Types
+
+##### DappMetadata
+
+```js
+export interface DappMetadata {
+  name: string;
+  description: string;
+  icons: string[];
+  url: string;
+}
+```
 
 ##### HashConnectConnectionState
 
@@ -323,5 +345,25 @@ export interface SessionData {
   };
   accountIds: string[];
   network: string;
+}
+```
+
+##### UserProfile
+
+```js
+export interface UserProfile {
+    accountId: string;
+    network: "mainnet" | "testnet";
+    currency: string;
+    profilePicture: {
+        tokenId: string,
+        serial: number,
+        thumbUrl: string,
+    };
+    username: {
+        tokenId: string,
+        serial: number,
+        name: string,
+    }
 }
 ```

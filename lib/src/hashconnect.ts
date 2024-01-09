@@ -6,9 +6,11 @@ import {
     SignerSignature,
     Transaction,
     TransactionId,
+    TransactionReceipt,
     TransactionResponse,
 } from "@hashgraph/sdk";
 import {
+    DappMetadata,
     HashConnectConnectionState,
     SessionData,
     UserProfile,
@@ -46,9 +48,9 @@ export class HashConnect {
 
     private _pairingString?: string;
 
-    getUserProfile = UserProfileHelper.getUserProfile;
-    getMultipleUserProfiles = UserProfileHelper.getMultipleUserProfiles;
-
+    getUserProfile = UserProfileHelper.getUserProfile.bind(UserProfileHelper);
+    getMultipleUserProfiles = UserProfileHelper.getMultipleUserProfiles.bind(UserProfileHelper);
+    
     get pairingString() {
         return this._pairingString;
     }
@@ -77,6 +79,34 @@ export class HashConnect {
         return accountIds;
     }
 
+    /**
+     * Create a new HashConnect instance
+     * @param ledgerId - LedgerId
+     * @param projectId - string
+     * @param metadata - {@link DappMetadata}
+     * @param debug - boolean
+     * @returns
+     * @example
+     * ```ts
+     * const metadata = {
+     *      name: "Example dApp",
+     *      description: "Example dApp",
+     *      icons: ["https://example.com/icon.png"],
+     *      url: "https://example.com",
+     * };
+     * const hashconnect = new HashConnect(LedgerId.TESTNET, "<ProjectId>", metadata, true);
+     * ```
+     * @category Initialization
+     */
+    constructor(
+        readonly ledgerId: LedgerId,
+        private readonly projectId: string,
+        private readonly metadata: DappMetadata,
+        private readonly _debug: boolean = false
+    ) {
+        this._setupEvents();
+    }
+
     async init(): Promise<void> {
         this.connectionStatusChangeEvent.emit(HashConnectConnectionState.Disconnected);
         if (this._debug) console.log("hashconnect - Initializing");
@@ -95,11 +125,11 @@ export class HashConnect {
             if (!this._signClient)
                 this._signClient = await SignClient.init({
                     core: this.core,
-                    metadata: this.metadata,
+                    metadata: this.metadata as SignClientTypes.Metadata,
                 });
             if (!this._authClient)
                 this._authClient = await AuthClient.init({
-                    metadata: this.metadata,
+                    metadata: this.metadata as SignClientTypes.Metadata,
                     core: this.core,
                     projectId: this.projectId,
                 });
@@ -166,33 +196,15 @@ export class HashConnect {
     }
 
     /**
-     * Create a new HashConnect instance
-     * @param ledgerId - LedgerId
-     * @param projectId - string
-     * @param metadata - { name: string; description: string; icons: string[]; url: string; }
-     * @param debug - boolean
-     * @returns
+     * Get a signer for an account
+     * @param accountId
+     * @returns {@link HashConnectSigner}
      * @example
      * ```ts
-     * const metadata = {
-     *      name: "Example dApp",
-     *      description: "Example dApp",
-     *      icons: ["https://example.com/icon.png"],
-     *      url: "https://example.com",
-     * };
-     * const hashconnect = new HashConnect(LedgerId.TESTNET, "<ProjectId>", metadata, true);
+     * const signer = hashconnect.getSigner(accountId);
      * ```
-     * @category Initialization
+     * @category Signers
      */
-    constructor(
-        readonly ledgerId: LedgerId,
-        private readonly projectId: string,
-        private readonly metadata: SignClientTypes.Metadata,
-        private readonly _debug: boolean = false
-    ) {
-        this._setupEvents();
-    }
-
     getSigner(accountId: AccountId): HashConnectSigner {
         if (!this._signClient) throw new Error("No sign client");
 
@@ -260,7 +272,7 @@ export class HashConnect {
     async sendTransaction(
         accountId: AccountId,
         transaction: Transaction
-    ): Promise<TransactionResponse> {
+    ): Promise<TransactionReceipt> {
         const signer = this.getSigner(accountId);
 
         if (!transaction.isFrozen()) {
@@ -271,7 +283,9 @@ export class HashConnect {
             transaction.freeze();
         }
 
-        return await signer.call(transaction);
+        let response = await signer.call(transaction);
+
+        return await response.getReceiptWithSigner(signer);
     }
 
     /**
@@ -288,10 +302,11 @@ export class HashConnect {
      */
     async signMessages(
         accountId: AccountId,
-        message: string[]
+        message: string
     ): Promise<SignerSignature[]> {
         const signer = this.getSigner(accountId);
-        return await signer.sign(message.map((m) => Buffer.from(m)));
+        let messageArray = [message];
+        return await signer.sign(messageArray.map((m) => Buffer.from(m)));
     }
 
     /**
@@ -434,6 +449,8 @@ export class HashConnect {
         );
     }
 
+    
+
     private async _connectToIframeParent() {
         if (typeof window === "undefined") {
             if (this._debug) console.log("hashconnect - Cancel iframe connection - no window object");
@@ -465,10 +482,10 @@ export class HashConnect {
      * @param borderRadius - string (css border radius)
      * @example
      * ```ts
-     * hashconnect.openModal();
+     * hashconnect.openPairingModal();
      * ```
      */
-    async openModal(themeMode: "dark" | "light" = "dark", backgroundColor: string = "#1F1D2B", accentColor: string = "#ACACD3", accentFillColor: string = "white", borderRadius: string = "0px") {
+    async openPairingModal(themeMode: "dark" | "light" = "dark", backgroundColor: string = "#1F1D2B", accentColor: string = "#ACACD3", accentFillColor: string = "white", borderRadius: string = "0px") {
         if (this._debug) console.log(`hashconnect - Pairing string created: ${this._pairingString}`);
 
         if (!this._pairingString) {
@@ -563,33 +580,23 @@ export class HashConnect {
         return { uri, approval };
     }
 
-    
+
     /**
-     * Verify a message signature
+     * Verify a signature on a message with a public key
      * @param message
-     * @param base64SignatureMap
+     * @param signerSignature
      * @param publicKey
      * @returns
      * @example
      * ```ts
-     * const verified = hashconnect.verifyMessageSignature(
-     *  message,
-     *  base64SignatureMap,
-     *  publicKey
-     * );
+     * const verified = hashconnect.verifyMessageSignature("<message>", signerSignature);
      * ```
-     * @category Utils
+     * @category Signatures
      */
-    verifyMessageSignature(
-        message: string,
-        base64SignatureMap: string,
-        publicKey: PublicKey,
-    ): boolean {
-        const signatureMap = base64StringToSignatureMap(base64SignatureMap)
-        const signature = signatureMap.sigPair[0].ed25519 || signatureMap.sigPair[0].ECDSASecp256k1
+    verifyMessageSignature(message: string, signerSignature: SignerSignature[], publicKey: PublicKey) {
+        let messageToVerify = Buffer.from(prefixMessageToSign(message));
+        let signature = signerSignature[0].signature;
 
-        if (!signature) throw new Error('Signature not found in signature map')
-
-        return publicKey.verify(Buffer.from(prefixMessageToSign(message)), signature)
+        return publicKey.verify(messageToVerify, signature)
     }
 }

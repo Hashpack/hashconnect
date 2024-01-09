@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ButtonLayoutDisplay, ButtonMaker, DialogInitializer, DialogLayoutDisplay } from '@costlydeveloper/ngx-awesome-popup';
-import { AccountId, LedgerId, Transaction, TransactionReceipt } from '@hashgraph/sdk';
-import { HashConnect, HashConnectConnectionState, SessionData, UserProfile } from 'hashconnect';
+import { AccountId, LedgerId, Transaction, TransactionReceipt, TransactionResponse } from '@hashgraph/sdk';
+import { DappMetadata, HashConnect, HashConnectConnectionState, SessionData, UserProfile } from 'hashconnect';
 import { ResultModalComponent } from '../components/result-modal/result-modal.component';
 import { SigningService } from './signing.service';
 
@@ -15,7 +15,7 @@ export class HashconnectService {
 
     hashconnect: HashConnect;
 
-    appMetadata = {
+    appMetadata: DappMetadata = {
         name: "dApp Example",
         description: "An example hedera dApp",
         icons: ["https://assets-global.website-files.com/61ce2e4bcaa2660da2bb419e/61cf5cc71c9324950d7e071d_logo-colour-white.svg"],

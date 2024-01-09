@@ -67,7 +67,7 @@ export const executeTransaction = async (
 
 export const signMessages = async (
     accountIdForSigning: AccountId,
-    messages: string[]
+    message: string
 ) => {
     await hcInitPromise;
 
@@ -83,7 +83,7 @@ export const signMessages = async (
         throw new Error(`Account ${accountIdForSigning} is not paired`);
     }
 
-    const result = await hc.signMessages(accountIdForSigning, messages);
+    const result = await hc.signMessages(accountIdForSigning, message);
     return result;
 };
 
@@ -112,9 +112,7 @@ export const authenticate = async (accountIdForSigning: AccountId) => {
     };
 
     // simulate server signing a message by signing the payload as a string
-    const serverSignatures = await hc.signMessages(accountIdForSigning, [
-        JSON.stringify(payload),
-    ]);
+    const serverSignatures = await hc.signMessages(accountIdForSigning, JSON.stringify(payload));
     const serverSignature = serverSignatures[0];
 
     console.log({
@@ -128,6 +126,8 @@ export const authenticate = async (accountIdForSigning: AccountId) => {
         serverSignature.signature,
         payload
     );
+
+    console.log({result});
 
     return result;
 };

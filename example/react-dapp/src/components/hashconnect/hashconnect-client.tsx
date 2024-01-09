@@ -67,7 +67,7 @@ export const HashConnectConnectButton = () => {
             }
           } else {
             // open walletconnect modal
-            hc.openModal();
+            hc.openPairingModal();
           }
         }}
       >

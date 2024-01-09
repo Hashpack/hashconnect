@@ -7,11 +7,11 @@ export enum HashConnectConnectionState {
   Paired = "Paired",
 }
 
-export interface WalletMetadata {
+export interface DappMetadata {
   name: string;
   description: string;
   icons: string[];
-  url?: string;
+  url: string;
 }
 
 export interface SessionData {
@@ -28,11 +28,6 @@ export interface UserProfile {
         tokenId: string,
         serial: number,
         thumbUrl: string,
-    };
-    theme: {
-        tokenId: string,
-        metadata: string,
-        themeId: string,
     };
     username: {
         tokenId: string,

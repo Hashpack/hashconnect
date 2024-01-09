@@ -36,7 +36,8 @@ export class UserProfileHelper {
     
             const userProfile: UserProfile = await response.json();
     
-            this.cache.push(userProfile);
+            if(userProfile)
+                this.cache.push(userProfile);
     
             return userProfile;
         } catch (error) {
@@ -88,6 +89,9 @@ export class UserProfileHelper {
     
             const fetchedProfiles: UserProfile[] = await response.json();
     
+            //remove nulls
+            fetchedProfiles.filter(profile => profile !== null);
+
             this.cache.push(...fetchedProfiles);
     
             return [...cachedProfiles, ...fetchedProfiles];

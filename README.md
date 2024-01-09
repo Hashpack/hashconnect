@@ -18,6 +18,8 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Installation](#installation)
     - [Initialization](#initialization)
     - [Setup](#setup)
+    - [Get Signer](#get-signer)
+      - [Usage](#usage-1)
     - [Events](#events)
       - [Pairing Event](#pairing-event)
       - [Disconnect Event](#disconnect-event)
@@ -27,10 +29,9 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
       - [Send Transaction](#send-transaction)
-      - [Sign](#sign)
-      - [Authenticate](#authenticate)
-    - [Get Signer](#get-signer)
-      - [Usage](#usage-1)
+      - [Sign Message](#sign-message)
+      - [Verify Signature](#verify-signature)
+    - [Transaction Receipts](#transaction-receipts)
     - [Types](#types)
         - [HashConnectConnectionState](#hashconnectconnectionstate)
         - [SessionData](#sessiondata)
@@ -69,7 +70,7 @@ async init() {
     await hashconnect.init();
 
     //open pairing modal
-    hashconnect.openModal();
+    hashconnect.openPairingModal();
 }
 
 setUpHashConnectEvents() {
@@ -153,8 +154,28 @@ setUpHashConnectEvents();
 let initData = await hashconnect.init();
 ```
 
-
 **Make sure you register your events before calling init** - as some events will fire immediately after calling init.
+
+### Get Signer
+
+Pass the accountId of a paired account to get a signer back, this allows you to interact with HashConnect using a simpler API.
+
+```js
+signer = hashconnect.getSigner(AccountId.fromString('0.0.12345'));
+```
+
+#### Usage
+
+```js
+const signer = hashconnect.getSigner(fromAccount);
+
+let trans = await new TransferTransaction()
+    .addHbarTransfer(fromAccount, -1)
+    .addHbarTransfer(toAccount, 1)
+    .freezeWithSigner(signer);
+
+let response = await trans.executeWithSigner(signer);
+```
 
 ### Events
 
@@ -182,7 +203,7 @@ hashconnect.disconnectionEvent.on((data) => {
 
 #### Connection Status Change
 
-This event is fired if the connection status changes, this should only really happen if the server goes down. HashConnect will automatically try to reconnect, once reconnected this event will fire again. This returns a `HashConnectConnectionState` [(details)](#hashconnectconnectionstate) 
+This event is fired when the connection status changes. This returns a `HashConnectConnectionState` [(details)](#hashconnectconnectionstate) 
 
 ```js
 hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {
@@ -192,13 +213,13 @@ hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {
 
 ### Pairing
 
-You can easily show a pairing popup containing the pairing code and a QR code by calling showModal().
+You can easily show a pairing popup containing the pairing code and a QR code by calling openPairingModal().
 
 ```js
-hashconnect.openModal();
+hashconnect.openPairingModal();
 ```
 
-There are a variety of optional theme properties you can pass into openModal() to customize it:
+There are a variety of optional theme properties you can pass into openPairingModal() to customize it:
 
 - themeMode - "dark" | "light"
 - backgroundColor - string (hex color)
@@ -209,7 +230,6 @@ There are a variety of optional theme properties you can pass into openModal() t
 #### Pairing to extension
 
 If the HashPack extension is found during init, it will automatically pop it up and request pairing.
-
 
 ### Disconnecting
 
@@ -222,20 +242,57 @@ Call `hashconnect.disconnect()` to disconnect.
 This request takes two parameters, **accountId** and a Hedera Transaction.
 
 ```js
-await hashconnect.sendTransaction(accountId, transaction);
+let response = await hashconnect.sendTransaction(accountId, transaction);
+```
+
+**With Signer:**
+```js
+let signer = hashconnect.getSigner(accountId);
+
+let trans = await new TransferTransaction()
+    .addHbarTransfer(fromAccount, -1)
+    .addHbarTransfer(toAccount, 1)
+    .freezeWithSigner(signer);
+
+let response = await trans.executeWithSigner(signer);
 ```
 
 
-#### Sign
+#### Sign Message
 
-This request allows you to get a signature on a generic piece of data. You can send a string or object.
+This request allows you to get a signature on a generic string.
 
 ```js
-await hashconnect.sign(signingAcct, dataToSign);
+let signature = await hashconnect.signMessages(accountId, message);
 ```
 
+**With Signer:**
+```js
+let signer = hashconnect.getSigner(accountId);
+let signature = await signer.signMessages(["Hello World!"]);
+```
 
-#### Authenticate
+#### Verify Signature
+
+Once you've got the result you can call .verifyMessageSignature() to verify it was signed by the correct account. **Please note** - you will need to get the public key from a mirror node as you cannot trust the public key being returned by the user for verification purposes. You will also likely want to verify it server side.
+
+This method will return a boolean if the signature matches the public key.
+
+```js
+let verified = hashconnect.verifyMessageSignature("Hello World!", signMessageResponse, publicKey);
+```
+
+### Transaction Receipts
+
+The HashConnect .sendTransaction() method will automatically retrieve and return a receipt, however when using the signer flow there is one extra step to getting a receipt:
+
+**With Signer:**
+```js
+let response = await trans.executeWithSigner(signer);
+let receipt = await response.getReceiptWithSigner(signer);
+```
+
+<!-- #### Authenticate
 
 You can authenticate a message came from the expected dapp and was signed by the expected user using `hashconnect.hashpackAuthenticate()`.
 
@@ -251,28 +308,9 @@ const { isValid, error } = await hashconnect.hashpackAuthenticate(
         data: {}
     }
 );
-```
+``` -->
 
-### Get Signer
 
-Pass the accountId of a paired account to get a signer back, this allows you to interact with HashConnect using a simpler API.
-
-```js
-signer = hashconnect.getSigner(AccountId.fromString('0.0.12345'));
-```
-
-#### Usage
-
-```js
-const signer = hashconnect.getSigner(fromAccount);
-
-let trans = await new TransferTransaction()
-    .addHbarTransfer(fromAccount, -1)
-    .addHbarTransfer(toAccount, 1)
-    .freezeWithSigner(signer);
-
-let res = await trans.executeWithSigner(signer);
-```
 
 ### Types
 

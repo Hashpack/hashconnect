@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { AccountId } from '@hashgraph/sdk';
+import { AccountId, PublicKey } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 
@@ -37,8 +37,14 @@ export class SignComponent implements OnInit {
     }
 
     async send() {
-        let res = await this.HashconnectService.hashconnect.signMessages(AccountId.fromString(this.signingAcct), ["Hello World!"]);
+        let res = await this.HashconnectService.hashconnect.signMessages(AccountId.fromString(this.signingAcct), "Hello World!");
         
-        // this.HashconnectService.showResultOverlay(res);
+        let accountInfo = await fetch("https://testnet.mirrornode.hedera.com/api/v1/accounts/" + this.signingAcct);
+        let accountInfoJson = await accountInfo.json();
+        let publicKey = PublicKey.fromString(accountInfoJson.key.key);
+
+        let verified = this.HashconnectService.hashconnect.verifyMessageSignature("Hello World!", res, publicKey);
+        
+        this.HashconnectService.showResultOverlay({ verified, res });
     }
 }

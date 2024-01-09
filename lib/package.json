@@ -1,6 +1,6 @@
 {
     "name": "hashconnect",
-    "version": "3.0.0-beta.10",
+    "version": "3.0.0-beta.11",
     "description": "hashconnect interoperability library",
     "author": "Tyler Coté <tyler@hashpack.app>, Nick Hanna <nick@hashpack.app>, Patrick Woosam <pwoosam5@icloud.com>",
     "repository": "https://github.com/Hashpack/hashconnect",

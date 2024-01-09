@@ -482,7 +482,7 @@ export class HashConnect {
      * @param borderRadius - string (css border radius)
      * @example
      * ```ts
-     * hashconnect.openModal();
+     * hashconnect.openPairingModal();
      * ```
      */
     async openPairingModal(themeMode: "dark" | "light" = "dark", backgroundColor: string = "#1F1D2B", accentColor: string = "#ACACD3", accentFillColor: string = "white", borderRadius: string = "0px") {

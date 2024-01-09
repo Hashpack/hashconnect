@@ -9,6 +9,7 @@ import {
     SignerSignature,
     Transaction,
     TransactionId,
+    TransactionReceiptQuery,
     TransactionResponse,
     TransactionResponseJSON,
 } from "@hashgraph/sdk";
@@ -89,7 +90,7 @@ export class HashConnectSigner extends DAppSigner {
             let transaction = Transaction.fromBytes(request.toBytes())
             if (transaction) {
                 this.openExtension();
-                
+
                 const response = await this.request<TransactionResponseJSON>({
                     method: HederaJsonRpcMethod.SignAndExecuteTransaction,
                     params: {
@@ -101,17 +102,18 @@ export class HashConnectSigner extends DAppSigner {
                 return TransactionResponse.fromJSON(response) as OutputT;
             }
         } catch (error) {
-            throw error;
-        }
-
-        try {
-            let query = Query.fromBytes(request.toBytes())
-
-            if (query) {
-                throw new Error("Query not supported - use a mirror node instead");
+            try {
+                let query = Query.fromBytes(request.toBytes())
+    
+                if(query instanceof TransactionReceiptQuery) {
+                    let receipt = await query.execute(this.hederaClient);
+                    return receipt as OutputT;
+                } else if (query) {
+                    throw new Error("Query not supported - use a mirror node instead");
+                }
+            } catch {
+                throw error;
             }
-        } catch {
-
         }
 
         throw new Error("Unsupported request type");

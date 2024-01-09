@@ -27,19 +27,13 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
       - [Send Transaction](#send-transaction)
-      - [Sign](#sign)
-      - [Authenticate](#authenticate)
+      - [Sign Message](#sign-message)
+      - [Verify Signature](#verify-signature)
     - [Get Signer](#get-signer)
       - [Usage](#usage-1)
-    - [Profiles](#profiles)
-      - [Single Profile](#single-profile)
-      - [Multiple Profiles](#multiple-profiles)
-    - [Token Gating](#token-gating)
     - [Types](#types)
-        - [DappMetadata](#dappmetadata)
         - [HashConnectConnectionState](#hashconnectconnectionstate)
         - [SessionData](#sessiondata)
-        - [UserProfile](#userprofile)
 
 ## Project ID
 
@@ -75,7 +69,7 @@ async init() {
     await hashconnect.init();
 
     //open pairing modal
-    hashconnect.openModal();
+    hashconnect.openPairingModal();
 }
 
 setUpHashConnectEvents() {
@@ -123,7 +117,7 @@ Import the library like you would any npm package
 import { HashConnect } from 'hashconnect';
 ```
 
-Create a [DappMetadata](#dappmetadata) object that contains information about your dapp.
+Create a metadata object that contains information about your dapp.
 
 ```js
 const appMetadata = {
@@ -159,7 +153,6 @@ setUpHashConnectEvents();
 let initData = await hashconnect.init();
 ```
 
-
 **Make sure you register your events before calling init** - as some events will fire immediately after calling init.
 
 ### Events
@@ -188,7 +181,7 @@ hashconnect.disconnectionEvent.on((data) => {
 
 #### Connection Status Change
 
-This event is fired if the connection status changes, this should only really happen if the server goes down. HashConnect will automatically try to reconnect, once reconnected this event will fire again. This returns a `HashConnectConnectionState` [(details)](#hashconnectconnectionstate) 
+This event is fired if the connection status changes. This returns a `HashConnectConnectionState` [(details)](#hashconnectconnectionstate) 
 
 ```js
 hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {
@@ -198,13 +191,13 @@ hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {
 
 ### Pairing
 
-You can easily show a pairing popup containing the pairing code and a QR code by calling showModal().
+You can easily show a pairing popup containing the pairing code and a QR code by calling openPairingModal().
 
 ```js
-hashconnect.openModal();
+hashconnect.openPairingModal();
 ```
 
-There are a variety of optional theme properties you can pass into openModal() to customize it:
+There are a variety of optional theme properties you can pass into openPairingModal() to customize it:
 
 - themeMode - "dark" | "light"
 - backgroundColor - string (hex color)
@@ -215,7 +208,6 @@ There are a variety of optional theme properties you can pass into openModal() t
 #### Pairing to extension
 
 If the HashPack extension is found during init, it will automatically pop it up and request pairing.
-
 
 ### Disconnecting
 
@@ -231,17 +223,40 @@ This request takes two parameters, **accountId** and a Hedera Transaction.
 await hashconnect.sendTransaction(accountId, transaction);
 ```
 
-
-#### Sign
-
-This request allows you to get a signature on a generic piece of data. You can send a string or object.
+---or---
 
 ```js
-await hashconnect.sign(signingAcct, dataToSign);
+let signer = hashconnect.getSigner(accountId);
+let signature = await signer.signMessages(["Hello World!"]);
 ```
 
 
-#### Authenticate
+#### Sign Message
+
+This request allows you to get a signature on a generic string.
+
+```js
+await hashconnect.signMessages(accountId, message);
+```
+
+---or---
+
+```js
+let signer = hashconnect.getSigner(accountId);
+let signature = await signer.signMessages(["Hello World!"]);
+```
+
+#### Verify Signature
+
+Once you've got the result you can call .verifyMessageSignature() to verify it was signed by the correct account. **Please note** - you will need to get the public key from a mirror node as you cannot trust the public key being returned by the user for verification purposes. You will also likely want to verify it server side.
+
+This method will return a boolean if the signature matches the public key.
+
+```js
+let verified = hashconnect.verifyMessageSignature("Hello World!", signMessageResponse, publicKey);
+```
+
+<!-- #### Authenticate
 
 You can authenticate a message came from the expected dapp and was signed by the expected user using `hashconnect.hashpackAuthenticate()`.
 
@@ -257,7 +272,7 @@ const { isValid, error } = await hashconnect.hashpackAuthenticate(
         data: {}
     }
 );
-```
+``` -->
 
 ### Get Signer
 
@@ -280,47 +295,7 @@ let trans = await new TransferTransaction()
 let res = await trans.executeWithSigner(signer);
 ```
 
-
-### Profiles
-
-HashConnect allows you to get a users decentralized social profile. This currently includes a username and profile picture, and will be expanded to support more information in the future.
-
-#### Single Profile
-
-To get a single profile, usually for the currently logged in user, it returns a single [UserProfile](#userprofile).
-
-```js
-const profile = hashconnect.getUserProfile(accountId)
-```
-
-You can optionally pass in a network if you want to get a profile from testnet.
-
-#### Multiple Profiles
-
-It's generally a good idea to fetch multiple profiles in a single call. Will return an array of [UserProfiles](#userprofile).
-
-```js
-const profiles = hashconnect.getMultipleUserProfiles([accountIds]);
-```
-
-You can optionally pass in a network if you want to get a profiles from testnet.
-
-### Token Gating
-
-Coming Soon
-
 ### Types
-
-##### DappMetadata
-
-```js
-export interface DappMetadata {
-  name: string;
-  description: string;
-  icons: string[];
-  url: string;
-}
-```
 
 ##### HashConnectConnectionState
 
@@ -345,25 +320,5 @@ export interface SessionData {
   };
   accountIds: string[];
   network: string;
-}
-```
-
-##### UserProfile
-
-```js
-export interface UserProfile {
-    accountId: string;
-    network: "mainnet" | "testnet";
-    currency: string;
-    profilePicture: {
-        tokenId: string,
-        serial: number,
-        thumbUrl: string,
-    };
-    username: {
-        tokenId: string,
-        serial: number,
-        name: string,
-    }
 }
 ```

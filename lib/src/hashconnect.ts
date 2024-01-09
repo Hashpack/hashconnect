@@ -6,6 +6,7 @@ import {
     SignerSignature,
     Transaction,
     TransactionId,
+    TransactionReceipt,
     TransactionResponse,
 } from "@hashgraph/sdk";
 import {
@@ -271,7 +272,7 @@ export class HashConnect {
     async sendTransaction(
         accountId: AccountId,
         transaction: Transaction
-    ): Promise<TransactionResponse> {
+    ): Promise<TransactionReceipt> {
         const signer = this.getSigner(accountId);
 
         if (!transaction.isFrozen()) {
@@ -282,7 +283,9 @@ export class HashConnect {
             transaction.freeze();
         }
 
-        return await signer.call(transaction);
+        let response = await signer.call(transaction);
+
+        return await response.getReceiptWithSigner(signer);
     }
 
     /**

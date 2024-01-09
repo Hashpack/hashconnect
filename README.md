@@ -203,7 +203,7 @@ hashconnect.disconnectionEvent.on((data) => {
 
 #### Connection Status Change
 
-This event is fired if the connection status changes. This returns a `HashConnectConnectionState` [(details)](#hashconnectconnectionstate) 
+This event is fired when the connection status changes. This returns a `HashConnectConnectionState` [(details)](#hashconnectconnectionstate) 
 
 ```js
 hashconnect.connectionStatusChangeEvent.on((connectionStatus) => {

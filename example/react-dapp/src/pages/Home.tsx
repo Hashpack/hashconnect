@@ -90,13 +90,17 @@ export const Home = () => {
                 .setNodeAccountIds([AccountId.fromString("0.0.3")])
                 .setTransactionId(TransactionId.generate(fromAccountId));
               const frozenTransaction = transferTransaction.freeze();
-              const executeResult = await executeTransaction(
-                AccountId.fromString(fromAccountId),
-                frozenTransaction
-              );
-              console.log({
-                executeResult,
-              });
+              try {
+                  const executeResult = await executeTransaction(
+                      AccountId.fromString(fromAccountId),
+                      frozenTransaction
+                      );
+                      console.log({
+                          executeResult,
+                        });
+                } catch(err) {
+                    console.log(err)
+                }
             }}
           >
             Sign and Execute

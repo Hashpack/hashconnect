@@ -16,7 +16,6 @@ import { HcsDeleteTopicComponent } from './components/hcs-delete-topic/hcs-delet
 import { HcsSubmitMessageComponent } from './components/hcs-submit-message/hcs-submit-message.component';
 import { HcsUpdateTopicComponent } from './components/hcs-update-topic/hcs-update-topic.component';
 import { MintTokenComponent } from './components/mint-token/mint-token.component';
-import { PairingComponent } from './components/pairing/pairing.component';
 import { PauseTokenComponent } from './components/pause-token/pause-token.component';
 import { PrngTransactionComponent } from './components/prng-transaction/prng-transaction.component';
 import { SendTransactionComponent } from './components/send-transaction/send-transaction.component';

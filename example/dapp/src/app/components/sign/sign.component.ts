@@ -20,6 +20,7 @@ export class SignComponent implements OnInit {
     signingAcct: string;
 
     data = {
+        message: "Hello World!",
     }
 
     ngOnInit(): void {
@@ -37,13 +38,13 @@ export class SignComponent implements OnInit {
     }
 
     async send() {
-        let res = await this.HashconnectService.hashconnect.signMessages(AccountId.fromString(this.signingAcct), "Hello World!");
+        let res = await this.HashconnectService.hashconnect.signMessages(AccountId.fromString(this.signingAcct), this.data.message);
         
         let accountInfo = await fetch("https://testnet.mirrornode.hedera.com/api/v1/accounts/" + this.signingAcct);
         let accountInfoJson = await accountInfo.json();
         let publicKey = PublicKey.fromString(accountInfoJson.key.key);
 
-        let verified = this.HashconnectService.hashconnect.verifyMessageSignature("Hello World!", res, publicKey);
+        let verified = this.HashconnectService.hashconnect.verifyMessageSignature(this.data.message, res, publicKey);
         
         this.HashconnectService.showResultOverlay({ verified, res });
     }

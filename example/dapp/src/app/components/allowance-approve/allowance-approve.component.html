@@ -1,0 +1,55 @@
+<h2>Allowance Approve</h2>
+
+<select [(ngModel)]="signingAcct">
+    <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+        {{acc}}</option>
+</select>
+
+<section>
+    <span>
+        <input type="checkbox" name="hbarAllowance" id="hbarAllowance" [(ngModel)]="data.hbarAllowance">
+        <label for="hbarAllowance">HBAR Allowance</label>
+    </span>
+    <div *ngIf="data.hbarAllowance">
+        <div class="allowance" *ngFor="let allowance of data.hbarAllowances">
+            <span>
+                <label>Amount</label>
+                <input type="text" [(ngModel)]="allowance.amount">
+            </span>
+        </div>
+        <button (click)="addHbarAllowance()">Add HBAR Allowance</button>
+    </div>
+</section>
+
+<section>
+    <span>
+        <input type="checkbox" name="nftAllowance" id="nftAllowance" [(ngModel)]="data.nftAllowance">
+        <label for="nftAllowance">NFT Allowance</label>
+    </span>
+    <div *ngIf="data.nftAllowance">
+        <div class="allowance" *ngFor="let allowance of data.nftAllowances">
+            <span>
+                <label>Token ID</label>
+                <input type="text" [(ngModel)]="allowance.tokenId">
+            </span>
+            <span>
+                <label>Serial</label>
+                <input type="text" [(ngModel)]="allowance.serial">
+            </span>
+        </div>
+        <button (click)="addNFTAllowance()">Add NFT Allowance</button>
+    </div>
+</section>
+
+<section>
+    <span>
+        <input type="checkbox" name="tokenAllowance" id="tokenAllowance" [(ngModel)]="data.tokenAllowance">
+        <label for="tokenAllowance">Token Allowance</label>
+    </span>
+    <div *ngIf="data.tokenAllowance">
+        <div class="allowance">
+
+        </div>
+        <button (click)="addTokenAllowance()">Add token Allowance</button>
+    </div>
+</section>

@@ -1,0 +1,12 @@
+<h2>Associate Token</h2>
+
+<p>Account to associate token to</p>
+<select [(ngModel)]="signingAcct">
+    <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+        {{acc}}</option>
+</select>
+
+<p>Token ID</p>
+<p *ngFor="let token of tokenIds"><input type="text" [(ngModel)]="token.id"></p>
+
+<button class="primary" (click)="addTokenId()">Add Token ID</button>

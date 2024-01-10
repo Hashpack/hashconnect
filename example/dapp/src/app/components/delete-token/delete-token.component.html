@@ -1,0 +1,10 @@
+<h2>Delete Token</h2>
+
+<h3>Delete From</h3>
+<select [(ngModel)]="signingAcct">
+    <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+        {{acc}}</option>
+</select>
+
+<h3>Token ID</h3>
+<input type="text" [(ngModel)]="data.tokenId">

@@ -1,0 +1,30 @@
+<h2>Wipe Token</h2>
+
+<p>Account to sign (token wipe account)</p>
+<select [(ngModel)]="signingAcct">
+    <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+        {{acc}}</option>
+</select>
+
+<h3>Token ID</h3>
+<input type="text" [(ngModel)]="data.tokenId">
+
+<h3>Account ID to wipe</h3>
+<input type="text" [(ngModel)]="data.accountId">
+
+
+<h3>
+    <input type="checkbox" [(ngModel)]="data.isNft">
+    Is NFT
+</h3>
+
+<div *ngIf="!data.isNft">
+    <h3>Amount</h3>
+    <input type="number" min="1" [(ngModel)]="data.amount">
+</div>
+
+
+<div *ngIf="data.isNft">
+    <h3>Serial #</h3>
+    <input type="number" maxlength="100" [(ngModel)]="data.serial">
+</div>

@@ -1,0 +1,29 @@
+<h2>Burn Tokens</h2>
+
+<p>Account to sign (token supply account)</p>
+<select [(ngModel)]="signingAcct">
+    <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+        {{acc}}</option>
+</select>
+
+<h3>Token ID</h3>
+<input type="text" [(ngModel)]="data.tokenId">
+
+<h3>
+    <input type="checkbox" [(ngModel)]="data.isNft">
+    Is NFT
+</h3>
+
+<div *ngIf="!data.isNft">
+    <h3>Amount</h3>
+    <input type="number" min="1" [(ngModel)]="data.amount">
+</div>
+
+<div *ngIf="data.isNft">
+    <h3>Serials</h3>
+    <div *ngFor="let serial of data.serials">
+        <input type="text" [(ngModel)]="serial.number">
+    </div>
+
+    <button class="outline" (click)="addSerial()">Add Serial</button>
+</div>

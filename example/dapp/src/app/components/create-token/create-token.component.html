@@ -1,0 +1,88 @@
+<h2>Create a token</h2>
+
+<h3>Owner</h3>
+<select [(ngModel)]="signingAcct">
+    <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+        {{acc}}</option>
+</select>
+
+<h3>Token Name</h3>
+<input type="text" [(ngModel)]="tokenData.name">
+
+<h3>Token Symbol</h3>
+<input type="text" [(ngModel)]="tokenData.symbol">
+
+<h3>Token Type</h3>
+<select [(ngModel)]="type" (ngModelChange)="changeType($event)">
+    <option value="Fungible">Fungible</option>
+    <option value="NFT">Non-Fungible</option>
+</select>
+
+<h3>Token Supply Type</h3>
+<select [(ngModel)]="supplyType" (ngModelChange)="changeSupplyType($event)">
+    <option value="Infinite">Infinite</option>
+    <option value="Finite">Finite</option>
+</select>
+
+<h3>Initial Supply</h3>
+<input type="number" [(ngModel)]="tokenData.initialSupply" min="0">
+
+<div *ngIf="supplyType != 'Infinite'">
+    <h3>Max Supply</h3>
+    <input type="number" [(ngModel)]="tokenData.maxSupply" min="0">
+</div>
+
+<div *ngIf="type == 'Fungible'">
+    <h3>Decimals</h3>
+    <input type="number" [(ngModel)]="tokenData.decimals" min="0">
+</div>
+
+<h3>
+    <input type="checkbox" [(ngModel)]="tokenData.includeRoyalty">
+    Include Royalty
+</h3>
+
+<div *ngIf="tokenData.includeRoyalty">
+    <h3>Royalty Percentage</h3>
+    <input type="number" [(ngModel)]="tokenData.royaltyPercent" min="1" max="100">
+    <h3>Royalty Fallback (receiver pays if fungible exchanged is 0)</h3>
+    <input type="number" [(ngModel)]="tokenData.fallbackFee" min="1" max="100">
+</div>
+
+<h3>
+    <input type="checkbox" [(ngModel)]="tokenData.includeFixedFee">
+    Include Fixed Fee
+</h3>
+
+<div *ngIf="tokenData.includeFixedFee">
+    <h3>Fixed Fee</h3>
+    <input type="number" [(ngModel)]="tokenData.fixedFee" min="1" max="100">
+    <h3>Fixed Fee Token ID</h3>
+    <input type="text" [(ngModel)]="tokenData.fixedTokenId">
+</div>
+
+<h3>
+    <input type="checkbox" [(ngModel)]="tokenData.includeFractionalFee">
+    Include Fractional Fee
+</h3>
+
+<div *ngIf="tokenData.includeFractionalFee">
+    <h3>Fractional Fee Percent</h3>
+    <input type="number" [(ngModel)]="tokenData.fractionalFee.percent" min="1" max="100">
+    
+    <h3>Fractional Fee Max</h3>
+    <input type="number" [(ngModel)]="tokenData.fractionalFee.max" min="0" max="100">
+    
+    <h3>Fractional Fee Min</h3>
+    <input type="number" [(ngModel)]="tokenData.fractionalFee.min" min="0" max="100">
+</div>
+
+<!-- <h3>
+    <input type="checkbox" [(ngModel)]="tokenData.includeFractionalFee">
+    Include Fractional Fee
+</h3>
+
+<div *ngIf="tokenData.includeFractionalFee">
+    <h3>Fractional Fee</h3>
+    <input type="number" [(ngModel)]="tokenData.fractionalFee" min="1" max="100">
+</div> -->

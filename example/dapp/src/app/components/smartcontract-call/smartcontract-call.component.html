@@ -1,0 +1,13 @@
+<h2>Smart Contract Call</h2>
+
+<p>From:
+    <select [(ngModel)]="signingAcct">
+        <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+            {{acc}}</option>
+    </select>
+</p>
+
+<p>
+    Contract ID
+    <input type="text" [(ngModel)]="contractId">
+</p>

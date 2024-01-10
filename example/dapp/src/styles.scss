@@ -1,0 +1,49 @@
+@import "assets/styles/_variables.scss";
+@import "assets/styles/reset.scss";
+@import "assets/styles/typography.scss";
+@import "assets/styles/inputs.scss";
+@import "assets/styles/modals.scss";
+* {
+    box-sizing: border-box;
+
+    *:focus {
+        outline-color: var(--blue-3);
+    }
+}
+html {
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: var(--grey-1);
+    color: white;
+    font-family: var(--main-font);
+    font-size: 14px;
+    line-height: 24px;
+    height: 100%;
+    overflow: auto;
+}
+
+.main_panel {
+    margin-bottom: auto;
+    flex: 0 0 auto;
+}
+
+//scrollbar
+*::-webkit-scrollbar {
+    width: 10px;
+}
+
+*::-webkit-scrollbar-track {
+    background: var(--grey-3);
+}
+
+*::-webkit-scrollbar-thumb {
+    background: var(--blue-2);
+    border-radius: var(--button-border-radius);
+    
+    &:hover {
+        background: var(--blue-3);
+    }
+}

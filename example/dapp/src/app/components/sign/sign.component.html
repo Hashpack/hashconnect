@@ -1,0 +1,10 @@
+<h2>Sign</h2>
+
+<p>Account to sign</p>
+<select [(ngModel)]="signingAcct">
+    <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+        {{acc}}</option>
+</select>
+
+<h3>Message To Sign</h3>
+<input type="text" [(ngModel)]="data.message">

@@ -1,0 +1,16 @@
+<h2>Create Topic</h2>
+
+<p>From:
+    <select [(ngModel)]="signingAcct">
+        <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+            {{acc}}</option>
+    </select>
+</p>
+
+<p>
+    Topic Name: <input type="text" [(ngModel)]="topicMemo">
+</p>
+
+<p>
+    Transaction Memo: <input type="text" [(ngModel)]="memo">
+</p>

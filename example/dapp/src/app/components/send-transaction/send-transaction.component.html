@@ -1,0 +1,72 @@
+<h2>Send transaction</h2>
+
+<div>
+
+    <p>To: {{ data.transfer.toAcc }}</p>
+
+    <p>From:
+        <select [(ngModel)]="signingAcct">
+            <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+                {{acc}}</option>
+        </select>
+    </p>
+
+    <hr>
+
+    <p>
+        <input type="checkbox" name="" id="" [(ngModel)]="data.transfer.include_hbar"> HBAR Transfer
+    </p>
+
+    <div *ngIf="data.transfer.include_hbar">
+        <p>To HBAR Amount: <input type="number" name="" id="" [(ngModel)]="data.transfer.to_hbar_amount" max="5" min="-5"></p>
+        <p>From HBAR Amount: <input type="number" name="" id="" [(ngModel)]="data.transfer.from_hbar_amount" max="5" min="-5"></p>
+    </div>
+    
+    <hr>
+
+    <p>
+        <input type="checkbox" name="" id="" [(ngModel)]="data.transfer.include_token"> Token Transfer
+    </p>
+
+    <div *ngIf="data.transfer.include_token">
+        <div *ngFor="let tokenTrans of data.transfer.tokenTransfers">
+            <p>Token ID: <input type="text" name="" id="" [(ngModel)]="tokenTrans.tokenId"></p>
+            <p>Token Amount: <input type="number" name="" id="" [(ngModel)]="tokenTrans.amount" max="5" min="-5"></p>
+            <p>Sender ID: <input type="text" name="" id="" [(ngModel)]="tokenTrans.accountId"></p>
+        </div>
+
+        <button class="outline" (click)="addTokenTransfer()">Add Token Transaction</button>
+    </div>
+    
+    <hr>
+      
+    <p>
+        <input type="checkbox" name="" id="" [(ngModel)]="data.transfer.include_nft"> NFT Transfer
+    </p>
+
+    <div *ngIf="data.transfer.include_nft">
+        <div *ngFor="let nftTrans of data.transfer.nftTransfers">
+            <p>Token ID: <input type="text" name="" id="" [(ngModel)]="nftTrans.tokenId"></p>
+            <p>Serial Number: <input type="number" name="" id="" [(ngModel)]="nftTrans.serialNumber" max="9999999" min="0"></p>
+            <p>Sender ID: <input type="text" name="" id="" [(ngModel)]="nftTrans.sender"></p>
+            <p>Receiver ID: <input type="text" name="" id="" [(ngModel)]="nftTrans.receiver"></p>
+        </div>
+
+        <button class="outline" (click)="addNFTTransfer()">Add NFT Transfer</button>
+
+        <div>
+            <input type="checkbox" name="" id="" [(ngModel)]="data.transfer.hideNfts">
+            Hide NFT Info
+        </div>
+    </div>
+    
+    <hr>
+
+    <p>Memo: <input type="text" [(ngModel)]="memo"></p>
+
+    <hr>
+
+    <p>
+        <input type="checkbox" name="" id="" [(ngModel)]="data.transfer.return_transaction"> Return transaction instead of execute
+    </p>
+</div>

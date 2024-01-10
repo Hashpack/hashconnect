@@ -1,0 +1,13 @@
+<h2>Smart Contract Create</h2>
+
+<p>From:
+    <select [(ngModel)]="signingAcct">
+        <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+            {{acc}}</option>
+    </select>
+</p>
+
+<p>
+    Bytecode File Id
+    <input type="text" [(ngModel)]="bytecodeFileId">
+</p>

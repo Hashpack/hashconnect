@@ -1,0 +1,20 @@
+<h2>Submit Message</h2>
+
+<p>From:
+    <select [(ngModel)]="signingAcct">
+        <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+            {{acc}}</option>
+    </select>
+</p>
+
+<p>
+    Topic Id: <input type="text" [(ngModel)]="topicId">
+</p>
+
+<p>
+    Message: <input type="text" [(ngModel)]="message">
+</p>
+
+<p>
+    Transaction Memo: <input type="text" [(ngModel)]="memo">
+</p>

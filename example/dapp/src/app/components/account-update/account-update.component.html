@@ -1,0 +1,19 @@
+<h2>Account Update</h2>
+
+<p>Account to update</p>
+<select [(ngModel)]="signingAcct">
+    <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+        {{acc}}</option>
+</select>
+
+<h3>New Public Key - WARNING BE CAREFUL WITH THIS ONE</h3>
+<input type="text" [(ngModel)]="data.newPublicKey">
+
+<h3>Automatic Token Associations</h3>
+<input type="number" min="0" max="1000" [(ngModel)]="data.maxAutomaticTokenAssociations">
+
+<h3>Account Memo</h3>
+<input type="text" [(ngModel)]="data.accountMemo">
+
+<h3>Transaction Memo</h3>
+<input type="text" [(ngModel)]="data.transMemo">

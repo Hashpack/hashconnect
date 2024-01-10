@@ -1,0 +1,16 @@
+<h2>Delete Topic</h2>
+
+<p>From:
+    <select [(ngModel)]="signingAcct">
+        <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+            {{acc}}</option>
+    </select>
+</p>
+
+<p>
+    Topic ID: <input type="text" [(ngModel)]="topicId">
+</p>
+
+<p>
+    Transaction Memo: <input type="text" [(ngModel)]="memo">
+</p>

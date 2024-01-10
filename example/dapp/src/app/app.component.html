@@ -1,0 +1,87 @@
+
+    <div class="top">
+        <h1>{{title}}</h1>
+        <h2>Status: {{HashConnectService.state}}</h2>
+        
+        <h3>Connected accounts: {{ HashConnectService.pairingData?.accountIds | json}}</h3>
+
+        <h3>Connected to: {{ HashConnectService.pairingData?.metadata | json }}</h3>
+        <div class="profile" *ngIf="HashConnectService.userProfile">
+            <div class="profile_wrap">
+                <div class="profile__avatar">
+                    <img [src]="HashConnectService.userProfile.profilePicture.thumbUrl" alt="avatar">
+                </div>
+                <div class="profile__name">
+                    <h3>{{ HashConnectService.userProfile.username.name || HashConnectService.userProfile.accountId }}</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="mainnet_toggle">
+            <input type="checkbox" [(ngModel)]="isMainnet" (ngModelChange)="toggleMainnet()">
+            Mainnet
+        </div>
+    </div>
+
+    
+
+    <div class="buttons">
+        <div>
+            <input type="checkbox" [(ngModel)]="viewData"> View HashConnect Data
+        </div>
+        <button class="primary" (click)="pair()" [disabled]="HashConnectService.state == 'Paired' || HashConnectService.state == 'Disconnected'">Pair</button>
+        <button class="primary" (click)="HashConnectService.disconnect()" [disabled]="HashConnectService.state != 'Paired'">Disconnect</button>
+        <button class="primary" (click)="auth()" [disabled]="HashConnectService.state != 'Paired'">Authenticate</button>
+        <button class="primary" (click)="sign()" [disabled]="HashConnectService.state != 'Paired'">Sign</button>
+
+        <button class="primary" (click)="sendTransaction()" [disabled]="HashConnectService.state != 'Paired'">Create basic transaction</button>
+        <button class="primary" (click)="prngTrans()" [disabled]="HashConnectService.state != 'Paired'">prng</button>
+        <button class="primary" (click)="getUserProfile()" [disabled]="HashConnectService.state != 'Paired'">Get User Profile</button>
+        
+        <h3>Account</h3>
+        <button class="primary" (click)="accountUpdate()" [disabled]="HashConnectService.state != 'Paired'">Account Update</button>
+        <button class="primary" (click)="associateToken()" [disabled]="HashConnectService.state != 'Paired'">Associate Token</button>
+        <button class="primary" (click)="disassociateToken()" [disabled]="HashConnectService.state != 'Paired'">Disassociate Token</button>
+        <button class="primary" (click)="allowanceApprove()" [disabled]="HashConnectService.state != 'Paired'">Allowance Approve</button>
+        <button class="primary" (click)="allowanceDelete()" [disabled]="HashConnectService.state != 'Paired'">Allowance Delete</button>
+
+        <h3>Tokens</h3>
+        <button class="primary" (click)="createToken()" [disabled]="HashConnectService.state != 'Paired'">Create Token</button>
+        <button class="primary" (click)="deleteToken()" [disabled]="HashConnectService.state != 'Paired'">Delete Token</button>
+        <button class="primary" (click)="mintToken()" [disabled]="HashConnectService.state != 'Paired'">Mint Token</button>
+        <button class="primary" (click)="burnToken()" [disabled]="HashConnectService.state != 'Paired'">Burn Token</button>
+        <button class="primary" (click)="pauseToken()" [disabled]="HashConnectService.state != 'Paired'">Pause Token</button>
+        <button class="primary" (click)="unpauseToken()" [disabled]="HashConnectService.state != 'Paired'">Unpause Token</button>
+        <button class="primary" (click)="wipeToken()" [disabled]="HashConnectService.state != 'Paired'">Wipe Token</button>
+
+        <button class="primary" (click)="kycGrant()" [disabled]="HashConnectService.state != 'Paired'">Grant Token KYC</button>
+        <button class="primary" (click)="kycRevoke()" [disabled]="HashConnectService.state != 'Paired'">Revoke Token KYC</button>
+        
+        <button class="primary" (click)="freezeToken()" [disabled]="HashConnectService.state != 'Paired'">Freeze Token</button>
+        <button class="primary" (click)="unfreezeToken()" [disabled]="HashConnectService.state != 'Paired'">UnFreeze Token</button>
+       
+        <button class="primary" (click)="tokenFeeUpdate()" [disabled]="HashConnectService.state != 'Paired'">Token Fee Update</button>
+
+        <h3>File Service</h3>
+        <button class="primary" (click)="fileCreate()" [disabled]="HashConnectService.state != 'Paired'">File Create</button>
+        <button class="primary" (click)="fileAppend()" [disabled]="HashConnectService.state != 'Paired'">File Append</button>
+
+        <h3>Smart Contracts</h3>
+        <button class="primary" (click)="smartcontractCreate()" [disabled]="HashConnectService.state != 'Paired'">Smart Contract Create</button>
+        <button class="primary" (click)="smartcontractDelete()" [disabled]="HashConnectService.state != 'Paired'">Smart Contract Delete</button>
+        <button class="primary" (click)="smartcontractCall()" [disabled]="HashConnectService.state != 'Paired'">Smart Contract Call</button>
+        <button class="primary" (click)="smartcontractExecute()" [disabled]="HashConnectService.state != 'Paired'">Smart Contract Execute</button>
+
+        <h3>Consensus Service</h3>
+        <button class="primary" (click)="hcsCreateTopic()" [disabled]="HashConnectService.state != 'Paired'">Create Topic</button>
+        <button class="primary" (click)="hcsDeleteTopic()" [disabled]="HashConnectService.state != 'Paired'">Delete Topic</button>
+        <button class="primary" (click)="hcsUpdateTopic()" [disabled]="HashConnectService.state != 'Paired'">Update Topic</button>
+        <button class="primary" (click)="hcsSubmitMessage()" [disabled]="HashConnectService.state != 'Paired'">Submit Message</button>
+    </div>
+
+    <pre class="data" *ngIf="viewData">
+        {{ HashConnectService.hashconnect | json }}
+    </pre>
+
+
+<router-outlet></router-outlet>

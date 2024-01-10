@@ -1,0 +1,13 @@
+<h2>File Create</h2>
+<p>The default file content is the contract code from the <a href="https://hedera.com/blog/how-to-deploy-smart-contracts-on-hedera-part-1-a-simple-getter-and-setter-contract" target="_blank">Hedera smart contract tutorial</a></p>
+
+<p>From:
+    <select [(ngModel)]="signingAcct">
+        <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
+            {{acc}}</option>
+    </select>
+</p>
+
+<p>
+    Content: <input type="text" [(ngModel)]="fileContent">
+</p>

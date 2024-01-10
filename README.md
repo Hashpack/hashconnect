@@ -4,13 +4,13 @@
 
 **For v2 docs [go here](https://github.com/Hashpack/hashconnect/blob/5e5909c7610e759a6b52bc790fc306aac3fb7322/README.md)**
 
+[Join the Hedera Developer Guild Discord](https://discord.gg/ZmSKQ3BUaQ1)
+
 Hashconnect is a helper library around the Hedera WalletConnect standard, allowing dapps to easily integrate with a variety of wallets.
 
 The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pairing and signing functionality.
 
-**[View Demo](https://hashpack.github.io/hashconnect/)**
-
-**[Example React Integration](https://github.com/rajatK012/hashconnectWalletConnect)**
+**[Example React Integration](https://github.com/Hashpack/hashconnect/tree/main/example/react-dapp)**
 
 - [Hashconnect](#hashconnect)
   - [Project ID](#project-id)

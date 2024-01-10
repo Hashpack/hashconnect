@@ -2,6 +2,8 @@
 
 **HashConnect v3 is current in pre-release. API's may change or be unstable.**
 
+**For v2 docs [go here](https://github.com/Hashpack/hashconnect/blob/5e5909c7610e759a6b52bc790fc306aac3fb7322/README.md)**
+
 Hashconnect is a helper library around the Hedera WalletConnect standard, allowing dapps to easily integrate with a variety of wallets.
 
 The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pairing and signing functionality.

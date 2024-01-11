@@ -31,6 +31,7 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
     - [Disconnecting](#disconnecting)
     - [Sending Requests](#sending-requests)
       - [Send Transaction](#send-transaction)
+      - [Sign and Return](#sign-and-return)
       - [Sign Message](#sign-message)
       - [Verify Signature](#verify-signature)
     - [Transaction Receipts](#transaction-receipts)
@@ -241,7 +242,7 @@ Call `hashconnect.disconnect()` to disconnect.
 
 #### Send Transaction
 
-This request takes two parameters, **accountId** and a Hedera Transaction.
+This request takes two parameters, **accountId** and a Hedera Transaction, signs it with the specified account ID, and executes it.
 
 ```js
 let response = await hashconnect.sendTransaction(accountId, transaction);
@@ -259,10 +260,29 @@ let trans = await new TransferTransaction()
 let response = await trans.executeWithSigner(signer);
 ```
 
+#### Sign and Return 
+
+This request takes two parameters, **accountId** and a Hedera Transaction, signs it with the specified account ID, and returns a signed transaction that you can execute or send to other users for additional signatures.
+
+```js
+let response = await hashconnect.signAndReturnTransaction(accountId, transaction);
+```
+
+**With Signer:**
+```js
+let signer = hashconnect.getSigner(accountId);
+
+let trans = await new TransferTransaction()
+    .addHbarTransfer(fromAccount, -1)
+    .addHbarTransfer(toAccount, 1)
+    .freezeWithSigner(signer);
+
+let response = await trans.signTransaction(signer);
+```
 
 #### Sign Message
 
-This request allows you to get a signature on a generic string.
+This request allows you to get a signature on a generic string, which can be used for things like authentication.
 
 ```js
 let signature = await hashconnect.signMessages(accountId, message);

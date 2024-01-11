@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { DialogBelonging } from '@costlydeveloper/ngx-awesome-popup';
-import { AccountId, Hbar, HbarUnit, TokenAssociateTransaction, TransactionReceipt, TransactionResponse, TransferTransaction } from '@hashgraph/sdk';
+import { AccountId, Client, Hbar, HbarUnit, TokenAssociateTransaction, TransactionReceipt, TransactionResponse, TransferTransaction } from '@hashgraph/sdk';
 import { Subscription } from 'rxjs';
 import { HashconnectService } from 'src/app/services/hashconnect.service';
 import { SigningService } from 'src/app/services/signing.service';
@@ -96,18 +96,36 @@ export class SendTransactionComponent implements OnInit {
 
         let transaction = await this.SigningService.signAndMakeBytes(trans, this.signingAcct);
 
-        await this.HashconnectService.sendTransaction(transaction, AccountId.fromString(this.signingAcct), this.data.transfer.return_transaction, this.data.transfer.hideNfts).then(async res => {
-            let responseData: any = {
-                response: null,
-                receipt: res
-            }
+        if (!this.data.transfer.return_transaction) {
+            await this.HashconnectService.sendTransaction(transaction, AccountId.fromString(this.signingAcct)).then(async res => {
+                let responseData: any = {
+                    response: null,
+                    receipt: res
+                }
 
-            debugger
-            this.HashconnectService.showResultOverlay(responseData);
-        }).catch(err => {
-            debugger
-            this.HashconnectService.showResultOverlay(err);
-        });
+                debugger
+                this.HashconnectService.showResultOverlay(responseData);
+            }).catch(err => {
+                debugger
+                this.HashconnectService.showResultOverlay(err);
+            });
+        } else {
+            await this.HashconnectService.hashconnect.signAndReturnTransaction(AccountId.fromString(this.signingAcct), transaction).then(async res => {
+                let responseData: any = {
+                    executedSuccessfully: false,
+                    signedTx: res
+                }
+
+                let testClient = Client.forNetwork("testnet" as any);
+                let transactionResponse = await res.execute(testClient);
+                let receipt = await transactionResponse.getReceipt(testClient);
+                if(receipt.status._code == 22) responseData.executedSuccessfully = true;
+                
+                this.HashconnectService.showResultOverlay(responseData);
+            }).catch(err => {
+                this.HashconnectService.showResultOverlay(err);
+            });
+        }
     }
 
     addTokenTransfer() {

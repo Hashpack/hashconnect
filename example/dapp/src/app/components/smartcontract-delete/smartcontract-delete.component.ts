@@ -46,7 +46,7 @@ export class SmartcontractDeleteComponent implements OnInit {
 
         let transactionBytes: Uint8Array = await this.SigningService.makeBytes(trans, this.signingAcct);
 
-        let res = await this.HashconnectService.sendTransaction(trans, AccountId.fromString(this.signingAcct), false);
+        let res = await this.HashconnectService.sendTransaction(trans, AccountId.fromString(this.signingAcct));
 
         //handle response
         let responseData: any = {

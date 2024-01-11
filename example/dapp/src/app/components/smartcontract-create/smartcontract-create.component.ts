@@ -46,7 +46,7 @@ export class SmartcontractCreateComponent implements OnInit {
         .setGas(100000)
         .setConstructorParameters(new ContractFunctionParameters().addString("Alice").addUint256(111111));
 
-        let res = await this.HashconnectService.sendTransaction(trans, AccountId.fromString(this.signingAcct), false);
+        let res = await this.HashconnectService.sendTransaction(trans, AccountId.fromString(this.signingAcct));
 
         //handle response
         let responseData: any = {

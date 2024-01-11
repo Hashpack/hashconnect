@@ -44,7 +44,7 @@ export class HcsCreateTopicComponent implements OnInit {
         .setTopicMemo(this.topicMemo)
         .setTransactionMemo(this.memo);
 
-        let res = await this.HashconnectService.sendTransaction(trans, AccountId.fromString(this.signingAcct), false);
+        let res = await this.HashconnectService.sendTransaction(trans, AccountId.fromString(this.signingAcct));
 
         //handle response
         let responseData: any = {

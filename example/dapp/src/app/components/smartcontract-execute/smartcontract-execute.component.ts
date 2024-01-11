@@ -49,7 +49,7 @@ export class SmartcontractExecuteComponent implements OnInit {
         .setFunction("setMobileNumber", new ContractFunctionParameters().addString("Bob").addUint256(222222))
         .setMaxTransactionFee(new Hbar(0.75));
 
-        let res = await this.HashconnectService.sendTransaction(trans, AccountId.fromString(this.signingAcct), false, false, this.getRecord);
+        let res = await this.HashconnectService.sendTransaction(trans, AccountId.fromString(this.signingAcct));
 
         //handle response
         let responseData: any = {

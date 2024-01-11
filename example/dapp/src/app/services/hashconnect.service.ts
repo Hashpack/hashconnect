@@ -65,11 +65,8 @@ export class HashconnectService {
     }
 
 
-    async sendTransaction(trans: Transaction, acctToSign: AccountId, return_trans: boolean = false, hideNfts: boolean = false, getRecord: boolean = false) {
-        if(return_trans)
-            return await this.hashconnect.signTransaction(acctToSign, trans);
-        else
-            return await this.hashconnect.sendTransaction(acctToSign, trans)
+    async sendTransaction(trans: Transaction, acctToSign: AccountId) {
+        return await this.hashconnect.sendTransaction(acctToSign, trans)
     }
 
     async disconnect() {

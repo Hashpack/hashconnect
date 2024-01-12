@@ -4,7 +4,7 @@
 
 **For v2 docs [go here](https://github.com/Hashpack/hashconnect/blob/5e5909c7610e759a6b52bc790fc306aac3fb7322/README.md)**
 
-[Join the Hedera Developer Guild Discord](https://discord.gg/ZmSKQ3BUaQ1)
+[Join the Hedera Developer Guild Discord](https://discord.gg/cP5wDCjNYb)
 
 Hashconnect is a helper library around the Hedera WalletConnect standard, allowing dapps to easily integrate with a variety of wallets.
 

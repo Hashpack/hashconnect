@@ -4,3 +4,15 @@
     <option *ngFor="let acc of HashconnectService.pairingData?.accountIds" [value]="acc" [selected]="signingAcct == acc">
         {{acc}}</option>
 </select>
+
+<label>NFT Token Id</label>
+<input type="text" [(ngModel)]="data.tokenId">
+
+<label>Serials</label>
+
+<div *ngFor="let serial of data.serials; let i = index">
+    <input type="text" [(ngModel)]="data.serials[i]">
+    <button (click)="removeSerial(i)">Remove</button>
+</div>
+
+<button (click)="addSerial()">Add Serial</button>

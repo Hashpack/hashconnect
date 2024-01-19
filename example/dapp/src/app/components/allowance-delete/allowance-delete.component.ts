@@ -26,7 +26,9 @@ export class AllowanceDeleteComponent implements OnInit {
         key: "",
         accountMemo: "",
         transMemo: "",
-        newPublicKey: ""
+        newPublicKey: "",
+        tokenId: "",
+        serials: []
     }
 
     ngOnInit(): void {
@@ -43,8 +45,20 @@ export class AllowanceDeleteComponent implements OnInit {
         );
     }
 
+    addSerial() {
+        this.data.serials.push(0);
+    }
+
+    removeSerial(index: number) {
+        this.data.serials.splice(index, 1);
+    }
+
     async send() {
-        let trans = new AccountAllowanceDeleteTransaction().deleteAllTokenNftAllowances(new NftId(TokenId.fromString("0.0.29631020"), 1), this.signingAcct);
+        let trans = new AccountAllowanceDeleteTransaction();
+
+        for(let serial of this.data.serials) {
+            trans.deleteAllTokenNftAllowances(new NftId(TokenId.fromString(this.data.tokenId), serial), this.signingAcct)
+        }
 
         let frozenTrans = await this.SigningService.freezeTransaction(trans, this.signingAcct);
 

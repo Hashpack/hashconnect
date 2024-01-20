@@ -49,7 +49,7 @@ This is what you need to start using HashConnect, it will be explained in detail
 
 ```js
 import { HashConnect, HashConnectConnectionState, SessionData } from 'hashconnect';
-import { LedgerId } from '@hashgraph/sdk';
+import { LedgerId, Transaction } from '@hashgraph/sdk';
 
 const appMetadata = {
     name: "<Your dapp name>",

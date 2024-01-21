@@ -4,6 +4,7 @@ import { AccountId, LedgerId, Transaction, TransactionReceipt, TransactionRespon
 import { DappMetadata, HashConnect, HashConnectConnectionState, SessionData, UserProfile } from 'hashconnect';
 import { ResultModalComponent } from '../components/result-modal/result-modal.component';
 import { SigningService } from './signing.service';
+import { HashConnectSigner } from 'hashconnect/dist/signer';
 
 
 @Injectable({

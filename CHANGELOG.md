@@ -1,6 +1,23 @@
-## v0.2.5
-- lock crypto.js version to fix 'invalid decryption' bug
-- 
+## v3.0.9
+- Fix documentation around signer.sign()
+- Trigger disconnection event when disconnecting from dapp
+- Added documentation around verifying signatures
+
+## v3.0.8
+- Generate new pairing string when pairing rejected
+
+## v3.0.7
+- Added check if disconnection is in progress
+
+## v3.0.6
+- Added check if window object exists for running outside browser
+
+## v3.0.1 - v3.0.5
+- various tweaks
+
+## v3.0.0
+- refactored to use walletconnect
+
 ## v0.2.4
 - wrapped a console log in if(debug)
 

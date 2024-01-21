@@ -1,6 +1,6 @@
-# Hashconnect
+# HashConnect
 
-**HashConnect v3 is current in pre-release. API's may change or be unstable.**
+**HashConnect v3 is public beta. API's may change or be unstable.**
 
 **For v2 docs [go here](https://github.com/Hashpack/hashconnect/blob/5e5909c7610e759a6b52bc790fc306aac3fb7322/README.md)**
 
@@ -12,7 +12,7 @@ The [provided demo](https://hashpack.github.io/hashconnect/) demonstrates the pa
 
 **[Example React Integration](https://github.com/Hashpack/hashconnect/tree/main/example/react-dapp)**
 
-- [Hashconnect](#hashconnect)
+- [HashConnect](#hashconnect)
   - [Project ID](#project-id)
   - [Quick Start](#quick-start)
   - [Concepts](#concepts)
@@ -196,7 +196,7 @@ hashconnect.pairingEvent.on((pairingData) => {
 
 #### Disconnect Event
 
-When a user disconnects in the wallet this event will be triggered so you can update the state of your dapp.
+When a user disconnects this event will be triggered so you can update the state of your dapp.
 
 ```js
 hashconnect.disconnectionEvent.on((data) => {
@@ -291,7 +291,7 @@ let signature = await hashconnect.signMessages(accountId, message);
 **With Signer:**
 ```js
 let signer = hashconnect.getSigner(accountId);
-let signature = await signer.signMessages(["Hello World!"]);
+let signature = await signer.sign(["Hello World!"]);
 ```
 
 #### Verify Signature
@@ -302,6 +302,14 @@ This method will return a boolean if the signature matches the public key.
 
 ```js
 let verified = hashconnect.verifyMessageSignature("Hello World!", signMessageResponse, publicKey);
+```
+
+In order to prevent messages from secretly being transactions, there is a bit of manipulation happening to the messages. If you are attempting to verify a signature yourlsef, on the backend for example, you will need to run the message you are verifying through this function first and then verify the result against the signature:
+
+```js
+prefixMessageToSign(message: string) {
+    return '\x19Hedera Signed Message:\n' + message.length + message
+}
 ```
 
 ### Transaction Receipts

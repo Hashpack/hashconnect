@@ -1,3 +1,6 @@
+## v3.10.0
+- Added official Hedera Wallet Connect package instead of including a locally compiled version
+
 ## v3.0.9
 - Fix documentation around signer.sign()
 - Trigger disconnection event when disconnecting from dapp

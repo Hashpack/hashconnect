@@ -16,7 +16,6 @@ import {
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import {
-  authenticate,
   executeTransaction,
   signTransaction,
   hc,
@@ -167,20 +166,6 @@ export const Home = () => {
             }}
           >
             Sign and Return
-          </Button>
-          <Button
-            variant="contained"
-            color={"blurple" as any}
-            onClick={async () => {
-              const authenticateResult = await authenticate(
-                AccountId.fromString(fromAccountId)
-              );
-              console.log({
-                authenticateResult,
-              });
-            }}
-          >
-            Generate Server Signature and Authenticate
           </Button>
         </Stack>
       )}

@@ -1,4 +1,7 @@
-## v3.10.0
+## v3.0.11
+- Stopped HashPack extension from popping up on init
+
+## v3.0.10
 - Added official Hedera Wallet Connect package instead of including a locally compiled version
 
 ## v3.0.9

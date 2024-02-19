@@ -277,7 +277,7 @@ let trans = await new TransferTransaction()
     .addHbarTransfer(toAccount, 1)
     .freezeWithSigner(signer);
 
-let response = await trans.signTransaction(signer);
+let response = await trans.signWithSigner(signer);
 ```
 
 #### Sign Message

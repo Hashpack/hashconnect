@@ -9,7 +9,7 @@
     "@mui/icons-material": "^5.10.9",
     "@mui/material": "^5.10.9",
     "@reduxjs/toolkit": "^1.8.6",
-    "axios": "^0.27.2",
+    "axios": "^0.28.0",
     "bluebird": "^3.7.2",
     "buffer": "^6.0.3",
     "hashconnect": "3.0.11",

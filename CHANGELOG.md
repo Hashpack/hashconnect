@@ -1,3 +1,6 @@
+## v3.0.12
+- Updated WalletConnect and HashGraph SDK
+
 ## v3.0.11
 - Stopped HashPack extension from popping up on init
 
